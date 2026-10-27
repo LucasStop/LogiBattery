@@ -2,7 +2,7 @@
 
 Decisão de quais testes valem para cada parte do projeto. Catálogo de tipos e matriz default: `~/.claude/TESTES.md`. Partes definidas em [ARCHITECTURE.md](ARCHITECTURE.md). Estratégia aprovada pelo Lucas antes da implementação.
 
-Status: rascunho
+Status: aprovada em 2026-10-27
 
 ## 1. Formato da suíte
 - Formato: Troféu

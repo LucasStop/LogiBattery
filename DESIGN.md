@@ -4,7 +4,7 @@ Design system do projeto. É a fonte única de identidade visual e de padrões d
 
 Regra de fluxo: nenhuma tela é implementada antes de ter protótipo aprovado pelo Lucas (ver [Fluxo de protótipo e aprovação](#fluxo-de-protótipo-e-aprovação) e [design/telas.md](design/telas.md)). Mudança em token ou componente atualiza este arquivo no mesmo PR.
 
-Status do design system: rascunho (tokens e componentes a fechar na etapa de protótipo)
+Status do design system: aprovada em 2026-10-27
 
 ## 1. Brand
 - Produto: monitor de bateria de periféricos Logitech para macOS, em widget e barra de menu.

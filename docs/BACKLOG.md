@@ -4,7 +4,7 @@ Fonte das issues iniciais. `~/.claude/templates/criar-issues.sh` lê este arquiv
 
 Formato do bloco: `## título`, linhas de metadado (`id:` nome curto, `labels: a, b`, `pai: id` vira sub-issue do pai, `depende: id1, id2` vira "bloqueada por"), corpo em Markdown. Id que não existe (bloco removido no perfil) é ignorado. Uma issue por história do [PRD](PRD.md) (título `US-01: ...`, critério de aceite copiado) mais as de fundação abaixo. Issue grande demais para um PR vira duas.
 
-Status: rascunho. Aprovado em AAAA-MM-DD <!-- trocar a data quando o Lucas aprovar a lista -->
+Status: aprovado. Aprovado em 2026-10-27
 
 ## epic: Fundação
 id: fundacao
