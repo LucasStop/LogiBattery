@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, dev, 'release/**']
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: SwiftLint · Testes
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ferramentas
+        run: brew install xcodegen swiftlint
+
+      - name: Gerar projeto
+        if: hashFiles('project.yml') != ''
+        run: xcodegen generate
+
+      - name: SwiftLint
+        if: hashFiles('project.yml') != ''
+        run: swiftlint --strict
+        continue-on-error: true # TODO: tirar quando o repo passar limpo
+
+      - name: Testes
+        if: hashFiles('project.yml') != ''
+        # Passos de build só rodam depois que o project.yml existir (issue de fundação).
+        run: xcodebuild test -scheme "$SCHEME" -destination 'platform=macOS'
+        env:
+          SCHEME: LogiBattery
