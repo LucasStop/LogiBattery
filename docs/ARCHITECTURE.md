@@ -3,7 +3,7 @@
 Visão das partes do sistema e de como se conectam. Cada parte aqui ganha uma linha em [TESTING.md](TESTING.md). Decisões difíceis de reverter viram ADR em [adr/](adr/).
 Parte com UI tem suas telas em [../design/telas.md](../design/telas.md).
 
-Status: rascunho
+Status: aprovada em 2026-10-27
 
 ## 1. Contexto
 - O que o sistema faz: lê a bateria de mouse e teclado Logitech (receptor e Bluetooth) por HID++ e mostra em widget, popover na barra de menu, avisos e histórico. Ver [PRD.md](PRD.md).

@@ -2,7 +2,7 @@
 
 Modelo de dados, migrações e ciclo de vida da informação. Ligado a [ARCHITECTURE.md](ARCHITECTURE.md) (parte Persistência) e a [TESTING.md](TESTING.md) (testes de integração e migração).
 
-Status: rascunho
+Status: aprovada em 2026-10-27
 
 ## 1. Armazenamento
 - Banco: SwiftData (SQLite embutido) no container do App Group · Cache/fila: N/A · Arquivos: `snapshot.json` no App Group, lido pelo widget

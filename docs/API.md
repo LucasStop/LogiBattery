@@ -2,7 +2,7 @@
 
 Contrato e convenções da API. A fonte do contrato é o OpenAPI (N/A, sem API HTTP; o contrato é o schema do `snapshot.json` abaixo); este arquivo documenta as decisões que o schema não diz. Mudança de contrato atualiza o OpenAPI, este arquivo e os testes de contrato no mesmo PR (ver [TESTING.md](TESTING.md)).
 
-Status: rascunho. Sem API de rede: este arquivo registra o contrato interno entre o app host e o widget.
+Status: aprovada em 2026-10-27. Sem API de rede: este arquivo registra o contrato interno entre o app host e o widget.
 
 ## 1. Visão
 - Consumidores: a extensão de widget, que lê o snapshot. Nenhum terceiro.
