@@ -56,7 +56,7 @@ Base: cores semânticas do sistema (`NSColor`/`Color`) para acompanhar o tema e 
 
 | Estilo | Tamanho / linha | Peso | Uso |
 |---|---|---|---|
-| `display` | 34 / 40 pt | semibold, números tabulares | Porcentagem no widget pequeno |
+| `display` | 34 / 40 pt | semibold, números tabulares | Porcentagem grande (hoje sem uso no widget pequeno, que usa anéis 13 pt semibold) |
 | `h1` | 22 / 28 pt | semibold | Título de janela de ajustes |
 | `h2` | 17 / 22 pt | semibold | Seção |
 | `h3` | 13 / 18 pt | semibold | Nome do aparelho |
@@ -111,7 +111,7 @@ Por componente, registrar em `design/components.md` a anatomia e a regra de uso;
 - Estado de erro: diz o que houve (ex.: permissão negada) e leva ao painel de Privacidade.
 - Navegação: ícone na barra de menu abre o popover; ajustes em janela própria; profundidade máxima 2.
 - Listas: aparelhos ordenados do menor para o maior nível; sem busca nem paginação.
-- Widget: três tamanhos; o pequeno mostra o aparelho mais crítico, o médio até 3, o grande a lista e o gráfico.
+- Widget: três tamanhos; o pequeno mostra até 4 aparelhos em anéis com o percentual embaixo, o médio até 3, o grande a lista e o gráfico.
 
 ## 6. Acessibilidade
 - Meta: WCAG 2.2 AA.
