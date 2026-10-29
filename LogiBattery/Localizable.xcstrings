@@ -288,6 +288,22 @@
           }
         }
       }
+    },
+    "alert.full.body": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carga completa. Pode tirar da tomada."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fully charged. You can unplug it."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

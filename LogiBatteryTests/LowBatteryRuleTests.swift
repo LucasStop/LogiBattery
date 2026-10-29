@@ -65,6 +65,18 @@ final class LowBatteryRuleTests: XCTestCase {
 
 @MainActor
 final class AlertCoordinatorTests: XCTestCase {
+    func testCoordinatorAlsoSendsFullChargeAlerts() {
+        let notifier = RecordingNotifier()
+        let coordinator = AlertCoordinator(notifier: notifier)
+        func keyboard(_ state: ChargeState, _ percent: Int) -> Device {
+            Device(id: "k", name: "MX Keys", kind: .keyboard, percent: percent, chargeState: state, path: .receiver,
+                   readAt: Date(timeIntervalSince1970: 0))
+        }
+        coordinator.handle([keyboard(.charging, 98)])
+        coordinator.handle([keyboard(.full, 100)])
+        XCTAssertEqual(notifier.alerts, [BatteryAlert(deviceName: "MX Keys", percent: 100, severity: .full)])
+    }
+
     func testCoordinatorSendsRuleAlertsToNotifier() {
         let notifier = RecordingNotifier()
         let coordinator = AlertCoordinator(notifier: notifier)
