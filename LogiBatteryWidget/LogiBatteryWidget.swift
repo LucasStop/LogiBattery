@@ -37,8 +37,8 @@ struct BatteryWidgetView: View {
         Group {
             if devices.isEmpty {
                 EmptyWidget()
-            } else if family == .systemSmall, let device = devices.first {
-                SmallWidget(device: device, isStale: isStale)
+            } else if family == .systemSmall {
+                SmallWidget(devices: Array(devices.prefix(4)), isStale: isStale)
             } else {
                 ListWidget(devices: Array(devices.prefix(family == .systemMedium ? 3 : 4)), isStale: isStale,
                            series: family == .systemLarge ? entry.series : [])
@@ -58,26 +58,35 @@ private struct EmptyWidget: View {
     }
 }
 
+/// Até quatro aparelhos em anéis (grade 2x2) com o percentual embaixo, como o widget de baterias do macOS.
 private struct SmallWidget: View {
-    let device: Device
+    let devices: [Device]
     let isStale: Bool
 
     var body: some View {
-        let level = BatteryLevel(percent: device.percent)
-        VStack(alignment: .leading, spacing: 6) {
-            Label(device.name, systemImage: device.symbolName)
-                .font(.headline).lineLimit(1).labelStyle(.titleAndIcon)
-            Text(device.percent.map { "\($0)%" } ?? "—")
-                .font(.system(size: 34, weight: .semibold)).monospacedDigit()
-                .foregroundStyle(isStale ? .secondary : level.color)
-            BatteryCell(percent: device.percent, tint: isStale ? .secondary : device.tint)
-            StatusLine(device: device, isStale: isStale)
-            Spacer(minLength: 0)
-            Text(device.readAt, format: .relative(presentation: .named))
-                .font(.caption2).foregroundStyle(.secondary)
+        let columns = [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)]
+        LazyVGrid(columns: columns, spacing: 8) {
+            ForEach(devices) { device in
+                VStack(spacing: 2) {
+                    ZStack {
+                        Circle().stroke(.quaternary, lineWidth: 5)
+                        Circle()
+                            .trim(from: 0, to: CGFloat(min(max(device.percent ?? 0, 0), 100)) / 100)
+                            .stroke(isStale ? .secondary : device.tint,
+                                    style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                            .rotationEffect(.degrees(-90))
+                        Image(systemName: device.symbolName).font(.system(size: 15)).foregroundStyle(.secondary)
+                    }
+                    .frame(width: 52, height: 52)
+                    Text(device.percent.map { "\($0)%" } ?? "—")
+                        .font(.system(size: 13, weight: .semibold)).monospacedDigit()
+                        .foregroundStyle(isStale ? .secondary : BatteryLevel(percent: device.percent).color)
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text("\(device.name) \(device.percent.map { "\($0)%" } ?? "—")"))
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .accessibilityElement(children: .combine)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

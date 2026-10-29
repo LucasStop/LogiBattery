@@ -4,7 +4,7 @@ Fluxo e regras em [README.md](README.md). Tela só vai para desenvolvimento com 
 
 | ID | Tela / fluxo | História (PRD) | Estados prototipados | Protótipo | Status | Aprovada em | Notas |
 |---|---|---|---|---|---|---|---|
-| T01 | Widget pequeno | US-05 | padrão, sem dados, desatualizado | prototypes/t01-widget-pequeno.html | implementada | 2026-10-27 | Aparelho mais crítico |
+| T01 | Widget pequeno | US-05 | padrão, sem dados, desatualizado | prototypes/t01-widget-pequeno.html | implementada | 2026-10-27 | Até 4 aparelhos em anéis 2x2 com o percentual embaixo (revisado em 2026-10-29, pedido do Lucas) |
 | T02 | Widget médio | US-05 | padrão, sem dados, desatualizado | prototypes/t02-widget-medio.html | implementada | 2026-10-27 | Até 3 aparelhos |
 | T03 | Widget grande | US-05, US-09 | padrão, sem dados, desatualizado | prototypes/t03-widget-grande.html | implementada | 2026-10-27 | Lista e gráfico |
 | T04 | Popover da barra de menu | US-01, US-02, US-03, US-04, US-06 | padrão, vazio, carregando, erro de permissão | prototypes/t04-popover.html | implementada | 2026-10-27 | Ícone indica o menor nível; com Histórico, Ajustes e Sair |
