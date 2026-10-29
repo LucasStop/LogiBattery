@@ -9,6 +9,7 @@ final class DeviceListViewModel {
     private(set) var lastRefresh: Date?
 
     private let scanner: any DeviceScanning
+    private var isRefreshing = false
     private let publish: @MainActor ([Device]) -> Void
 
     /// `publish` recebe cada leitura (snapshot do widget); o padrão não faz nada.
@@ -18,6 +19,9 @@ final class DeviceListViewModel {
     }
 
     func refresh() async {
+        guard !isRefreshing else { return }
+        isRefreshing = true
+        defer { isRefreshing = false }
         devices = Snapshot.widgetOrder(await scanner.scan())
         hasLoaded = true
         lastRefresh = .now
@@ -41,11 +45,31 @@ final class DeviceListViewModel {
         }
     }
 
+    /// Leitura periódica mais releitura quando um aparelho conecta, desconecta ou manda aviso de bateria.
+    func run(interval: @escaping @MainActor () -> Duration, changes: AsyncStream<Void>,
+             debounce: Duration = .seconds(2), minGap: Duration = .seconds(5)) async {
+        let polling = Task { await poll(interval: interval) }
+        defer { polling.cancel() }
+        await react(to: changes, debounce: debounce, minGap: minGap)
+    }
+
     // ponytail: o intervalo novo vale depois da espera em curso; cancelar o sono ao mudar o ajuste se incomodar.
-    func poll(interval: @MainActor () -> Duration = { .seconds(300) }) async {
+    func poll(interval: @escaping @MainActor () -> Duration = { .seconds(60) }) async {
         while !Task.isCancelled {
             await refresh()
             try? await Task.sleep(for: interval())
+        }
+    }
+
+    /// Espera o aparelho terminar de conectar (`debounce`) e limita a frequência (`minGap`) para uma rajada de
+    /// eventos virar uma leitura só.
+    private func react(to changes: AsyncStream<Void>, debounce: Duration, minGap: Duration) async {
+        var iterator = changes.makeAsyncIterator()
+        while await iterator.next() != nil {
+            try? await Task.sleep(for: debounce)
+            if Task.isCancelled { return }
+            await refresh()
+            try? await Task.sleep(for: minGap)
         }
     }
 }

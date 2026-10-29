@@ -15,7 +15,7 @@ final class SettingsTests: XCTestCase {
         XCTAssertEqual(settings.lowThreshold, 20)
         XCTAssertEqual(settings.criticalThreshold, 10)
         XCTAssertTrue(settings.fullChargeAlert)
-        XCTAssertEqual(settings.intervalMinutes, 5)
+        XCTAssertEqual(settings.intervalMinutes, 1)
     }
 
     func testChangesPersistAcrossRestart() {
@@ -31,10 +31,10 @@ final class SettingsTests: XCTestCase {
     }
 
     func testCriticalStaysBelowLowAndValuesStayInRange() {
-        var settings = AppSettings(lowThreshold: 20, criticalThreshold: 10, fullChargeAlert: true, intervalMinutes: 5)
+        var settings = AppSettings(lowThreshold: 20, criticalThreshold: 10, fullChargeAlert: true, intervalMinutes: 1)
         settings.criticalThreshold = 25
         XCTAssertEqual(settings.normalized().criticalThreshold, 19)
-        settings = AppSettings(lowThreshold: 8, criticalThreshold: 10, fullChargeAlert: true, intervalMinutes: 5)
+        settings = AppSettings(lowThreshold: 8, criticalThreshold: 10, fullChargeAlert: true, intervalMinutes: 1)
         XCTAssertEqual(settings.normalized().lowThreshold, 8)
         XCTAssertEqual(settings.normalized().criticalThreshold, 7)
         settings = AppSettings(lowThreshold: 90, criticalThreshold: 0, fullChargeAlert: true, intervalMinutes: 0)
@@ -78,7 +78,7 @@ final class SettingsTests: XCTestCase {
 
     func testPollIntervalFollowsSettings() {
         let model = SettingsModel(defaults: defaults())
-        XCTAssertEqual(model.values.interval, .seconds(300))
+        XCTAssertEqual(model.values.interval, .seconds(60))
         model.values.intervalMinutes = 10
         XCTAssertEqual(model.values.interval, .seconds(600))
     }

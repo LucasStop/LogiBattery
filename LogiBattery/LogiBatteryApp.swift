@@ -9,7 +9,9 @@ struct LogiBatteryApp: App {
 
     init() {
         let viewModel = viewModel
-        Task { await viewModel.poll { SettingsModel.shared.values.interval } }
+        Task {
+            await viewModel.run(interval: { SettingsModel.shared.values.interval }, changes: discovery.changes)
+        }
     }
 
     var body: some Scene {
@@ -47,10 +49,10 @@ struct LogiBatteryApp: App {
     }
 }
 
+private let discovery = HIDDiscovery()
+
 /// Descobre as interfaces a cada leitura: receptor ou aparelho conectado agora aparece sem reiniciar o app.
 private struct LiveScanner: DeviceScanning {
-    private let discovery = HIDDiscovery()
-
     func scan() async -> [Device] {
         await DeviceScanner(endpoints: discovery.endpoints()).scan()
     }
