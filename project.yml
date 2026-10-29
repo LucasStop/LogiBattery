@@ -25,6 +25,7 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: LogiBattery
         CODE_SIGN_ENTITLEMENTS: LogiBattery/LogiBattery.entitlements
         ENABLE_HARDENED_RUNTIME: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
     dependencies:
       - target: LogiBatteryWidget
         embed: true
