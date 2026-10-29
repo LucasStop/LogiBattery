@@ -61,3 +61,34 @@ extension Device {
         }
     }
 }
+
+/// Runa do Bluetooth; o SF Symbols não traz o logotipo.
+private struct BluetoothRune: Shape {
+    func path(in rect: CGRect) -> Path {
+        let points = [(0.2, 0.7), (0.8, 0.3), (0.5, 0.05), (0.5, 0.95), (0.8, 0.7), (0.2, 0.3)]
+            .map { CGPoint(x: rect.minX + $0.0 * rect.width, y: rect.minY + $0.1 * rect.height) }
+        var path = Path()
+        path.addLines(points)
+        return path
+    }
+}
+
+/// Como o aparelho está conectado agora: Bluetooth ou receptor USB.
+struct TransportBadge: View {
+    let path: DevicePath
+
+    var body: some View {
+        Group {
+            switch path {
+            case .bluetooth:
+                BluetoothRune().stroke(style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round))
+                    .frame(width: 8, height: 11)
+            case .receiver:
+                Image(systemName: "cable.connector").font(.system(size: 10))
+            }
+        }
+        .foregroundStyle(.secondary)
+        .frame(width: 12, height: 12)
+        .accessibilityLabel(Text(path.labelKey))
+    }
+}
