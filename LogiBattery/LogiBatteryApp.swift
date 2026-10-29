@@ -32,9 +32,12 @@ private struct LiveScanner: DeviceScanning {
     }
 }
 
+@MainActor private let alerts = AlertCoordinator(notifier: UserNotificationNotifier())
+
 /// Grava o snapshot do widget e pede a ele que recarregue (ADR 0001).
 @MainActor
 private func publishSnapshot(_ devices: [Device]) {
+    alerts.handle(devices)
     guard let store = SnapshotStore.appGroup else { return }
     do {
         try store.write(devices, at: .now)

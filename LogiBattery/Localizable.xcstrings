@@ -256,6 +256,38 @@
           }
         }
       }
+    },
+    "alert.low.body": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bateria baixa. Recarregue em breve."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Low battery. Charge it soon."
+          }
+        }
+      }
+    },
+    "alert.critical.body": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bateria crítica. Conecte o carregador agora."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Critical battery. Plug in the charger now."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -11,7 +11,7 @@ Fluxo e regras em [README.md](README.md). Tela só vai para desenvolvimento com 
 | T05 | Histórico (gráfico por aparelho) | US-09 | padrão, vazio, carregando | prototypes/t05-historico.html | aprovada | 2026-10-27 | 24 h, 7 dias, 30 dias |
 | T06 | Ajustes | US-07, US-08, US-10, US-11 | padrão | prototypes/t06-ajustes.html | aprovada | 2026-10-27 | Limites, intervalo, login, apagar histórico |
 | T07 | Guia de permissão | US-12 | padrão | prototypes/t07-permissao.html | aprovada | 2026-10-27 | Leva ao painel de Privacidade |
-| T08 | Notificações (baixa e carga cheia) | US-07, US-08 | baixa, crítica, cheia | prototypes/t08-notificacoes.html | aprovada | 2026-10-27 | Texto e ações do sistema |
+| T08 | Notificações (baixa e carga cheia) | US-07, US-08 | baixa, crítica, cheia | prototypes/t08-notificacoes.html | aprovada | 2026-10-27 | Texto e ações do sistema; baixa e crítica feitas (US-07), sem ações (Ver aparelhos, Silenciar) |
 
 Estados: padrão, vazio, carregando, erro (marcar os que se aplicam e foram prototipados).
 Status: rascunho, em revisão, aprovada, implementada.
