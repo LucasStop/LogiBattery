@@ -20,6 +20,11 @@ struct LogiBatteryApp: App {
             }
         }
         .menuBarExtraStyle(.window)
+
+        Window("history.title", id: "history") {
+            HistoryView()
+        }
+        .windowResizability(.contentSize)
     }
 }
 
@@ -40,6 +45,7 @@ private func publishSnapshot(_ devices: [Device]) {
     alerts.handle(devices)
     guard let store = SnapshotStore.appGroup else { return }
     do {
+        try HistoryStore.appGroup?.record(devices, at: .now)
         try store.write(devices, at: .now)
         WidgetCenter.shared.reloadAllTimelines()
     } catch {

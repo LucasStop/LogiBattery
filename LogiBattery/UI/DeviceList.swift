@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// Popover da barra de menu (T04). Histórico e Ajustes entram com as US-09 e US-11.
+/// Popover da barra de menu (T04). Ajustes entram com a US-11.
 struct DeviceList: View {
     let viewModel: DeviceListViewModel
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -17,8 +18,15 @@ struct DeviceList: View {
             }
             ForEach(viewModel.devices) { DeviceRow(device: $0) }
             Divider()
-            Button("popover.quit") { NSApplication.shared.terminate(nil) }
-                .buttonStyle(.plain).foregroundStyle(.secondary)
+            HStack {
+                Button("popover.history") {
+                    openWindow(id: "history")
+                    NSApplication.shared.activate(ignoringOtherApps: true)
+                }
+                Spacer()
+                Button("popover.quit") { NSApplication.shared.terminate(nil) }
+            }
+            .buttonStyle(.plain).foregroundStyle(.secondary)
         }
         .padding(12)
         .frame(width: 320)

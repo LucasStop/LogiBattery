@@ -5,7 +5,7 @@ Modelo de dados, migrações e ciclo de vida da informação. Ligado a [ARCHITEC
 Status: aprovada em 2026-10-27
 
 ## 1. Armazenamento
-- Banco: SwiftData (SQLite embutido) no container do App Group · Cache/fila: N/A · Arquivos: `snapshot.json` no App Group, lido pelo widget
+- Banco: `history.json` no container do App Group (arquivo único, escrita atômica; SwiftData fica para quando o arquivo crescer, ver `HistoryStore`) · Cache/fila: N/A · Arquivos: `snapshot.json` no App Group, lido pelo widget
 - Ambientes: local e produção são o próprio Mac do usuário; teste usa diretório temporário por execução.
 
 ## 2. Entidades
@@ -13,7 +13,7 @@ Status: aprovada em 2026-10-27
 | Entidade | Responsabilidade | Chave | Relações | Dado pessoal? |
 |---|---|---|---|---|
 | `Device` | Aparelho conhecido (nome, tipo, caminho, série em hash) | id estável derivado de série ou nome | 1 para N `Reading` | Não |
-| `Reading` | Uma leitura: porcentagem, estado de carga, momento, caminho (receptor ou Bluetooth) | (deviceId, timestamp) | N para 1 `Device` | Não |
+| `Reading` | Um ponto do histórico (`HistoryPoint`): porcentagem, estado de carga, momento; gravado quando o valor ou o estado muda, ou após 30 min sem mudança | (deviceId, timestamp) | N para 1 `Device` | Não |
 | `Settings` | Limites, intervalo de leitura, opções de aviso, login | única | - | Não |
 | `Snapshot` | Última leitura de cada aparelho para o widget (JSON, não é tabela) | arquivo único | agrega `Device` e `Reading` | Não |
 
