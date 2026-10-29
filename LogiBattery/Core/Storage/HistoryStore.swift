@@ -26,8 +26,7 @@ struct HistoryStore: Sendable {
     }
 
     static var appGroup: HistoryStore? {
-        FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: SnapshotStore.appGroupID)
-            .map(HistoryStore.init)
+        SnapshotStore.appGroup.map { HistoryStore(directory: $0.directory) }
     }
 
     /// Guarda um ponto quando o valor ou o estado mudou, ou depois de `minInterval` sem mudança.

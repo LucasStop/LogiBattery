@@ -6,7 +6,7 @@
 	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.com.lucasstop.LogiBattery</string>
+		<string>$(TeamIdentifierPrefix)com.lucasstop.LogiBattery</string>
 	</array>
 	<key>com.apple.security.device.usb</key>
 	<true/>
