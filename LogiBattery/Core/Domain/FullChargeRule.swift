@@ -10,12 +10,12 @@ struct FullChargeRule {
         devices.compactMap { device in
             switch device.chargeState {
             case .charging:
-                if cycles[device.id] == nil { cycles[device.id] = .charging }
+                if cycles[device.identity] == nil { cycles[device.identity] = .charging }
             case .discharging:
-                cycles[device.id] = nil
+                cycles[device.identity] = nil
             case .full:
-                guard cycles[device.id] == .charging else { return nil }
-                cycles[device.id] = .notified
+                guard cycles[device.identity] == .charging else { return nil }
+                cycles[device.identity] = .notified
                 return BatteryAlert(deviceName: device.name, percent: device.percent ?? 100, severity: .full)
             case .unknown:
                 break

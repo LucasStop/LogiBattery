@@ -25,12 +25,12 @@ struct LowBatteryRule {
     private mutating func alert(for device: Device) -> BatteryAlert? {
         guard let percent = device.percent else { return nil }
         // Acima do limite rearma, mesmo carregando.
-        fired[device.id, default: []].subtract(thresholds.filter { percent >= $0 })
+        fired[device.identity, default: []].subtract(thresholds.filter { percent >= $0 })
         guard device.chargeState != .charging, device.chargeState != .full else { return nil }
 
-        let crossed = thresholds.filter { percent < $0 && !(fired[device.id]?.contains($0) ?? false) }
+        let crossed = thresholds.filter { percent < $0 && !(fired[device.identity]?.contains($0) ?? false) }
         guard let sharpest = crossed.min() else { return nil }
-        fired[device.id, default: []].formUnion(crossed)
+        fired[device.identity, default: []].formUnion(crossed)
         let severity: BatteryAlert.Severity = sharpest == thresholds.min() && thresholds.count > 1 ? .critical : .low
         return BatteryAlert(deviceName: device.name, percent: percent, severity: severity)
     }
