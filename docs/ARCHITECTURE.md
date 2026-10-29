@@ -24,7 +24,7 @@ Inventário. `-` quando a parte não existe.
 | Persistência | Snapshot JSON e histórico de leituras no App Group | JSON + SwiftData (ou SQLite) | `LogiBattery/Core/Storage` | App Group | Não |
 | Autenticação e permissões | Estado de Input Monitoring e Bluetooth, guia ao painel de Privacidade | TCC, `IOHIDCheckAccess` | `LogiBattery/Core/Permissions` | Sistema | Não |
 | Integrações externas | Notificações e login item | `UserNotifications`, `SMAppService` | `LogiBattery/Core/System` | Sistema | Não |
-| Jobs, agendamentos | Polling (5 min) e reação a eventos HID++ de bateria | `Task`, timers | `LogiBattery/Core/Domain` | HID++, Persistência | Não |
+| Jobs, agendamentos | Polling (1 min por padrão) e reação a eventos HID++ de bateria | `Task`, timers | `LogiBattery/Core/Domain` | HID++, Persistência | Não |
 | CLI / automações | - | - | - | - | - |
 | Dados / ETL / ML | - | - | - | - | - |
 | Infra, deploy | Build, assinatura, notarização futura, CI | XcodeGen, GitHub Actions | `project.yml`, `.github` | - | Não |
@@ -46,7 +46,7 @@ Só o app host acessa o hardware. O widget lê o snapshot e nunca fala com HID.
 
 ## 4. Fluxos principais
 - Leitura (US-01, US-02, US-03, US-04): o monitor enumera dispositivos HID com vendor `0x046D`; para cada receptor, pergunta aos índices 1 a 6 quem está pareado; resolve a feature de bateria (`0x1004`, depois `0x1000`, `0x1001`; HID++ 1.0 fora do MVP); deduplica por nome (série quando houver aparelho repetido; ver `DeviceDeduplicator`); grava snapshot e ponto de histórico.
-- Widget (US-05): após gravar o snapshot, o host chama `WidgetCenter.shared.reloadAllTimelines()`; o widget lê o JSON e desenha. O host lê a cada 5 min (intervalo fixo até a US-11) mesmo sem o popover aberto.
+- Widget (US-05): após gravar o snapshot, o host chama `WidgetCenter.shared.reloadAllTimelines()`; o widget lê o JSON e desenha. O host lê no intervalo dos ajustes (padrão 1 min) mesmo sem o popover aberto, e relê em até ~2 s quando um aparelho conecta ou desconecta ou manda um frame HID++ espontâneo (`HIDDiscovery.changes`).
 - Aviso (US-07, US-08): a regra de aviso compara a leitura nova com o último estado notificado por aparelho; dispara uma vez e rearma quando a bateria sobe acima do limite ou um novo ciclo de carga começa.
 - Permissão (US-12): sem Input Monitoring a enumeração retorna vazio; o app mostra o guia em vez de lista vazia.
 

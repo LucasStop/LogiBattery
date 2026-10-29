@@ -19,9 +19,12 @@ final class IOHIDTransport: HIDPPTransport, @unchecked Sendable {
 
     private var pending: Pending?
     private var nextToken = 0
+    private let onActivity: @Sendable () -> Void
 
-    init(device: IOHIDDevice) {
+    /// `onActivity` roda quando chega um frame HID++ que ninguém pediu (aviso de bateria, aparelho ligou).
+    init(device: IOHIDDevice, onActivity: @escaping @Sendable () -> Void = {}) {
         self.device = device
+        self.onActivity = onActivity
         IOHIDDeviceSetDispatchQueue(device, queue)
         let onReport: IOHIDReportCallback = { context, _, _, _, _, report, length in
             guard let context else { return }
@@ -56,7 +59,8 @@ final class IOHIDTransport: HIDPPTransport, @unchecked Sendable {
     }
 
     private func handle(_ report: [UInt8]) {
-        guard let pending, report.count >= 5 else { return }
+        guard report.count >= 5 else { return }
+        guard let pending else { return notifyIfUnsolicited(report) }
         // Índice sem aparelho pareado responde erro HID++ 1.0 na hora; não esperar o timeout.
         if report[0] == Self.hidpp1ErrorReport, report[1] == pending.request.deviceIndex,
            report[2] == Self.errorFeature {
@@ -64,7 +68,14 @@ final class IOHIDTransport: HIDPPTransport, @unchecked Sendable {
         }
         if let frame = HIDPPFrame(response: report), frame.answers(pending.request) {
             finish(pending.token, .success(frame))
+        } else {
+            notifyIfUnsolicited(report)
         }
+    }
+
+    private func notifyIfUnsolicited(_ report: [UInt8]) {
+        guard report[0] == 0x10 || report[0] == 0x11, report[2] != Self.errorFeature, report[2] != 0xFF else { return }
+        onActivity()
     }
 
     private func finish(_ token: Int, _ result: Result<HIDPPFrame, Error>) {

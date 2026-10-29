@@ -5,7 +5,7 @@ struct AppSettings: Codable, Equatable, Sendable {
     var lowThreshold = 20
     var criticalThreshold = 10
     var fullChargeAlert = true
-    var intervalMinutes = 5
+    var intervalMinutes = 1
 
     var interval: Duration { .seconds(intervalMinutes * 60) }
 
