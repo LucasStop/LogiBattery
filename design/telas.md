@@ -7,7 +7,7 @@ Fluxo e regras em [README.md](README.md). Tela só vai para desenvolvimento com 
 | T01 | Widget pequeno | US-05 | padrão, sem dados, desatualizado | prototypes/t01-widget-pequeno.html | implementada | 2026-10-27 | Aparelho mais crítico |
 | T02 | Widget médio | US-05 | padrão, sem dados, desatualizado | prototypes/t02-widget-medio.html | implementada | 2026-10-27 | Até 3 aparelhos |
 | T03 | Widget grande | US-05, US-09 | padrão, sem dados, desatualizado | prototypes/t03-widget-grande.html | aprovada | 2026-10-27 | Lista e gráfico; sem o gráfico até a US-09 |
-| T04 | Popover da barra de menu | US-01, US-02, US-03, US-04, US-06 | padrão, vazio, carregando, erro de permissão | prototypes/t04-popover.html | aprovada | 2026-10-27 | Ícone indica o menor nível |
+| T04 | Popover da barra de menu | US-01, US-02, US-03, US-04, US-06 | padrão, vazio, carregando, erro de permissão | prototypes/t04-popover.html | implementada | 2026-10-27 | Ícone indica o menor nível; sem Histórico/Ajustes (US-09, US-11), erro de permissão na US-12, com Sair |
 | T05 | Histórico (gráfico por aparelho) | US-09 | padrão, vazio, carregando | prototypes/t05-historico.html | aprovada | 2026-10-27 | 24 h, 7 dias, 30 dias |
 | T06 | Ajustes | US-07, US-08, US-10, US-11 | padrão | prototypes/t06-ajustes.html | aprovada | 2026-10-27 | Limites, intervalo, login, apagar histórico |
 | T07 | Guia de permissão | US-12 | padrão | prototypes/t07-permissao.html | aprovada | 2026-10-27 | Leva ao painel de Privacidade |

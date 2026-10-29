@@ -6,6 +6,7 @@ import Observation
 final class DeviceListViewModel {
     private(set) var devices: [Device] = []
     private(set) var hasLoaded = false
+    private(set) var lastRefresh: Date?
 
     private let scanner: any DeviceScanning
     private let publish: @MainActor ([Device]) -> Void
@@ -17,9 +18,27 @@ final class DeviceListViewModel {
     }
 
     func refresh() async {
-        devices = await scanner.scan()
+        devices = Snapshot.widgetOrder(await scanner.scan())
         hasLoaded = true
+        lastRefresh = .now
         publish(devices)
+    }
+
+    /// O ícone da barra de menu mostra o menor nível entre os aparelhos com leitura.
+    var menuBarPercent: Int? { devices.compactMap(\.percent).min() }
+
+    var menuBarSymbol: String {
+        menuBarPercent.map(Self.symbol(forPercent:)) ?? "questionmark.circle"
+    }
+
+    static func symbol(forPercent percent: Int) -> String {
+        switch percent {
+        case 88...: "battery.100"
+        case 63..<88: "battery.75"
+        case 38..<63: "battery.50"
+        case 13..<38: "battery.25"
+        default: "battery.0"
+        }
     }
 
     // ponytail: intervalo fixo; vira ajuste na US-11.

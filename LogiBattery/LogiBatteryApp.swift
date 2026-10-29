@@ -11,8 +11,13 @@ struct LogiBatteryApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra("LogiBattery", systemImage: "battery.100") {
+        MenuBarExtra {
             DeviceList(viewModel: viewModel)
+        } label: {
+            Image(systemName: viewModel.menuBarSymbol)
+            if let percent = viewModel.menuBarPercent {
+                Text("\(percent)%")
+            }
         }
         .menuBarExtraStyle(.window)
     }
