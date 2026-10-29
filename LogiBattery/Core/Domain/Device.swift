@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-enum ChargeState: Equatable, Sendable {
+enum ChargeState: String, Codable, Equatable, Sendable {
     case discharging, charging, full, unknown
 
     /// Status da feature `0x1004`: 0 descarregando, 1 e 2 carregando, 3 carga completa.
@@ -26,11 +26,11 @@ extension ChargeState {
     }
 }
 
-enum DevicePath: Equatable, Sendable {
+enum DevicePath: String, Codable, Equatable, Sendable {
     case receiver, bluetooth
 }
 
-enum DeviceKind: Equatable, Sendable {
+enum DeviceKind: String, Codable, Equatable, Sendable {
     case mouse, keyboard, other
 
     // ponytail: o tipo vem do nome; a feature DeviceName (função 2) dá o tipo exato quando o nome enganar.
@@ -55,7 +55,7 @@ struct DeviceReading: Equatable, Sendable {
     let chargeState: ChargeState
 }
 
-struct Device: Equatable, Identifiable, Sendable {
+struct Device: Codable, Equatable, Identifiable, Sendable {
     let id: String
     let name: String
     let kind: DeviceKind
@@ -63,4 +63,24 @@ struct Device: Equatable, Identifiable, Sendable {
     let chargeState: ChargeState
     let path: DevicePath
     let readAt: Date
+
+    /// `readAt` vai como `updatedAt` no `snapshot.json` (docs/API.md).
+    enum CodingKeys: String, CodingKey {
+        case id, name, kind, percent, chargeState, path
+        case readAt = "updatedAt"
+    }
+}
+
+enum BatteryLevel: Equatable, Sendable {
+    case normal, low, critical, unknown
+
+    // ponytail: limites fixos 20% e 10% (padrão do PRD); passam a vir dos ajustes na US-11.
+    init(percent: Int?) {
+        switch percent {
+        case nil: self = .unknown
+        case let value? where value < 10: self = .critical
+        case let value? where value < 20: self = .low
+        default: self = .normal
+        }
+    }
 }

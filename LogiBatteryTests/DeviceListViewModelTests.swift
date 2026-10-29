@@ -25,3 +25,15 @@ private struct StubScanner: DeviceScanning {
     let devices: [Device]
     func scan() async -> [Device] { devices }
 }
+
+@MainActor
+final class DeviceListPublishTests: XCTestCase {
+    func testRefreshPublishesDevicesToSnapshotSink() async {
+        let device = Device(id: "a", name: "MX Master 3S", kind: .mouse, percent: 90, chargeState: .discharging,
+                            path: .receiver, readAt: Date(timeIntervalSince1970: 0))
+        var published: [[Device]] = []
+        let viewModel = DeviceListViewModel(scanner: StubScanner(devices: [device])) { published.append($0) }
+        await viewModel.refresh()
+        XCTAssertEqual(published, [[device]])
+    }
+}

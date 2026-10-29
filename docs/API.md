@@ -6,7 +6,7 @@ Status: aprovada em 2026-10-27. Sem API de rede: este arquivo registra o contrat
 
 ## 1. Visão
 - Consumidores: a extensão de widget, que lê o snapshot. Nenhum terceiro.
-- Base URL: N/A. O canal é o arquivo `snapshot.json` no container do App Group `group.<bundle-id>.battery`.
+- Base URL: N/A. O canal é o arquivo `snapshot.json` no container do App Group `group.com.lucasstop.LogiBattery`.
 - Estilo: arquivo compartilhado · Formato: JSON, UTF-8
 
 ## 2. Convenções
@@ -46,7 +46,7 @@ Formato único (RFC 9457, `application/problem+json`): `type`, `title`, `status`
 
 | Método e rota | Papel | Descrição | Teste |
 |---|---|---|---|
-| `snapshot.json` (leitura) | widget | Lista de aparelhos com `id`, `name`, `kind`, `percent`, `chargeState`, `path`, `updatedAt`, mais `schemaVersion` e `generatedAt` | `SnapshotContractTests` |
+| `snapshot.json` (leitura) | widget | Lista de aparelhos com `id`, `name`, `kind`, `percent`, `chargeState`, `path`, `updatedAt` (momento da leitura), mais `schemaVersion` e `generatedAt`; widget marca desatualizado após 30 min do `generatedAt` | `SnapshotContractTests` |
 | `snapshot.json` (escrita) | host | Substitui o arquivo de forma atômica após cada leitura | `SnapshotContractTests` |
 
 ## 8. Histórico de mudanças do contrato

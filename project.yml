@@ -31,7 +31,12 @@ targets:
   LogiBatteryWidget:
     type: app-extension
     platform: macOS
-    sources: [LogiBatteryWidget]
+    sources:
+      - LogiBatteryWidget
+      - LogiBattery/Localizable.xcstrings
+      - LogiBattery/Core/Domain/Device.swift
+      - LogiBattery/Core/Storage/Snapshot.swift
+      - LogiBattery/UI/Components/BatteryCell.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.lucasstop.LogiBattery.widget
