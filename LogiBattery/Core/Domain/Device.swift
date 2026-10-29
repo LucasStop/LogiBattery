@@ -80,6 +80,17 @@ struct Device: Codable, Equatable, Identifiable, Sendable {
     }
 }
 
+/// Identidade estável do aparelho entre receptor e Bluetooth: o id muda a cada reconexão, o nome não.
+enum DeviceIdentity {
+    static func key(_ name: String) -> String {
+        name.lowercased().split(separator: " ").joined(separator: " ")
+    }
+}
+
+extension Device {
+    var identity: String { DeviceIdentity.key(name) }
+}
+
 enum BatteryLevel: Equatable, Sendable {
     case normal, low, critical, unknown
 

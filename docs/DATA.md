@@ -13,7 +13,7 @@ Status: aprovada em 2026-10-27
 | Entidade | Responsabilidade | Chave | Relações | Dado pessoal? |
 |---|---|---|---|---|
 | `Device` | Aparelho conhecido (nome, tipo, caminho, série em hash) | id estável derivado de série ou nome | 1 para N `Reading` | Não |
-| `Reading` | Um ponto do histórico (`HistoryPoint`): porcentagem, estado de carga, momento; gravado quando o valor ou o estado muda, ou após 30 min sem mudança | (deviceId, timestamp) | N para 1 `Device` | Não |
+| `Reading` | Um ponto do histórico (`HistoryPoint`): porcentagem, estado de carga, momento; gravado quando o valor ou o estado muda, ou após 30 min sem mudança | (nome normalizado do aparelho, timestamp); `deviceId` muda a cada reconexão e não identifica a série | N para 1 `Device` | Não |
 | `Settings` | Limites, intervalo de leitura, opções de aviso, login | única | - | Não |
 | `Snapshot` | Última leitura de cada aparelho para o widget (JSON, não é tabela) | arquivo único | agrega `Device` e `Reading` | Não |
 

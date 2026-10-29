@@ -8,7 +8,7 @@ enum DeviceDeduplicator {
         var best: [String: Device] = [:]
         var order: [String] = []
         for device in devices {
-            let key = identity(device.name)
+            let key = device.identity
             guard let current = best[key] else {
                 best[key] = device
                 order.append(key)
@@ -17,10 +17,6 @@ enum DeviceDeduplicator {
             if wins(device, over: current) { best[key] = device }
         }
         return order.compactMap { best[$0] }
-    }
-
-    private static func identity(_ name: String) -> String {
-        name.lowercased().split(separator: " ").joined(separator: " ")
     }
 
     /// Mais recente vence; empate fica com o Bluetooth, que é o caminho direto.

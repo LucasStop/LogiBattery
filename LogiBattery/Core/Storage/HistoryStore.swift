@@ -6,6 +6,9 @@ struct HistoryPoint: Codable, Equatable, Sendable {
     let percent: Int
     let chargeState: ChargeState
     let timestamp: Date
+
+    /// Série do gráfico: o `deviceId` muda a cada reconexão, então agrupa pelo nome.
+    var identity: String { DeviceIdentity.key(deviceName) }
 }
 
 /// Histórico de leituras no App Group: o host grava, o app e o widget leem (docs/DATA.md).
@@ -32,15 +35,15 @@ struct HistoryStore: Sendable {
         let cutoff = now.addingTimeInterval(-Self.retention)
         let stored = load()
         var points = stored.filter { $0.timestamp >= cutoff }
-        var latest = Dictionary(points.map { ($0.deviceId, $0) }, uniquingKeysWith: { _, new in new })
+        var latest = Dictionary(points.map { ($0.identity, $0) }, uniquingKeysWith: { _, new in new })
         for device in devices {
             guard let percent = device.percent else { continue }
-            if let last = latest[device.id], last.percent == percent, last.chargeState == device.chargeState,
+            if let last = latest[device.identity], last.percent == percent, last.chargeState == device.chargeState,
                now.timeIntervalSince(last.timestamp) < Self.minInterval { continue }
             let point = HistoryPoint(deviceId: device.id, deviceName: device.name, percent: percent,
                                      chargeState: device.chargeState, timestamp: now)
             points.append(point)
-            latest[device.id] = point
+            latest[device.identity] = point
         }
         guard points != stored else { return }
         let encoder = JSONEncoder()
@@ -88,7 +91,7 @@ struct HistorySeries: Equatable, Identifiable, Sendable {
 
     static func build(_ points: [HistoryPoint], period: HistoryPeriod, now: Date) -> [HistorySeries] {
         let since = now.addingTimeInterval(-period.interval)
-        let grouped = Dictionary(grouping: points.filter { $0.timestamp >= since }, by: \.deviceId)
+        let grouped = Dictionary(grouping: points.filter { $0.timestamp >= since }, by: \.identity)
         return grouped
             .map { id, group in (id, group.sorted { $0.timestamp < $1.timestamp }) }
             .sorted { ($0.1[0].deviceName, $0.0) < ($1.1[0].deviceName, $1.0) }
