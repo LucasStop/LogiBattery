@@ -78,9 +78,12 @@ private struct SmallWidget: View {
                         Image(systemName: device.symbolName).font(.system(size: 15)).foregroundStyle(.secondary)
                     }
                     .frame(width: 52, height: 52)
-                    Text(device.percent.map { "\($0)%" } ?? "—")
-                        .font(.system(size: 13, weight: .semibold)).monospacedDigit()
-                        .foregroundStyle(isStale ? .secondary : BatteryLevel(percent: device.percent).color)
+                    HStack(spacing: 3) {
+                        TransportBadge(path: device.path)
+                        Text(device.percent.map { "\($0)%" } ?? "—")
+                            .font(.system(size: 13, weight: .semibold)).monospacedDigit()
+                            .foregroundStyle(isStale ? .secondary : BatteryLevel(percent: device.percent).color)
+                    }
                 }
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text("\(device.name) \(device.percent.map { "\($0)%" } ?? "—")"))
@@ -104,8 +107,11 @@ private struct ListWidget: View {
                     Image(systemName: device.symbolName).foregroundStyle(.secondary).frame(width: 18)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(device.name).font(.headline).lineLimit(1)
-                        Text(device.readAt, format: .relative(presentation: .named))
-                            .font(.caption2).foregroundStyle(.secondary)
+                        HStack(spacing: 4) {
+                            TransportBadge(path: device.path)
+                            Text(device.readAt, format: .relative(presentation: .named))
+                                .font(.caption2).foregroundStyle(.secondary)
+                        }
                     }
                     Spacer(minLength: 4)
                     StatusLine(device: device, isStale: isStale)
