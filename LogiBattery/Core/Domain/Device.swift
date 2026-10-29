@@ -30,6 +30,15 @@ enum DevicePath: String, Codable, Equatable, Sendable {
     case receiver, bluetooth
 }
 
+extension DevicePath {
+    var labelKey: LocalizedStringKey {
+        switch self {
+        case .receiver: "path.receiver"
+        case .bluetooth: "path.bluetooth"
+        }
+    }
+}
+
 enum DeviceKind: String, Codable, Equatable, Sendable {
     case mouse, keyboard, other
 
