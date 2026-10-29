@@ -45,7 +45,7 @@ func long(_ idx: UInt8, _ feat: UInt8, _ fn: UInt8, _ p: [UInt8] = []) -> [UInt8
 for d in devices.sorted(by: { prop($0, "ProductID") < prop($1, "ProductID") }) {
     let up = prop(d, kIOHIDPrimaryUsagePageKey), us = prop(d, kIOHIDPrimaryUsageKey)
     print(String(format: "PID 0x%04X  %@  usagePage 0x%04X usage 0x%02X  transport %@", prop(d, "ProductID"), str(d, "Product"), up, us, str(d, "Transport")))
-    guard up == 0xFF00 || up == 0xFF43 else { continue }
+    guard up == 0xFF00 || up == 0xFF43 || str(d, "Transport").contains("Bluetooth") else { continue }
     let isRecv = str(d, "Transport") == "USB"
     func ok(_ r: [UInt8]?) -> [UInt8]? { guard let r, r.count >= 5, r[0] == 0x11, r[2] != 0x8f, r[2] != 0xff else { return nil }; return r }
     func feature(_ idx: UInt8, _ id: UInt16) -> UInt8? {

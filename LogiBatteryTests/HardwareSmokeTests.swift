@@ -5,8 +5,8 @@ import XCTest
 final class HardwareSmokeTests: XCTestCase {
     func testReadsRealDevicesFromReceivers() async throws {
         try XCTSkipUnless(ProcessInfo.processInfo.environment["LOGIBATTERY_HW"] == "1", "sem hardware")
-        let discovery = ReceiverDiscovery()
-        let devices = await ReceiverScanner(receivers: discovery.receivers()).scan()
+        let discovery = HIDDiscovery()
+        let devices = await DeviceScanner(endpoints: discovery.endpoints()).scan()
         print("HW devices: \(devices.map { "\($0.name) \($0.percent ?? -1)%" })")
         XCTAssertFalse(devices.isEmpty)
         XCTAssertTrue(devices.allSatisfy { ($0.percent ?? -1) >= 0 })

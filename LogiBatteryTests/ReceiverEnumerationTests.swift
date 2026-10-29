@@ -3,16 +3,16 @@ import XCTest
 
 final class ReceiverEnumerationTests: XCTestCase {
     func testListsOnlyPairedDevicesSortedByLowestBattery() async throws {
-        let bolt = Receiver(id: "bolt", transport: try FixtureTransport(fixture: "bolt-mx-master-3s"))
-        let lightspeed = Receiver(id: "lightspeed", transport: try FixtureTransport(fixture: "lightspeed-pro-x-tkl"))
-        let devices = await ReceiverScanner(receivers: [bolt, lightspeed]).scan()
+        let bolt = HIDEndpoint(id: "bolt", transport: try FixtureTransport(fixture: "bolt-mx-master-3s"))
+        let lightspeed = HIDEndpoint(id: "lightspeed", transport: try FixtureTransport(fixture: "lightspeed-pro-x-tkl"))
+        let devices = await DeviceScanner(endpoints: [bolt, lightspeed]).scan()
         XCTAssertEqual(devices.map(\.name), ["PRO X TKL", "MX Master 3S"])
         XCTAssertEqual(devices.map(\.percent), [79, 90])
         XCTAssertEqual(devices.map(\.path), [.receiver, .receiver])
     }
 
     func testReceiverWithNoDevicesYieldsEmptyList() async {
-        let devices = await ReceiverScanner(receivers: [Receiver(id: "vazio", transport: SilentTransport())]).scan()
+        let devices = await DeviceScanner(endpoints: [HIDEndpoint(id: "vazio", transport: SilentTransport())]).scan()
         XCTAssertTrue(devices.isEmpty)
     }
 }
