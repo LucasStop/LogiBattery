@@ -176,6 +176,86 @@
           }
         }
       }
+    },
+    "popover.updated": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualizado"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updated"
+          }
+        }
+      }
+    },
+    "popover.reading": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lendo…"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading…"
+          }
+        }
+      }
+    },
+    "popover.empty.title": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenhum aparelho Logitech encontrado"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Logitech device found"
+          }
+        }
+      }
+    },
+    "popover.empty.body": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ligue o mouse ou o teclado, ou conecte o receptor USB."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on the mouse or keyboard, or plug in the USB receiver."
+          }
+        }
+      }
+    },
+    "popover.quit": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sair do LogiBattery"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quit LogiBattery"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
