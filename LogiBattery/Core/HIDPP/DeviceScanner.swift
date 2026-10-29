@@ -26,7 +26,7 @@ struct DeviceScanner: DeviceScanning {
             for endpoint in endpoints { group.addTask { await scan(endpoint) } }
             return await group.reduce(into: []) { $0 += $1 }
         }
-        return found.sorted { ($0.percent ?? .max) < ($1.percent ?? .max) }
+        return DeviceDeduplicator.merge(found).sorted { ($0.percent ?? .max) < ($1.percent ?? .max) }
     }
 
     private func scan(_ endpoint: HIDEndpoint) async -> [Device] {
