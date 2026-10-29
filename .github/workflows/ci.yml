@@ -29,7 +29,6 @@ jobs:
       - name: SwiftLint
         if: hashFiles('project.yml') != ''
         run: swiftlint --strict
-        continue-on-error: true # TODO: tirar quando o repo passar limpo
 
       - name: Testes
         if: hashFiles('project.yml') != ''
