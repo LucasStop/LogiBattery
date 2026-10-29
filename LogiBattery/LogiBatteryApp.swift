@@ -19,12 +19,16 @@ struct LogiBatteryApp: App {
         MenuBarExtra {
             DeviceList(viewModel: viewModel, permission: permission)
         } label: {
-            Image(systemName: viewModel.menuBarSymbol)
-            if let percent = viewModel.menuBarPercent {
-                Text("\(percent)%")
+            // Largura fixa: se o item muda de tamanho ao aparecer a porcentagem, o macOS ancora o popover
+            // na posição antiga e ele abre deslocado para a direita.
+            HStack(spacing: 3) {
+                Image(systemName: viewModel.menuBarSymbol)
+                Text(viewModel.menuBarPercent.map { "\($0)%" } ?? "")
+                    .monospacedDigit()
             }
+            .frame(width: 62, alignment: .leading)
             // O label existe desde a abertura do app: é onde o guia de permissão aparece no primeiro uso.
-            Color.clear.frame(width: 0).task {
+            .task {
                 if permission.needsGuide {
                     openWindow(id: "permission")
                     NSApplication.shared.activate(ignoringOtherApps: true)
