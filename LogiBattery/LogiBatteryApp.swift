@@ -12,11 +12,11 @@ struct LogiBatteryApp: App {
     }
 }
 
-/// Descobre os receptores a cada leitura: receptor plugado ou removido aparece sem reiniciar o app.
+/// Descobre as interfaces a cada leitura: receptor ou aparelho conectado agora aparece sem reiniciar o app.
 private struct LiveScanner: DeviceScanning {
-    private let discovery = ReceiverDiscovery()
+    private let discovery = HIDDiscovery()
 
     func scan() async -> [Device] {
-        await ReceiverScanner(receivers: discovery.receivers()).scan()
+        await DeviceScanner(endpoints: discovery.endpoints()).scan()
     }
 }

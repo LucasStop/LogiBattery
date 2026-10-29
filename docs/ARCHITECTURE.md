@@ -97,4 +97,4 @@ Achados que viram regra do parser:
 - Índice sem aparelho responde HID++ 1.0 `10 idx 8f ...` (erro): o parser descarta `0x8f` e `0xff` em `[2]`.
 - Respostas chegam fora de ordem e misturadas com eventos: casar resposta por índice, feature e função+sw, nunca pegar "o próximo frame".
 - Feature de bateria nos dois aparelhos é `0x1004`; `0x1000` e `0x1001` ficam como fallback (não observados).
-- Bluetooth direto não foi exercitado: os dois aparelhos estavam nos receptores e nada Logitech apareceu por Bluetooth no `IOHIDManager`. Fica para a US-02 (#13), com o aparelho trocado para Bluetooth.
+- Bluetooth (US-02, 2026-10-29): os aparelhos aparecem no `IOHIDManager` com transporte `Bluetooth Low Energy` (MX Master 3S `0xB034`, PRO X TKL `0xB382`), só com as interfaces genéricas de mouse e teclado, sem página `0xFF43`. Mesmo assim respondem ao long report `0x11` com índice `0xFF`, com os mesmos frames e a mesma feature `0x1004` do receptor (fixtures `bluetooth-*.txt`). Receptor ou Bluetooth do mesmo aparelho aparecem hoje como dois itens; a deduplicação é a US-03 (#14).
