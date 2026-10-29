@@ -28,7 +28,7 @@ Perfil: monolito · Stack: Swift (SwiftUI, XcodeGen) (ver `.projeto.yml`)
 - Instalar: `brew install xcodegen swiftlint && xcodegen generate`
 - Dev: `xcodebuild -scheme LogiBattery -destination 'platform=macOS' build` (app nativo: a regra das portas 3000/3001 não se aplica)
 - Build: `xcodebuild -scheme LogiBattery -configuration Release build`
-- Testes: `xcodebuild test -scheme LogiBattery -destination 'platform=macOS'` · E2E: `xcodebuild test -scheme LogiBatteryUITests -destination 'platform=macOS'`
+- Testes: `xcodebuild test -scheme LogiBattery -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO` (sem assinar: App Group exige certificado) · E2E: `xcodebuild test -scheme LogiBatteryUITests -destination 'platform=macOS'`
 - Lint/typecheck: `swiftlint --strict`
 
 ## Convenções

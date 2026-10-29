@@ -1,0 +1,12 @@
+{
+  "sourceLanguage" : "pt-BR",
+  "strings" : {
+    "app.name" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "LogiBattery" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "LogiBattery" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}

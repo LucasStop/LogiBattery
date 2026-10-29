@@ -1,0 +1,5 @@
+included:
+  - LogiBattery
+  - LogiBatteryWidget
+  - LogiBatteryTests
+  - LogiBatteryUITests

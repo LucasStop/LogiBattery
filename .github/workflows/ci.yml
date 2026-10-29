@@ -34,6 +34,7 @@ jobs:
       - name: Testes
         if: hashFiles('project.yml') != ''
         # Passos de build só rodam depois que o project.yml existir (issue de fundação).
-        run: xcodebuild test -scheme "$SCHEME" -destination 'platform=macOS'
+        # Sem certificado no CI: o App Group exige assinatura, então só os testes rodam sem assinar.
+        run: xcodebuild test -scheme "$SCHEME" -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
         env:
           SCHEME: LogiBattery
