@@ -51,3 +51,38 @@ private struct FixedScanner: DeviceScanning {
     let devices: [Device]
     func scan() async -> [Device] { devices }
 }
+
+@MainActor
+final class RestoreOnLaunchTests: XCTestCase {
+    private let now = Date(timeIntervalSince1970: 1_800_000_000)
+
+    private func snapshot(age: TimeInterval) -> Snapshot {
+        let device = Device(id: "a", name: "PRO X TKL", kind: .keyboard, percent: 78, chargeState: .discharging,
+                            path: .bluetooth, readAt: now.addingTimeInterval(-age))
+        return Snapshot(schemaVersion: Snapshot.schemaVersion, generatedAt: now.addingTimeInterval(-age),
+                        devices: [device])
+    }
+
+    func testFreshSnapshotShowsBeforeFirstReading() {
+        let viewModel = DeviceListViewModel(scanner: StaticScanner(), restoring: snapshot(age: 60), now: now)
+        XCTAssertEqual(viewModel.menuBarPercent, 78)
+        XCTAssertEqual(viewModel.menuBarSymbol, "battery.75")
+    }
+
+    func testStaleOrMissingSnapshotShowsNeutralReadingSymbol() {
+        let stale = DeviceListViewModel(scanner: StaticScanner(), restoring: snapshot(age: 3600), now: now)
+        XCTAssertNil(stale.menuBarPercent)
+        XCTAssertEqual(stale.menuBarSymbol, "ellipsis.circle")
+        XCTAssertEqual(DeviceListViewModel(scanner: StaticScanner()).menuBarSymbol, "ellipsis.circle")
+    }
+
+    func testEmptyReadingAfterLoadKeepsQuestionMark() async {
+        let viewModel = DeviceListViewModel(scanner: StaticScanner())
+        await viewModel.refresh()
+        XCTAssertEqual(viewModel.menuBarSymbol, "questionmark.circle")
+    }
+}
+
+private struct StaticScanner: DeviceScanning {
+    func scan() async -> [Device] { [] }
+}
