@@ -4,10 +4,11 @@ import WidgetKit
 struct BatteryEntry: TimelineEntry {
     let date: Date
     let snapshot: Snapshot?
+    let series: [HistorySeries]
 }
 
 struct BatteryProvider: TimelineProvider {
-    func placeholder(in context: Context) -> BatteryEntry { BatteryEntry(date: .now, snapshot: nil) }
+    func placeholder(in context: Context) -> BatteryEntry { BatteryEntry(date: .now, snapshot: nil, series: []) }
 
     func getSnapshot(in context: Context, completion: @escaping (BatteryEntry) -> Void) {
         completion(entry())
@@ -19,7 +20,9 @@ struct BatteryProvider: TimelineProvider {
     }
 
     private func entry() -> BatteryEntry {
-        BatteryEntry(date: .now, snapshot: SnapshotStore.appGroup?.read())
+        let points = HistoryStore.appGroup?.points(since: .now.addingTimeInterval(-HistoryPeriod.day.interval)) ?? []
+        return BatteryEntry(date: .now, snapshot: SnapshotStore.appGroup?.read(),
+                            series: HistorySeries.build(points, period: .day, now: .now))
     }
 }
 
@@ -37,7 +40,8 @@ struct BatteryWidgetView: View {
             } else if family == .systemSmall, let device = devices.first {
                 SmallWidget(device: device, isStale: isStale)
             } else {
-                ListWidget(devices: Array(devices.prefix(family == .systemMedium ? 3 : 6)), isStale: isStale)
+                ListWidget(devices: Array(devices.prefix(family == .systemMedium ? 3 : 4)), isStale: isStale,
+                           series: family == .systemLarge ? entry.series : [])
             }
         }
         .containerBackground(.fill.tertiary, for: .widget)
@@ -80,6 +84,7 @@ private struct SmallWidget: View {
 private struct ListWidget: View {
     let devices: [Device]
     let isStale: Bool
+    let series: [HistorySeries]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -104,6 +109,7 @@ private struct ListWidget: View {
                 .accessibilityElement(children: .combine)
             }
             Spacer(minLength: 0)
+            if !series.isEmpty { HistoryChart(series: series, compact: true).frame(maxHeight: 110) }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
     }

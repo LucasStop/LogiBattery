@@ -36,6 +36,8 @@ targets:
       - LogiBattery/Localizable.xcstrings
       - LogiBattery/Core/Domain/Device.swift
       - LogiBattery/Core/Storage/Snapshot.swift
+      - LogiBattery/Core/Storage/HistoryStore.swift
+      - LogiBattery/UI/Components/HistoryChart.swift
       - LogiBattery/UI/Components/BatteryCell.swift
     settings:
       base:
