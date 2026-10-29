@@ -14,6 +14,9 @@ struct DeviceList: View {
                 HStack {
                     Text(device.name)
                     Spacer()
+                    if let label = device.chargeState.labelKey {
+                        Text(label).font(.caption).foregroundStyle(.secondary)
+                    }
                     Text(device.percent.map { "\($0)%" } ?? "—")
                         .monospacedDigit()
                 }
