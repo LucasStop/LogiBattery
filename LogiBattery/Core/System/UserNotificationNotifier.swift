@@ -9,6 +9,7 @@ struct UserNotificationNotifier: AlertNotifying {
         content.body = switch alert.severity {
         case .low: String(localized: "alert.low.body")
         case .critical: String(localized: "alert.critical.body")
+        case .full: String(localized: "alert.full.body")
         }
         content.sound = .default
         let center = UNUserNotificationCenter.current()

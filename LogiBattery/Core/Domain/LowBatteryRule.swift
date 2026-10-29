@@ -1,7 +1,7 @@
 import Foundation
 
 struct BatteryAlert: Equatable, Sendable {
-    enum Severity: Equatable, Sendable { case low, critical }
+    enum Severity: Equatable, Sendable { case low, critical, full }
 
     let deviceName: String
     let percent: Int
@@ -42,7 +42,8 @@ protocol AlertNotifying {
 
 @MainActor
 final class AlertCoordinator {
-    private var rule = LowBatteryRule()
+    private var lowRule = LowBatteryRule()
+    private var fullRule = FullChargeRule()
     private let notifier: any AlertNotifying
 
     init(notifier: any AlertNotifying) {
@@ -50,6 +51,6 @@ final class AlertCoordinator {
     }
 
     func handle(_ devices: [Device]) {
-        rule.evaluate(devices).forEach(notifier.notify)
+        (lowRule.evaluate(devices) + fullRule.evaluate(devices)).forEach(notifier.notify)
     }
 }
