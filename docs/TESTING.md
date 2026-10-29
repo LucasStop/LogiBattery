@@ -29,7 +29,7 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 
 ## 3. Testes do projeto inteiro
 - Estático: SwiftLint + compilador com warnings como erro + gitleaks, no `lefthook.yml` e no CI.
-- Smoke: `xcodebuild build` dos dois alvos (app e widget) e a suíte de unitários, primeiro job do CI. Smoke com hardware, manual, antes de cada release: receptor, Bluetooth e o mesmo aparelho pelos dois caminhos.
+- Smoke: `xcodebuild build` dos dois alvos (app e widget) e a suíte de unitários, primeiro job do CI. Smoke com hardware, manual, antes de cada release: receptor, Bluetooth e o mesmo aparelho pelos dois caminhos. Receptor: `LOGIBATTERY_HW=1 TEST_RUNNER_LOGIBATTERY_HW=1 xcodebuild test -scheme LogiBattery -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO` roda `HardwareSmokeTests` (pulado sem a variável).
 - Regressão: a suíte completa roda em todo PR. Bug corrigido entra com teste que falha antes da correção, no mesmo PR.
 - Aceitação: cada história do `PRD.md` tem ao menos um teste (ou checagem manual descrita) ligado ao critério de aceite. Mapa em [Rastreabilidade](#5-rastreabilidade).
 - Exploratório: antes de cada release, 30 min: dormir e acordar o Mac, desligar o aparelho, trocar de receptor, negar a permissão.
