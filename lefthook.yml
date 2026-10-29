@@ -7,4 +7,5 @@ pre-commit:
       run: gitleaks git --staged --redact --no-banner
     swiftlint:
       glob: "*.swift"
-      run: swiftlint --strict {staged_files}
+      exclude: ["tools/**"] # spikes descartáveis ficam fora do lint
+      run: swiftlint --strict --force-exclude {staged_files}

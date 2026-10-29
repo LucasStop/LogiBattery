@@ -81,3 +81,20 @@ Só o app host acessa o hardware. O widget lê o snapshot e nunca fala com HID.
 | ADR | Decisão | Status |
 |---|---|---|
 | [0001](adr/0001-host-le-hardware-widget-le-snapshot.md) | App host lê o hardware e publica snapshot por App Group; o widget só lê | proposta |
+
+## 11. Spike HID++ (issue #10, 2026-10-29)
+
+Executável descartável em [`tools/hidpp-spike/`](../tools/hidpp-spike/main.swift) (`swiftc -O main.swift`; `HIDPP_TRACE=1` imprime os frames). Frames reais, sem série, em `Tests/Fixtures/hidpp/`.
+
+| Aparelho | Caminho | Receptor (PID) | Índice | HID++ | Feature de bateria | Leitura |
+|---|---|---|---|---|---|---|
+| MX Master 3S | Bolt | `0xC548` | 2 | 4.5 | `0x1004` no índice 8 | 90%, nível `0x08`, status 0 |
+| PRO X TKL | Lightspeed | `0xC547` | 1 | 4.2 | `0x1004` no índice 7 | 79%, nível `0x08`, status 0 |
+
+Achados que viram regra do parser:
+- A interface HID++ do receptor é `usagePage 0xFF00`, usage `0x01`; a leitura funcionou a partir do terminal, que pode já ter Input Monitoring; validar a permissão no app assinado.
+- Long report `0x11`, 20 bytes: `11 índice feature função|sw params`. Pedido de feature: `11 idx 00 01 <id hi> <id lo>`; bateria `0x1004` função 1: `11 idx <feature> 11`. Resposta: `[4]` = porcentagem, `[5]` = nível (1 crítico, 2 baixo, 4 bom, 8 cheio), `[6]` = status de carga.
+- Índice sem aparelho responde HID++ 1.0 `10 idx 8f ...` (erro): o parser descarta `0x8f` e `0xff` em `[2]`.
+- Respostas chegam fora de ordem e misturadas com eventos: casar resposta por índice, feature e função+sw, nunca pegar "o próximo frame".
+- Feature de bateria nos dois aparelhos é `0x1004`; `0x1000` e `0x1001` ficam como fallback (não observados).
+- Bluetooth direto não foi exercitado: os dois aparelhos estavam nos receptores e nada Logitech apareceu por Bluetooth no `IOHIDManager`. Fica para a US-02 (#13), com o aparelho trocado para Bluetooth.
