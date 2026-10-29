@@ -13,9 +13,15 @@ final class DeviceListViewModel {
     private let publish: @MainActor ([Device]) -> Void
 
     /// `publish` recebe cada leitura (snapshot do widget); o padrão não faz nada.
-    init(scanner: any DeviceScanning, publish: @escaping @MainActor ([Device]) -> Void = { _ in }) {
+    /// `restoring` mostra a última leitura salva enquanto a primeira leitura nova não termina; snapshot velho não vale.
+    init(scanner: any DeviceScanning, restoring: Snapshot? = nil, now: Date = .now,
+         publish: @escaping @MainActor ([Device]) -> Void = { _ in }) {
         self.scanner = scanner
         self.publish = publish
+        if let restoring, !restoring.isStale(at: now) {
+            devices = Snapshot.widgetOrder(restoring.devices)
+            lastRefresh = restoring.generatedAt
+        }
     }
 
     func refresh() async {
@@ -32,7 +38,7 @@ final class DeviceListViewModel {
     var menuBarPercent: Int? { devices.compactMap(\.percent).min() }
 
     var menuBarSymbol: String {
-        menuBarPercent.map(Self.symbol(forPercent:)) ?? "questionmark.circle"
+        menuBarPercent.map(Self.symbol(forPercent:)) ?? (hasLoaded ? "questionmark.circle" : "ellipsis.circle")
     }
 
     static func symbol(forPercent percent: Int) -> String {

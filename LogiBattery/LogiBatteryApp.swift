@@ -3,7 +3,8 @@ import WidgetKit
 
 @main
 struct LogiBatteryApp: App {
-    @State private var viewModel = DeviceListViewModel(scanner: LiveScanner(), publish: publishSnapshot)
+    @State private var viewModel = DeviceListViewModel(
+        scanner: LiveScanner(), restoring: SnapshotStore.appGroup?.read(), publish: publishSnapshot)
     @State private var permission = PermissionModel()
     @Environment(\.openWindow) private var openWindow
 
