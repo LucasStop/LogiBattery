@@ -6,6 +6,8 @@ Formato do bloco: `## título`, linhas de metadado (`id:` nome curto, `labels: a
 
 Status: aprovado. Aprovado em 2026-10-27
 
+Issues criadas em 2026-10-29 (#2 a #24). #5 a #9 foram concluídas pelas aprovações de 2026-10-27 (PR #1).
+
 ## epic: Fundação
 id: fundacao
 labels: epic
