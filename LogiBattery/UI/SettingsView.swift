@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// Janela de ajustes (T06): sem botão salvar. "Abrir no login" entra com a US-10.
+/// Janela de ajustes (T06): sem botão salvar.
 struct SettingsView: View {
     @State private var model = SettingsModel.shared
+    @State private var login = LoginItemModel()
     @State private var confirmDelete = false
 
     var body: some View {
@@ -19,6 +20,9 @@ struct SettingsView: View {
             Section {
                 stepper("settings.interval", hint: "settings.interval.hint", value: $model.values.intervalMinutes,
                         range: 1...60, step: 1) { "\($0) min" }
+                Toggle(isOn: Binding(get: { login.isEnabled }, set: { login.setEnabled($0) })) {
+                    label("settings.login", hint: login.failed ? "settings.login.error" : nil)
+                }
             }
             Section {
                 LabeledContent {
