@@ -1,0 +1,77 @@
+name: LogiBattery
+options:
+  bundleIdPrefix: com.lucasstop
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    CODE_SIGN_STYLE: Automatic
+    CODE_SIGN_IDENTITY: "-"
+    DEVELOPMENT_TEAM: ""
+targets:
+  LogiBattery:
+    type: application
+    platform: macOS
+    sources: [LogiBattery]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.lucasstop.LogiBattery
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_LSUIElement: YES
+        INFOPLIST_KEY_CFBundleDisplayName: LogiBattery
+        CODE_SIGN_ENTITLEMENTS: LogiBattery/LogiBattery.entitlements
+        ENABLE_HARDENED_RUNTIME: YES
+    dependencies:
+      - target: LogiBatteryWidget
+        embed: true
+  LogiBatteryWidget:
+    type: app-extension
+    platform: macOS
+    sources: [LogiBatteryWidget]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.lucasstop.LogiBattery.widget
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: LogiBattery
+        CODE_SIGN_ENTITLEMENTS: LogiBatteryWidget/LogiBatteryWidget.entitlements
+        SKIP_INSTALL: YES
+    info:
+      path: LogiBatteryWidget/Info.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+  LogiBatteryTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources: [LogiBatteryTests, Tests/Fixtures]
+    dependencies:
+      - target: LogiBattery
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.lucasstop.LogiBatteryTests
+        GENERATE_INFOPLIST_FILE: YES
+  LogiBatteryUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources: [LogiBatteryUITests]
+    dependencies:
+      - target: LogiBattery
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.lucasstop.LogiBatteryUITests
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  LogiBattery:
+    build:
+      targets: {LogiBattery: all, LogiBatteryWidget: all}
+    test:
+      targets: [LogiBatteryTests]
+  LogiBatteryUITests:
+    build:
+      targets: {LogiBattery: all, LogiBatteryUITests: all}
+    test:
+      targets: [LogiBatteryUITests]
