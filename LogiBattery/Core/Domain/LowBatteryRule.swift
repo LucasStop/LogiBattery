@@ -11,7 +11,7 @@ struct BatteryAlert: Equatable, Sendable {
 /// Regra de aviso de bateria baixa (US-07): um aviso por limite cruzado, rearmado ao recarregar acima dele.
 struct LowBatteryRule {
     // ponytail: o estado fica só em memória; reabrir o app pode repetir um aviso. Persistir se incomodar.
-    private let thresholds: [Int]
+    var thresholds: [Int]
     private var fired: [String: Set<Int>] = [:]
 
     init(thresholds: [Int] = [20, 10]) {
@@ -45,12 +45,17 @@ final class AlertCoordinator {
     private var lowRule = LowBatteryRule()
     private var fullRule = FullChargeRule()
     private let notifier: any AlertNotifying
+    private let settings: SettingsModel
 
-    init(notifier: any AlertNotifying) {
+    init(notifier: any AlertNotifying, settings: SettingsModel = .shared) {
         self.notifier = notifier
+        self.settings = settings
     }
 
     func handle(_ devices: [Device]) {
-        (lowRule.evaluate(devices) + fullRule.evaluate(devices)).forEach(notifier.notify)
+        lowRule.thresholds = [settings.values.lowThreshold, settings.values.criticalThreshold]
+        var alerts = lowRule.evaluate(devices)
+        if settings.values.fullChargeAlert { alerts += fullRule.evaluate(devices) }
+        alerts.forEach(notifier.notify)
     }
 }
