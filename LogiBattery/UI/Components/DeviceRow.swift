@@ -10,8 +10,12 @@ struct DeviceRow: View {
             Image(systemName: device.symbolName).foregroundStyle(.secondary).frame(width: 20)
             VStack(alignment: .leading, spacing: 2) {
                 Text(device.name).font(.headline).lineLimit(1)
-                Text(device.readAt, format: .relative(presentation: .named))
-                    .font(.caption).foregroundStyle(.secondary)
+                HStack(spacing: 4) {
+                    Text(device.path.labelKey)
+                    Text("·")
+                    Text(device.readAt, format: .relative(presentation: .named))
+                }
+                .font(.caption).foregroundStyle(.secondary)
             }
             Spacer(minLength: 4)
             if let label = device.chargeState.labelKey {

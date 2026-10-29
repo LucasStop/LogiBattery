@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Popover da barra de menu (T04). Ajustes entram com a US-11.
+/// Popover da barra de menu (T04). Login entra com a US-10.
 struct DeviceList: View {
     let viewModel: DeviceListViewModel
     @Environment(\.openWindow) private var openWindow
@@ -21,6 +21,10 @@ struct DeviceList: View {
             HStack {
                 Button("popover.history") {
                     openWindow(id: "history")
+                    NSApplication.shared.activate(ignoringOtherApps: true)
+                }
+                Button("popover.settings") {
+                    openWindow(id: "settings")
                     NSApplication.shared.activate(ignoringOtherApps: true)
                 }
                 Spacer()

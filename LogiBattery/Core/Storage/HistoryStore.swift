@@ -48,6 +48,11 @@ struct HistoryStore: Sendable {
         try encoder.encode(points).write(to: file, options: .atomic)
     }
 
+    func deleteAll() throws {
+        guard FileManager.default.fileExists(atPath: file.path) else { return }
+        try FileManager.default.removeItem(at: file)
+    }
+
     func points(since date: Date) -> [HistoryPoint] {
         load().filter { $0.timestamp >= date }
     }

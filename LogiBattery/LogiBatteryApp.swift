@@ -7,7 +7,7 @@ struct LogiBatteryApp: App {
 
     init() {
         let viewModel = viewModel
-        Task { await viewModel.poll() }
+        Task { await viewModel.poll { SettingsModel.shared.values.interval } }
     }
 
     var body: some Scene {
@@ -23,6 +23,11 @@ struct LogiBatteryApp: App {
 
         Window("history.title", id: "history") {
             HistoryView()
+        }
+        .windowResizability(.contentSize)
+
+        Window("settings.title", id: "settings") {
+            SettingsView()
         }
         .windowResizability(.contentSize)
     }

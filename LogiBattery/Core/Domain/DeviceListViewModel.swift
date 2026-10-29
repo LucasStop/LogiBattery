@@ -41,11 +41,11 @@ final class DeviceListViewModel {
         }
     }
 
-    // ponytail: intervalo fixo; vira ajuste na US-11.
-    func poll(every interval: Duration = .seconds(300)) async {
+    // ponytail: o intervalo novo vale depois da espera em curso; cancelar o sono ao mudar o ajuste se incomodar.
+    func poll(interval: @MainActor () -> Duration = { .seconds(300) }) async {
         while !Task.isCancelled {
             await refresh()
-            try? await Task.sleep(for: interval)
+            try? await Task.sleep(for: interval())
         }
     }
 }
