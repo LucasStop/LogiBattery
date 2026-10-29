@@ -784,6 +784,166 @@
           }
         }
       }
+    },
+    "permission.window": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permissão necessária"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permission needed"
+          }
+        }
+      }
+    },
+    "permission.title": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permitir leitura dos aparelhos"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow reading your devices"
+          }
+        }
+      }
+    },
+    "permission.body": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O LogiBattery precisa de Monitoramento de Entrada para ler a bateria do mouse e do teclado. Nada sai do seu Mac."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LogiBattery needs Input Monitoring to read your mouse and keyboard battery. Nothing leaves your Mac."
+          }
+        }
+      }
+    },
+    "permission.step1": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Clique em Abrir Privacidade."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Click Open Privacy."
+          }
+        }
+      }
+    },
+    "permission.step2": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2. Ative o LogiBattery em Monitoramento de Entrada."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2. Turn on LogiBattery under Input Monitoring."
+          }
+        }
+      }
+    },
+    "permission.step3": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3. Volte aqui. A leitura começa sozinha."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3. Come back here. Reading starts by itself."
+          }
+        }
+      }
+    },
+    "permission.open": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir Privacidade"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Privacy"
+          }
+        }
+      }
+    },
+    "permission.later": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agora não"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not now"
+          }
+        }
+      }
+    },
+    "permission.banner.title": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permissão necessária"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permission needed"
+          }
+        }
+      }
+    },
+    "permission.banner.body": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O macOS bloqueou o Monitoramento de Entrada. Sem ela não dá para ler a bateria."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS blocked Input Monitoring. Without it the battery cannot be read."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

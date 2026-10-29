@@ -4,6 +4,8 @@ import WidgetKit
 @main
 struct LogiBatteryApp: App {
     @State private var viewModel = DeviceListViewModel(scanner: LiveScanner(), publish: publishSnapshot)
+    @State private var permission = PermissionModel()
+    @Environment(\.openWindow) private var openWindow
 
     init() {
         let viewModel = viewModel
@@ -12,17 +14,29 @@ struct LogiBatteryApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            DeviceList(viewModel: viewModel)
+            DeviceList(viewModel: viewModel, permission: permission)
         } label: {
             Image(systemName: viewModel.menuBarSymbol)
             if let percent = viewModel.menuBarPercent {
                 Text("\(percent)%")
+            }
+            // O label existe desde a abertura do app: é onde o guia de permissão aparece no primeiro uso.
+            Color.clear.frame(width: 0).task {
+                if permission.needsGuide {
+                    openWindow(id: "permission")
+                    NSApplication.shared.activate(ignoringOtherApps: true)
+                }
             }
         }
         .menuBarExtraStyle(.window)
 
         Window("history.title", id: "history") {
             HistoryView()
+        }
+        .windowResizability(.contentSize)
+
+        Window("permission.window", id: "permission") {
+            PermissionView(model: permission)
         }
         .windowResizability(.contentSize)
 

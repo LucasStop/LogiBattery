@@ -3,11 +3,13 @@ import SwiftUI
 /// Popover da barra de menu (T04). Login entra com a US-10.
 struct DeviceList: View {
     let viewModel: DeviceListViewModel
+    let permission: PermissionModel
     @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             header
+            if permission.needsAttention { PermissionBanner(model: permission) }
             if viewModel.devices.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(viewModel.hasLoaded ? "popover.empty.title" : "popover.reading").font(.headline)
@@ -34,7 +36,10 @@ struct DeviceList: View {
         }
         .padding(12)
         .frame(width: 320)
-        .task { await viewModel.refresh() }
+        .task {
+            permission.refresh()
+            await viewModel.refresh()
+        }
     }
 
     private var header: some View {
