@@ -6,7 +6,7 @@ Status: aprovada em 2026-10-27. Sem API de rede: este arquivo registra o contrat
 
 ## 1. Visão
 - Consumidores: a extensão de widget, que lê o snapshot. Nenhum terceiro.
-- Base URL: N/A. O canal é o arquivo `snapshot.json` no container do App Group `group.com.lucasstop.LogiBattery`.
+- Base URL: N/A. O canal é o arquivo `snapshot.json` no container do App Group `$(TeamIdentifierPrefix)com.lucasstop.LogiBattery` (ex.: `69D4S5TF8S.com.lucasstop.LogiBattery`; o prefixo do time é exigido pelo macOS para o widget ler o container).
 - Estilo: arquivo compartilhado · Formato: JSON, UTF-8
 
 ## 2. Convenções

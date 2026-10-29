@@ -1,4 +1,5 @@
 import Foundation
+import Security
 
 /// Última leitura de cada aparelho. O host escreve, o widget lê (docs/API.md, ADR 0001).
 struct Snapshot: Codable, Equatable, Sendable {
@@ -20,7 +21,14 @@ struct Snapshot: Codable, Equatable, Sendable {
 }
 
 struct SnapshotStore: Sendable {
-    static let appGroupID = "group.com.lucasstop.LogiBattery"
+    /// Grupo prefixado com o time (`$(TeamIdentifierPrefix)` nos entitlements): sem o prefixo o macOS barra o
+    /// widget no container do host. Lê o valor assinado do próprio processo; nil sem assinatura (testes e CI).
+    static var appGroupID: String? {
+        guard let task = SecTaskCreateFromSelf(nil),
+              let groups = SecTaskCopyValueForEntitlement(task, "com.apple.security.application-groups" as CFString,
+                                                          nil) as? [String] else { return nil }
+        return groups.first { $0.hasSuffix("com.lucasstop.LogiBattery") }
+    }
 
     let directory: URL
     private var file: URL { directory.appendingPathComponent("snapshot.json") }
@@ -31,7 +39,8 @@ struct SnapshotStore: Sendable {
 
     /// Nil quando o app não está assinado com o App Group (testes e CI sem certificado).
     static var appGroup: SnapshotStore? {
-        FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupID).map(SnapshotStore.init)
+        appGroupID.flatMap { FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: $0) }
+            .map(SnapshotStore.init)
     }
 
     func write(_ devices: [Device], at date: Date) throws {
