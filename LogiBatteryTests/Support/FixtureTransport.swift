@@ -5,14 +5,17 @@ import Foundation
 struct FixtureTransport: HIDPPTransport {
     private let replies: [[UInt8]: [UInt8]]
 
-    init(fixture name: String) throws {
+    /// `patch` altera as respostas gravadas (ex.: simular carregando, que não temos gravado).
+    init(fixture name: String, patch: (inout [UInt8]) -> Void = { _ in }) throws {
         let url = try XCTUnwrapFixture(name)
         var replies: [[UInt8]: [UInt8]] = [:]
         var pending: [UInt8]?
         for line in try String(contentsOf: url, encoding: .utf8).split(separator: "\n") {
             let bytes = line.dropFirst(2).split(separator: " ").compactMap { UInt8($0, radix: 16) }
             if line.hasPrefix("> ") { pending = bytes } else if line.hasPrefix("< "), let request = pending {
-                replies[request] = bytes
+                var reply = bytes
+                patch(&reply)
+                replies[request] = reply
             }
         }
         self.replies = replies

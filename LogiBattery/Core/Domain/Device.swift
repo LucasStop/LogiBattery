@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 enum ChargeState: Equatable, Sendable {
     case discharging, charging, full, unknown
@@ -10,6 +11,17 @@ enum ChargeState: Equatable, Sendable {
         case 1, 2: self = .charging
         case 3: self = .full
         default: self = .unknown
+        }
+    }
+}
+
+extension ChargeState {
+    /// Chave em `Localizable.xcstrings`; descarregando não tem texto (é o estado normal).
+    var labelKey: LocalizedStringKey? {
+        switch self {
+        case .charging: "charge.charging"
+        case .full: "charge.full"
+        case .discharging, .unknown: nil
         }
     }
 }

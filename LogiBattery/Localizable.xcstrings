@@ -1,12 +1,54 @@
 {
-  "sourceLanguage" : "pt-BR",
-  "strings" : {
-    "app.name" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "LogiBattery" } },
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "LogiBattery" } }
+  "sourceLanguage": "pt-BR",
+  "strings": {
+    "app.name": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LogiBattery"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LogiBattery"
+          }
+        }
+      }
+    },
+    "charge.charging": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carregando"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Charging"
+          }
+        }
+      }
+    },
+    "charge.full": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carga completa"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fully charged"
+          }
+        }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }
