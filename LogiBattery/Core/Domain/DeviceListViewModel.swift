@@ -53,10 +53,11 @@ final class DeviceListViewModel {
 
     /// Leitura periódica mais releitura quando um aparelho conecta, desconecta ou manda aviso de bateria.
     func run(interval: @escaping @MainActor () -> Duration, changes: AsyncStream<Void>,
-             debounce: Duration = .seconds(2), minGap: Duration = .seconds(5)) async {
+             debounce: Duration = .seconds(2), minGap: Duration = .seconds(5),
+             settle: [Duration] = [.seconds(5), .seconds(10), .seconds(15)]) async {
         let polling = Task { await poll(interval: interval) }
         defer { polling.cancel() }
-        await react(to: changes, debounce: debounce, minGap: minGap)
+        await react(to: changes, debounce: debounce, minGap: minGap, settle: settle)
     }
 
     // ponytail: o intervalo novo vale depois da espera em curso; cancelar o sono ao mudar o ajuste se incomodar.
@@ -69,12 +70,20 @@ final class DeviceListViewModel {
 
     /// Espera o aparelho terminar de conectar (`debounce`) e limita a frequência (`minGap`) para uma rajada de
     /// eventos virar uma leitura só.
-    private func react(to changes: AsyncStream<Void>, debounce: Duration, minGap: Duration) async {
+    /// Aparelho que acabou de conectar (ex.: mouse trocando para Bluetooth) ainda dorme e não responde à primeira
+    /// leitura; `settle` repete a leitura em intervalos curtos em vez de esperar o próximo ciclo de 1 min.
+    private func react(to changes: AsyncStream<Void>, debounce: Duration, minGap: Duration,
+                       settle: [Duration]) async {
         var iterator = changes.makeAsyncIterator()
         while await iterator.next() != nil {
             try? await Task.sleep(for: debounce)
             if Task.isCancelled { return }
             await refresh()
+            for wait in settle {
+                try? await Task.sleep(for: wait)
+                if Task.isCancelled { return }
+                await refresh()
+            }
             try? await Task.sleep(for: minGap)
         }
     }

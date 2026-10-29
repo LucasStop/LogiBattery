@@ -70,6 +70,21 @@ final class DeviceChangeRefreshTests: XCTestCase {
         XCTAssertEqual(scanner.count, 2)
     }
 
+    func testChangeRepeatsReadingWhileTheDeviceSettles() async throws {
+        let scanner = CountingScanner()
+        let viewModel = DeviceListViewModel(scanner: scanner)
+        let (changes, continuation) = AsyncStream<Void>.makeStream(bufferingPolicy: .bufferingNewest(1))
+        let task = Task {
+            await viewModel.run(interval: { .seconds(3600) }, changes: changes, debounce: .milliseconds(10),
+                                minGap: .milliseconds(10), settle: [.milliseconds(20), .milliseconds(20)])
+        }
+        try await waitUntil { scanner.count >= 1 }
+        continuation.yield()
+        try await waitUntil { scanner.count >= 4 }
+        task.cancel()
+        XCTAssertGreaterThanOrEqual(scanner.count, 4)
+    }
+
     private func waitUntil(_ condition: @MainActor () -> Bool) async throws {
         for _ in 0..<200 where !condition() { try await Task.sleep(for: .milliseconds(10)) }
         XCTAssertTrue(condition())
