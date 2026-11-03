@@ -44,13 +44,12 @@ struct BatteryWidgetView: View {
         Group {
             if devices.isEmpty {
                 EmptyWidget()
-            } else if family == .systemSmall {
-                SmallWidget(devices: Array(devices.prefix(4)), isStale: isStale, date: entry.date,
-                            thresholds: thresholds)
+            } else if family == .systemLarge {
+                ListWidget(devices: Array(devices.prefix(4)), isStale: isStale, date: entry.date,
+                           thresholds: thresholds, series: entry.series)
             } else {
-                ListWidget(devices: Array(devices.prefix(family == .systemMedium ? 3 : 4)), isStale: isStale,
-                           date: entry.date, thresholds: thresholds,
-                           series: family == .systemLarge ? entry.series : [])
+                RingWidget(devices: devices, columns: family == .systemSmall ? 2 : 4, isStale: isStale,
+                           date: entry.date, thresholds: thresholds)
             }
         }
         .containerBackground(.fill.tertiary, for: .widget)
@@ -67,42 +66,78 @@ private struct EmptyWidget: View {
     }
 }
 
-/// Até quatro aparelhos em anéis (grade 2x2) com o percentual embaixo, como o widget de baterias do macOS.
-private struct SmallWidget: View {
+/// Até 4 aparelhos em anéis, como o widget de baterias do macOS: grade 2x2 no pequeno e linha 4x1 no médio.
+/// Posição sem aparelho fica com o anel vazio, para a grade não mudar de forma.
+private struct RingWidget: View {
+    static let slots = 4
     let devices: [Device]
+    let columns: Int
     let isStale: Bool
     let date: Date
     let thresholds: BatteryThresholds
 
     var body: some View {
-        let columns = [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)]
-        LazyVGrid(columns: columns, spacing: 8) {
-            ForEach(devices) { device in
-                let gray = isStale || device.isOld(at: date)
-                let level = BatteryLevel(percent: device.percent, thresholds: thresholds)
-                VStack(spacing: 2) {
-                    ZStack {
-                        Circle().stroke(.quaternary, lineWidth: 5)
-                        Circle()
-                            .trim(from: 0, to: CGFloat(min(max(device.percent ?? 0, 0), 100)) / 100)
-                            .stroke(gray ? .secondary : device.tint(thresholds),
-                                    style: StrokeStyle(lineWidth: 5, lineCap: .round))
-                            .rotationEffect(.degrees(-90))
-                        Image(systemName: device.symbolName).font(.system(size: 15)).foregroundStyle(.secondary)
-                    }
-                    .frame(width: 52, height: 52)
-                    HStack(spacing: 3) {
-                        TransportBadge(path: device.path)
-                        Text(device.percent.map { "\($0)%" } ?? "—")
-                            .font(.system(size: 13, weight: .semibold)).monospacedDigit()
-                            .foregroundStyle(gray ? .secondary : level.color)
+        let filled = devices.prefix(Self.slots).map { Optional($0) }
+        let slots = filled + Array(repeating: nil, count: Self.slots - filled.count)
+        VStack(spacing: 8) {
+            ForEach(0..<Self.slots / columns, id: \.self) { row in
+                HStack(spacing: 8) {
+                    ForEach(row * columns..<(row + 1) * columns, id: \.self) { index in
+                        let device = slots[index]
+                        RingSlot(device: device, gray: isStale || device?.isOld(at: date) == true,
+                                 thresholds: thresholds, showsPercent: columns > 2)
                     }
                 }
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(Text("\(device.name) \(device.percent.map { "\($0)%" } ?? "—")"))
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+/// Anel com o ícone do aparelho e, abaixo dele, o selo de conexão. O percentual só vai no médio: no pequeno
+/// lotava a grade (o anel já mostra o nível, e o VoiceOver lê o número).
+private struct RingSlot: View {
+    let device: Device?
+    let gray: Bool
+    let thresholds: BatteryThresholds
+    let showsPercent: Bool
+
+    private var lineWidth: CGFloat { showsPercent ? 6 : 5 }
+    private var percentText: String { device?.percent.map { "\($0)%" } ?? "—" }
+
+    var body: some View {
+        VStack(spacing: 4) {
+            ZStack {
+                Circle().stroke(.quaternary, lineWidth: lineWidth)
+                if let device {
+                    Circle()
+                        .trim(from: 0, to: CGFloat(min(max(device.percent ?? 0, 0), 100)) / 100)
+                        .stroke(gray ? .secondary : device.tint(thresholds),
+                                style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                        .rotationEffect(.degrees(-90))
+                    // Selo pendurado embaixo do ícone: o ícone fica no centro mesmo sem selo (Mac).
+                    Image(systemName: device.symbolName)
+                        .font(.system(size: showsPercent ? 18 : 15))
+                        .foregroundStyle(.secondary)
+                        .overlay(alignment: .bottom) {
+                            TransportBadge(path: device.path).alignmentGuide(.bottom) { $0[.top] - 2 }
+                        }
+                }
+            }
+            .padding(lineWidth / 2)
+            .aspectRatio(1, contentMode: .fit)
+            if showsPercent {
+                Text(percentText)
+                    .font(.system(size: 13, weight: .semibold)).monospacedDigit()
+                    .foregroundStyle(gray ? .secondary : BatteryLevel(percent: device?.percent,
+                                                                      thresholds: thresholds).color)
+                    .opacity(device == nil ? 0 : 1)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("\(device?.name ?? "") \(percentText)"))
+        .accessibilityHidden(device == nil)
     }
 }
 
