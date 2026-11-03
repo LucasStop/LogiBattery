@@ -104,14 +104,19 @@ Base: cores semânticas do sistema (`NSColor`/`Color`) para acompanhar o tema e 
 - O selo não vira texto: o rótulo do VoiceOver continua "nome, percentual", e a conexão entra no rótulo só onde já entra hoje.
 
 ### 3.7 Materiais e Liquid Glass
-- Widget: fundo só por `containerBackground(_:for: .widget)` (macOS 14+). No estilo padrão, o fundo é escolhido no spike da #64 entre `.fill.tertiary` (atual), `Color.clear`, `.thinMaterial` e vidro. Nos estilos claro e tingido, o macOS troca esse fundo por vidro sozinho: o widget nunca desenha vidro próprio.
+- Widget: fundo `containerBackground(.clear, for: .widget)`. Sobra a base do próprio sistema: cinza-escura no sistema escuro e branca no claro. Nos estilos translúcido e tonalizado, o macOS troca essa base por vidro sozinho. O widget nunca desenha vidro próprio.
+- Spike da #64 (macOS 27, 2026-11-03), medido em print no estilo tom escuro:
+  - `.fill.tertiary`, `.thinMaterial`, `.ultraThinMaterial`, `glassEffect` (`.regular` e `.clear`), `.background` e `.windowBackground` saem todos opacos;
+  - o vidro só aparece quando é o sistema que troca o fundo (translúcido, tonalizado, atenuado);
+  - o Baterias da Apple mostra o papel de parede no padrão e no tom escuro porque a base dele é do sistema, só para widget da Apple; o Stats, de terceiro, também fica opaco;
+  - `.clear` deixa a base mais escura e mais próxima da Apple, sem cor fixa nossa.
 - Modos de renderização (`@Environment(\.widgetRenderingMode)`):
   - `.fullColor`: cores completas, o padrão.
-  - `.accented` (estilos claro e tingido do Liquid Glass): o sistema pinta de branco o conteúdo primário e o grupo de destaque. O anel de progresso leva `widgetAccentable()`; a trilha fica em baixa opacidade para continuar visível; o ícone usa `widgetAccentedRenderingMode(.accented)`. O nível baixo fica no comprimento do anel e no número, como no Baterias.
+  - `.accented` (estilos translúcido e tonalizado): o sistema pinta todo shape de uma cor (branco no translúcido, a cor do tom no tonalizado). Diferente do Baterias, o anel de progresso mantém a cor do nível: no macOS 15+ ele é desenhado como imagem (`Image(size:renderer:)`) com `widgetAccentedRenderingMode(.fullColor)`, sem checar `widgetRenderingMode` (no macOS 27 esses estilos não chegam como `.accented`). Trilha, ícone e texto seguem a cor do sistema. Leitura velha e macOS 14 usam o shape com `widgetAccentable()`.
   - `.vibrant` (mesa fora de foco): o sistema dessatura tudo; a hierarquia sai da opacidade (primário, secundário), não da cor.
 - Fundo removido: `@Environment(\.showsWidgetContainerBackground)` falso quer dizer sem fundo; nada pode depender do contraste do fundo.
 - Popover e janelas: `glassEffect(_:in:)` nas seções no macOS 26+ e `.regularMaterial` antes, sempre atrás de `if #available(macOS 26, *)` (alvo mínimo macOS 14). Nunca vidro sobre vidro.
-- Matriz de verificação em `docs/TESTING.md` (#64): estilo padrão, escuro, claro e tingido; sistema claro e escuro; mesa ativa e inativa.
+- Matriz de verificação com prints em `docs/TESTING.md` §3 (#64): estilo padrão, tom escuro, translúcido e tonalizado; sistema claro e escuro; widgets atenuados.
 
 ### 3.8 Medidas do widget
 Medidas do widget Baterias da Apple no macOS 27, tiradas de prints de 2026-11-03 (1 px = 1 pt) com contagem de pixel e conferidas com o nosso widget ao lado. Tolerância: ±1 pt. Implementação: `RingMetrics` em `LogiBatteryWidget/LogiBatteryWidget.swift` (#63).
@@ -208,6 +213,7 @@ Nenhuma tela é desenvolvida sem protótipo aprovado. O inventário e o status d
 - 2026-11-03: médio no visual do médio da Apple, selo ao lado do percentual (#60).
 - 2026-11-03: Apple nativa como referência no formato do VoltAgent: visão geral, ícones próprios, materiais e Liquid Glass, medidas do widget, faça e não faça (#62).
 - 2026-11-03: widget pequeno e médio nas medidas do Baterias (anel de 64 e 62 pt, ícone de 24 pt em cor primária, percentual de 16 pt), conferidas em print ao lado do da Apple; protótipos com os SF Symbols de verdade (#63).
+- 2026-11-03: fundo do widget transparente (base do sistema, vidro nos estilos translúcido e tonalizado), anel na cor do nível também no translúcido e no tonalizado (imagem em cor cheia) e matriz de estilos com prints; vidro do Baterias no estilo padrão é exclusivo da Apple (#64).
 
 ## Ícone do app
 Opção A aprovada por Lucas em 2026-10-29: anel de carga verde (gradiente `#5EE59A` a `#1F9D55`) sobre fundo escuro `#1C2333`/`#0B0F19`, com raio branco no centro. Fonte em `design/icon/appicon.svg` (1024 pt, margem de 100 pt); os PNGs de `LogiBattery/Assets.xcassets/AppIcon.appiconset` saem dela com `rsvg-convert`.

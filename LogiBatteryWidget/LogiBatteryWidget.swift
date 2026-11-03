@@ -56,7 +56,9 @@ struct BatteryWidgetView: View {
                            date: entry.date, thresholds: thresholds)
             }
         }
-        .containerBackground(.fill.tertiary, for: .widget)
+        // Transparente: fica a base do próprio sistema, que é a mais escura e vira vidro nos estilos claro e
+        // tingido. Material, glassEffect e .fill.tertiary saem opacos no estilo padrão e no escuro (spike #64).
+        .containerBackground(.clear, for: .widget)
     }
 }
 
@@ -151,11 +153,7 @@ private struct RingSlot: View {
         ZStack {
             Circle().stroke(.quaternary, lineWidth: RingMetrics.stroke)
             if let device {
-                Circle()
-                    .trim(from: 0, to: CGFloat(min(max(device.percent ?? 0, 0), 100)) / 100)
-                    .stroke(gray ? .secondary : device.tint(thresholds),
-                            style: StrokeStyle(lineWidth: RingMetrics.stroke, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
+                progress(device)
                 Image(systemName: device.symbolName).font(.system(size: RingMetrics.icon))
                 // Topo do selo a 12 pt do centro: o ícone fica no centro mesmo sem selo (Mac) e o selo não encosta
                 // no traço.
@@ -163,8 +161,36 @@ private struct RingSlot: View {
             }
         }
         .padding(RingMetrics.stroke / 2)
-        .frame(width: medium ? RingMetrics.mediumRing : RingMetrics.smallRing,
-               height: medium ? RingMetrics.mediumRing : RingMetrics.smallRing)
+        .frame(width: size, height: size)
+    }
+
+    private var size: CGFloat { medium ? RingMetrics.mediumRing : RingMetrics.smallRing }
+
+    @ViewBuilder
+    private func progress(_ device: Device) -> some View {
+        let fraction = CGFloat(min(max(device.percent ?? 0, 0), 100)) / 100
+        if #available(macOS 15, *), !gray {
+            // Nos estilos translúcido e tonalizado o sistema pinta todo shape de uma cor só; imagem em cor cheia
+            // escapa disso e o anel mantém a cor do nível. Sem checar `widgetRenderingMode`: no macOS 27 esses
+            // estilos não chegam como `.accented` (#64). Leitura velha segue pelo shape, na cor do sistema.
+            let tint = device.tint(thresholds)
+            Image(size: CGSize(width: size, height: size)) { context in
+                var arc = Path()
+                arc.addArc(center: CGPoint(x: size / 2, y: size / 2), radius: (size - RingMetrics.stroke) / 2,
+                           startAngle: .degrees(-90), endAngle: .degrees(-90 + 360 * fraction), clockwise: false)
+                context.stroke(arc, with: .color(tint),
+                               style: StrokeStyle(lineWidth: RingMetrics.stroke, lineCap: .round))
+            }
+            .widgetAccentedRenderingMode(.fullColor)
+            .padding(-RingMetrics.stroke / 2)
+        } else {
+            Circle()
+                .trim(from: 0, to: fraction)
+                .stroke(gray ? .secondary : device.tint(thresholds),
+                        style: StrokeStyle(lineWidth: RingMetrics.stroke, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+                .widgetAccentable()
+        }
     }
 }
 
