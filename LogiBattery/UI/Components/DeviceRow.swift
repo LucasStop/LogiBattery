@@ -10,7 +10,7 @@ struct DeviceRow: View {
         // Leitura velha (aparelho dormindo ou fora de alcance) fica cinza, como no widget.
         let gray = device.isOld(at: .now)
         HStack(spacing: 8) {
-            device.symbol.foregroundStyle(.secondary).frame(width: 20)
+            device.symbol.font(.system(size: 16)).foregroundStyle(.secondary).frame(width: 20)
                 .accessibilityHidden(true) // a conexão já vai no texto embaixo do nome
             VStack(alignment: .leading, spacing: 2) {
                 Text(device.name).font(.headline).lineLimit(1)
