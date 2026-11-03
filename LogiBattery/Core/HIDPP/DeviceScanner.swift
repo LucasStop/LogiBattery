@@ -37,7 +37,7 @@ struct DeviceScanner: DeviceScanning {
             // Segundo registro HID do mesmo aparelho Bluetooth devolve nome em bytes sem sentido (#72); descarta.
             if endpoint.path == .bluetooth, !DeviceIdentity.isPrintable(reading.name) { continue }
             devices.append(Device(id: "\(endpoint.id):\(index)", name: reading.name,
-                                  kind: DeviceKind(name: reading.name), percent: reading.percent,
+                                  kind: reading.kind ?? DeviceKind(name: reading.name), percent: reading.percent,
                                   chargeState: reading.chargeState, path: endpoint.path, readAt: now()))
         }
         return devices
