@@ -77,3 +77,15 @@ h1{font-size:22px;line-height:28px;margin:0 0 var(--s1)}
 .notif b{display:block}.notif .acts{display:flex;gap:var(--s2);margin-top:var(--s2)}
 /* barra de menu */
 .menubar{display:flex;align-items:center;gap:var(--s2);background:var(--surface);padding:var(--s1) var(--s3);border-radius:var(--r-sm);font-size:12px;width:fit-content}
+/* Grade de anéis do widget (T01 2x2, T02 4x1) */
+.rings{display:grid;gap:8px;flex:1;min-height:0}
+.w-s .rings{grid-template-columns:repeat(2,1fr)}
+.w-m .rings{grid-template-columns:repeat(4,1fr);align-items:center}
+.slot{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:0}
+.ring{position:relative;width:100%;max-width:56px;aspect-ratio:1;border-radius:50%;background:conic-gradient(var(--lvl) calc(var(--p,0)*1%),var(--border) 0);color:var(--muted)}
+.w-m .ring{max-width:68px}
+.ring::before{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--surface)}
+.ring .ico{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);line-height:0}
+.ring .via{position:absolute;left:50%;top:calc(50% + 10px);transform:translateX(-50%);line-height:0}
+.ring .via svg{width:11px;height:11px}
+.slot .pct{font-size:13px;color:var(--lvl)}

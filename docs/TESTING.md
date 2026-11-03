@@ -53,7 +53,7 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 | US-02 | Aparelho Bluetooth aparece com nome e % | `BluetoothDeviceTests`; smoke Bluetooth | unitário, manual |
 | US-03 | Mesmo aparelho em dois caminhos vira um item | `DeviceDedupeTests` | unitário |
 | US-04 | Estado carregando e cheio | `ChargeStateTests` | unitário |
-| US-05 | Widget mostra nome, % e estado nos 3 tamanhos | `SnapshotContractTests`, `WidgetReloadTests` (reload só com mudança, leitura velha); print por tamanho | integração, manual |
+| US-05 | Widget mostra os aparelhos e o estado nos 3 tamanhos (anéis 2x2 sem % no pequeno, 4x1 com % no médio, lista no grande) | `SnapshotContractTests`, `WidgetReloadTests` (reload só com mudança, leitura velha); print por tamanho comparado aos protótipos T01 a T03, com 1 a 4 aparelhos (posição vazia) | integração, manual |
 | US-06 | Popover lista aparelhos; ícone mostra o menor nível | `PopoverViewModelTests`; manual | componente, manual |
 | US-07 | Bateria baixa avisa uma vez e rearma | `LowBatteryRuleTests` | unitário |
 | US-08 | Carga completa avisa uma vez por ciclo | `FullChargeRuleTests` | unitário |
