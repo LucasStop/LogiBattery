@@ -17,6 +17,7 @@ h1{font-size:22px;line-height:28px;margin:0 0 var(--s1)}
 .theme{padding:var(--s5);border-radius:var(--r-lg);background:var(--backdrop);color:var(--fg);display:flex;align-items:flex-start;gap:var(--s4);flex-wrap:wrap;min-width:260px}
 .tag{font-size:10px;line-height:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:0 0 var(--s1)}
 .tabular{font-variant-numeric:tabular-nums}
+.sf{display:inline-block;font-size:16px;vertical-align:middle;background:currentColor;-webkit-mask-size:100% 100%;mask-size:100% 100%}
 .muted{color:var(--muted)}.caption{font-size:10px;line-height:13px;color:var(--muted)}.sm{font-size:11px;line-height:14px}
 .h3{font-weight:600}
 /* níveis */
@@ -77,19 +78,19 @@ h1{font-size:22px;line-height:28px;margin:0 0 var(--s1)}
 .notif b{display:block}.notif .acts{display:flex;gap:var(--s2);margin-top:var(--s2)}
 /* barra de menu */
 .menubar{display:flex;align-items:center;gap:var(--s2);background:var(--surface);padding:var(--s1) var(--s3);border-radius:var(--r-sm);font-size:12px;width:fit-content}
-/* Grade de anéis do widget (T01 2x2, T02 4x1) */
-.rings{display:grid;gap:8px;flex:1;min-height:0}
-.w-s .rings{grid-template-columns:repeat(2,1fr)}
-.w-m .rings{grid-template-columns:repeat(4,1fr);align-items:center}
-.slot{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:0}
-.ring{position:relative;width:100%;max-width:56px;aspect-ratio:1;border-radius:50%;background:conic-gradient(var(--lvl) calc(var(--p,0)*1%),var(--border) 0);color:var(--muted)}
-.ring::before{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--surface)}
-.ring .ico{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);line-height:0}
-.ring .via{position:absolute;left:50%;top:calc(50% + 10px);transform:translateX(-50%);line-height:0}
+/* Grade de anéis do widget (T01 2x2, T02 4x1), medidas do DESIGN.md §3.8 */
+.widget:has(.rings){padding:0}
+.rings{display:grid;flex:1;min-height:0}
+.w-s .rings{grid-template-columns:repeat(2,64px);gap:12px;place-content:center}
+.w-m .rings{grid-template-columns:repeat(4,1fr);align-items:center;padding:0 10px}
+.slot{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;min-height:0}
+.ring{position:relative;width:64px;aspect-ratio:1;border-radius:50%;background:conic-gradient(var(--lvl,var(--border)) calc(var(--p,0)*1%),var(--border) 0)}
+.w-m .ring{width:62px}
+.ring::before{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--surface)}
+.ring .ico{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);line-height:0;color:var(--fg)}
+.ring .ico .sf{font-size:24px}
+.ring .via{position:absolute;left:50%;top:calc(50% + 12px);transform:translateX(-50%);line-height:0;color:var(--muted)}
 .ring .via svg{width:11px;height:11px}
-.slot .pct{font-size:15px;color:var(--fg);display:flex;align-items:center;gap:3px}
+.slot .pct{font-size:16px;line-height:19px;color:var(--fg);display:flex;align-items:center;gap:3px}
 .none .pct{color:var(--muted)}
 .slot .pct .via{color:var(--muted);line-height:0}.slot .pct .via svg{width:11px;height:11px}
-.w-m .ring{max-width:54px}
-.w-m .ring .ico{color:var(--fg)}.w-m .ring .ico svg{width:22px;height:22px}
-.w-m .slot{gap:10px}
