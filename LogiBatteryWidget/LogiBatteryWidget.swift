@@ -85,7 +85,7 @@ private struct RingWidget: View {
                     ForEach(row * columns..<(row + 1) * columns, id: \.self) { index in
                         let device = slots[index]
                         RingSlot(device: device, gray: isStale || device?.isOld(at: date) == true,
-                                 thresholds: thresholds, showsPercent: columns > 2)
+                                 thresholds: thresholds, medium: columns > 2)
                     }
                 }
             }
@@ -94,50 +94,60 @@ private struct RingWidget: View {
     }
 }
 
-/// Anel com o ícone do aparelho e, abaixo dele, o selo de conexão. O percentual só vai no médio: no pequeno
-/// lotava a grade (o anel já mostra o nível, e o VoiceOver lê o número).
+/// Anel com o ícone do aparelho. No pequeno, o selo de conexão fica dentro do anel, embaixo do ícone, e não há
+/// percentual (lotava a grade; o anel mostra o nível e o VoiceOver lê o número). No médio, como no da Apple:
+/// anel de 54 pt, ícone e percentual em cor primária, e o selo ao lado do percentual.
 private struct RingSlot: View {
     let device: Device?
     let gray: Bool
     let thresholds: BatteryThresholds
-    let showsPercent: Bool
+    let medium: Bool
 
-    private var lineWidth: CGFloat { showsPercent ? 6 : 5 }
+    private var lineWidth: CGFloat { medium ? 6 : 5 }
     private var percentText: String { device?.percent.map { "\($0)%" } ?? "—" }
 
     var body: some View {
-        VStack(spacing: 4) {
-            ZStack {
-                Circle().stroke(.quaternary, lineWidth: lineWidth)
-                if let device {
-                    Circle()
-                        .trim(from: 0, to: CGFloat(min(max(device.percent ?? 0, 0), 100)) / 100)
-                        .stroke(gray ? .secondary : device.tint(thresholds),
-                                style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
-                    // Selo pendurado embaixo do ícone: o ícone fica no centro mesmo sem selo (Mac).
-                    Image(systemName: device.symbolName)
-                        .font(.system(size: showsPercent ? 18 : 15))
-                        .foregroundStyle(.secondary)
-                        .overlay(alignment: .bottom) {
-                            TransportBadge(path: device.path).alignmentGuide(.bottom) { $0[.top] - 2 }
-                        }
+        VStack(spacing: 10) {
+            ring
+            if medium {
+                HStack(spacing: 3) {
+                    if let device { TransportBadge(path: device.path) }
+                    Text(percentText)
+                        .font(.system(size: 15, weight: .semibold)).monospacedDigit()
+                        .foregroundStyle(gray ? Color.secondary : Color.primary)
                 }
-            }
-            .padding(lineWidth / 2)
-            .aspectRatio(1, contentMode: .fit)
-            if showsPercent {
-                Text(percentText)
-                    .font(.system(size: 13, weight: .semibold)).monospacedDigit()
-                    .foregroundStyle(gray ? .secondary : BatteryLevel(percent: device?.percent,
-                                                                      thresholds: thresholds).color)
-                    .opacity(device == nil ? 0 : 1)
+                .opacity(device == nil ? 0 : 1)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text("\(device?.name ?? "") \(percentText)"))
         .accessibilityHidden(device == nil)
+    }
+
+    private var ring: some View {
+        ZStack {
+            Circle().stroke(.quaternary, lineWidth: lineWidth)
+            if let device {
+                Circle()
+                    .trim(from: 0, to: CGFloat(min(max(device.percent ?? 0, 0), 100)) / 100)
+                    .stroke(gray ? .secondary : device.tint(thresholds),
+                            style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                // Selo pendurado embaixo do ícone: o ícone fica no centro mesmo sem selo (Mac).
+                Image(systemName: device.symbolName)
+                    .font(.system(size: medium ? 22 : 15))
+                    .foregroundStyle(medium ? Color.primary : Color.secondary)
+                    .overlay(alignment: .bottom) {
+                        if !medium {
+                            TransportBadge(path: device.path).alignmentGuide(.bottom) { $0[.top] - 2 }
+                        }
+                    }
+            }
+        }
+        .padding(lineWidth / 2)
+        .aspectRatio(1, contentMode: .fit)
+        .frame(maxWidth: medium ? 54 : nil)
     }
 }
 

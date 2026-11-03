@@ -112,7 +112,7 @@ Por componente, registrar em `design/components.md` a anatomia e a regra de uso;
 - Estado de erro: diz o que houve (ex.: permissão negada) e leva ao painel de Privacidade.
 - Navegação: ícone na barra de menu abre o popover; ajustes em janela própria; profundidade máxima 2.
 - Listas: aparelhos ordenados do menor para o maior nível; sem busca nem paginação.
-- Widget: três tamanhos. Pequeno e médio usam a grade de anéis com 4 posições fixas (2x2 e 4x1), Mac primeiro e o resto do menor para o maior nível; posição sem aparelho mostra só o anel vazio (`quaternary`, fora do VoiceOver). Dentro do anel, o ícone do aparelho (`computermouse`, `keyboard`, `laptopcomputer`, `headphones`) no centro e o selo de conexão (Bluetooth ou receptor; o Mac não tem) logo abaixo. O percentual vai embaixo do anel só no médio: no pequeno lotava a grade, e o VoiceOver lê o número. O grande segue com a lista e o gráfico. Aprovado por Lucas em 2026-11-03.
+- Widget: três tamanhos. Pequeno e médio usam a grade de anéis com 4 posições fixas (2x2 e 4x1), Mac primeiro e o resto do menor para o maior nível; posição sem aparelho mostra só o anel vazio (`quaternary`, fora do VoiceOver). O ícone do aparelho (`computermouse`, `keyboard`, `laptopcomputer`, `headphones`) fica no centro do anel. Pequeno: selo de conexão (Bluetooth ou receptor; o Mac não tem) dentro do anel, logo abaixo do ícone, e sem percentual (lotava a grade; o VoiceOver lê o número). Médio, igual ao médio da Apple: anel de 54 pt com traço de 6 pt, ícone de 22 pt e percentual de 15 pt semibold em cor primária embaixo do anel, com o selo ao lado do percentual (#60). O grande segue com a lista e o gráfico. Aprovado por Lucas em 2026-11-03.
 - Leitura velha: aparelho sem leitura nova há mais de 30 min (dormindo ou fora de alcance) continua na lista com a hora da última leitura, e anel, número e célula ficam em `muted` (`.secondary`), no widget e no popover. Volta à cor na primeira leitura nova. Aprovado por Lucas em 2026-11-03.
 
 ## 6. Acessibilidade
@@ -153,6 +153,7 @@ Nenhuma tela é desenvolvida sem protótipo aprovado. O inventário e o status d
 ## Histórico
 - 2026-10-27: criação do design system (rascunho).
 - 2026-11-03: leitura com mais de 30 min em cinza (widget e popover).
+- 2026-11-03: médio no visual do médio da Apple, selo ao lado do percentual (#60).
 - 2026-11-03: grade de anéis no widget pequeno (2x2, sem percentual) e médio (4x1); selo de conexão dentro do anel; ícones de Mac e fone (#55).
 
 ## Ícone do app
