@@ -54,18 +54,17 @@ extension Device {
             : BatteryLevel(percent: percent, thresholds: thresholds).color
     }
 
-    /// Mouse, teclado e fone usam o símbolo próprio com o selo de conexão dentro (Symbols.xcassets, gerado por
-    /// design/symbols/make.py); o resto, o SF Symbol do sistema com o `TransportBadge` ao lado.
+    /// Todo aparelho com conexão usa o símbolo próprio com o selo no canto de baixo à direita (Symbols.xcassets,
+    /// gerado por design/symbols/make.py, #65 e #75); o Mac (`laptop`) usa o SF Symbol do sistema, sem selo.
     var symbolName: String {
         switch (kind, path) {
-        case (.mouse, .bluetooth), (.mouse, .receiver), (.keyboard, .bluetooth), (.keyboard, .receiver),
-             (.headphones, .bluetooth):
-            "lb.\(kind.rawValue).\(path.rawValue)"
-        case (.mouse, _): "computermouse"
-        case (.keyboard, _): "keyboard"
         case (.laptop, _): "laptopcomputer"
-        case (.headphones, _): "headphones"
-        case (.other, _): "dot.radiowaves.left.and.right"
+        case (_, .bluetooth), (_, .receiver):
+            "lb.\(kind.rawValue).\(path.rawValue)"
+        case (.mouse, .internal): "computermouse"
+        case (.keyboard, .internal): "keyboard"
+        case (.headphones, .internal): "headphones"
+        case (.other, .internal): "dot.radiowaves.left.and.right"
         }
     }
 
@@ -74,39 +73,5 @@ extension Device {
     /// O selo vira parte do desenho, então a conexão vai no rótulo do VoiceOver.
     var symbol: Image {
         symbolHasBadge ? Image(symbolName, label: Text(path.labelKey)) : Image(systemName: symbolName)
-    }
-}
-
-/// Runa do Bluetooth; o SF Symbols não traz o logotipo.
-private struct BluetoothRune: Shape {
-    func path(in rect: CGRect) -> Path {
-        let points = [(0.2, 0.7), (0.8, 0.3), (0.5, 0.05), (0.5, 0.95), (0.8, 0.7), (0.2, 0.3)]
-            .map { CGPoint(x: rect.minX + $0.0 * rect.width, y: rect.minY + $0.1 * rect.height) }
-        var path = Path()
-        path.addLines(points)
-        return path
-    }
-}
-
-/// Como o aparelho está conectado agora: Bluetooth ou receptor USB. A bateria do próprio Mac não leva selo, nem o
-/// aparelho cujo símbolo já traz o selo (`symbolHasBadge`).
-struct TransportBadge: View {
-    let device: Device
-    private var path: DevicePath { device.path }
-
-    var body: some View {
-        if path != .internal, !device.symbolHasBadge {
-            Group {
-                if path == .bluetooth {
-                    BluetoothRune().stroke(style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round))
-                        .frame(width: 8, height: 11)
-                } else {
-                    Image(systemName: "cable.connector").font(.system(size: 10))
-                }
-            }
-            .foregroundStyle(.secondary)
-            .frame(width: 12, height: 12)
-            .accessibilityLabel(Text(path.labelKey))
-        }
     }
 }

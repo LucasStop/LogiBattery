@@ -7,15 +7,9 @@ const I={mouse:'<rect x="5" y="2" width="10" height="16" rx="5"/><path d="M10 2v
  plug:'<path d="M7 2v4M13 2v4M5 6h10v3a5 5 0 0 1-10 0zM10 14v4"/>',
  bolt:'<path d="M11 2 4 11h5l-1 7 7-9h-5z" fill="currentColor"/>'};
 const svg=n=>`<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n]}</svg>`;
-// SF Symbol de verdade (symbols.js) quando existe, como máscara na cor do texto; o selo Bluetooth não tem SF Symbol.
+// SF Symbol de verdade (symbols.js / custom-symbols.js) quando existe, como máscara na cor do texto.
 const sf=n=>{const s=SF[n];return `<i class="sf" style="width:${s.w/24}em;height:${s.h/24}em;-webkit-mask-image:url(${s.d});mask-image:url(${s.d})" aria-hidden="true"></i>`};
-// Símbolos próprios que o make.py ainda não gerou (#75): base + selo no canto de baixo à direita, com a folga em volta
-// feita por um disco na cor do fundo do anel. Aproximação de protótipo; no app o selo é recortado no próprio símbolo.
-I.other='<circle cx="10" cy="10" r="1.6" fill="currentColor"/><path d="M6.6 6.6a4.8 4.8 0 0 0 0 6.8M13.4 6.6a4.8 4.8 0 0 1 0 6.8M4 4a8.5 8.5 0 0 0 0 12M16 4a8.5 8.5 0 0 1 0 12"/>';
-const COMP={'lb.other.bluetooth':['other','bt'],'lb.other.receiver':['other','rx'],'lb.headphones.receiver':['headphones','rx']};
-const comp=n=>{const [b,k]=COMP[n];const base=SF[b]?sf(b):`<svg width="24" height="24" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">${I[b]}</svg>`;
- return `<span class="cs">${base}<span class="bdg">${svg(k==='bt'?'bt':'plug')}</span></span>`};
-document.querySelectorAll('[data-i]').forEach(e=>e.innerHTML=COMP[e.dataset.i]?comp(e.dataset.i):typeof SF!=='undefined'&&SF[e.dataset.i]?sf(e.dataset.i):svg(e.dataset.i));
+document.querySelectorAll('[data-i]').forEach(e=>e.innerHTML=typeof SF!=='undefined'&&SF[e.dataset.i]?sf(e.dataset.i):svg(e.dataset.i));
 // Renderiza cada .pair em claro e escuro a partir de um único markup (protótipo, não vai para o app).
 document.querySelectorAll('.pair').forEach(p=>{
   const html=p.innerHTML;
