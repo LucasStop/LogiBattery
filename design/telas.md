@@ -12,6 +12,7 @@ Fluxo e regras em [README.md](README.md). Tela só vai para desenvolvimento com 
 | T06 | Ajustes | US-07, US-08, US-10, US-11, US-14 | padrão | prototypes/t06-ajustes.html | implementada | 2026-10-27 | Limites, intervalo, login, apagar histórico. Opção de esconder o ícone da barra de menus (aprovado em 2026-11-03, #56) |
 | T07 | Guia de permissão | US-12 | padrão | prototypes/t07-permissao.html | implementada | 2026-10-27 | Leva ao painel de Privacidade |
 | T08 | Notificações (baixa e carga cheia) | US-07, US-08 | baixa, crítica, cheia | prototypes/t08-notificacoes.html | implementada | 2026-10-27 | Texto e ações do sistema; sem ações (Ver aparelhos, Silenciar) |
+| T09 | Widgets médio e grande com 5 ou mais aparelhos | US-05 | opção A (página 1 e 2), opção B (4 mais relevantes e +N), claro e escuro | prototypes/t02-t03-paginas.html | em revisão | | #79. A: botão de próxima página com indicador, `AppIntent` macOS 14+, sem interação na tela de bloqueio. B: os 4 de menor nível (carregando entra antes) e um +N, sem estado. Recomendação: B no pequeno e no médio, A no grande (ou B sozinha, se for uma só): B vale na tela de bloqueio e não guarda estado; A não perde nenhum aparelho. Grande paginado troca o gráfico por 4 linhas. T01 fica de fora (sem botão), só +N se escolhida a B |
 
 Estados: padrão, vazio, carregando, erro (marcar os que se aplicam e foram prototipados).
 Status: rascunho, em revisão, aprovada, implementada.
