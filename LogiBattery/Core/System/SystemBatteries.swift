@@ -27,10 +27,10 @@ enum SystemBatteries {
                       chargeState: state, path: .internal, readAt: now)
     }
 
-    /// Fone de nível único usa `single`; fone de dois lados sem nível único usa o lado mais fraco. Zero é "sem dado".
-    static func headset(name: String, single: Int, combined: Int, buds: [Int], now: Date) -> Device? {
-        guard let percent = [single, combined].first(where: { $0 > 0 }) ?? buds.filter({ $0 > 0 }).min()
-        else { return nil }
+    /// Fone de nível único usa `single`; fone de dois lados sem nível único usa o lado mais fraco.
+    /// Zero é "sem dado": sem nível sai com `percent` nil e a lista guarda a última leitura (issue #70).
+    static func headset(name: String, single: Int, combined: Int, buds: [Int], now: Date) -> Device {
+        let percent = [single, combined].first(where: { $0 > 0 }) ?? buds.filter({ $0 > 0 }).min()
         return Device(id: "bt-audio-\(name)", name: name, kind: .headphones, percent: percent,
                       chargeState: .unknown, path: .bluetooth, readAt: now)
     }
