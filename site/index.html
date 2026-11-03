@@ -1,0 +1,68 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LogiBattery</title>
+<meta name="description" content="Free, open source macOS app that shows the battery of Logitech and Bluetooth mice and keyboards in the menu bar and widgets.">
+<meta name="color-scheme" content="light dark">
+<style>
+/* Landing (#92), protótipo T10 aprovado. Página estática, sem dependências. */
+:root{--bg:#f5f5f7;--surface:#fff;--fg:#1d1d1f;--muted:#6e6e73;--border:#d2d2d7;--primary:#0a64f0;--primary-fg:#fff;--shot:#c9d4e6;--ok:#1f9d55}
+@media (prefers-color-scheme:dark){:root{--bg:#1c1c1e;--surface:#2a2a2d;--fg:#f5f5f7;--muted:#a1a1a6;--border:#4d4d52;--primary:#3b8bff;--shot:#2c3a52;--ok:#34c77b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif}
+a{color:var(--primary)}
+.wrap{max-width:960px;margin:0 auto;padding:0 16px}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 0}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600}
+.brand img{width:32px;height:32px}
+select{font:inherit;font-size:14px;color:var(--fg);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 10px}
+.hero{text-align:center;padding:48px 0 32px}
+.hero h1{font-size:clamp(32px,6vw,52px);line-height:1.1;margin:0 0 16px;letter-spacing:-.02em}
+.hero p{max-width:56ch;margin:0 auto 24px;color:var(--muted);font-size:19px}
+.btn{display:inline-block;font:inherit;font-weight:600;border:0;border-radius:999px;padding:12px 28px;background:var(--primary);color:var(--primary-fg);text-decoration:none;cursor:pointer}
+.btn.alt{background:var(--surface);color:var(--fg);border:1px solid var(--border);font-weight:500;padding:8px 18px;font-size:15px}
+.note{font-size:14px;color:var(--muted);margin-top:12px}
+.shot{background:var(--shot);border-radius:20px;padding:24px;margin:24px 0;text-align:center}
+.shot img{max-width:100%;height:auto;max-height:420px;border-radius:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:32px 0}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px}
+.card h3{margin:0 0 6px;font-size:17px}.card p{margin:0;color:var(--muted);font-size:15px}
+h2{font-size:28px;line-height:1.2;margin:48px 0 8px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 16px}
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.shots .shot{margin:0}.shots img{max-height:300px}
+.support{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.support>div:first-child{flex:1;min-width:240px}
+.qr{width:140px;height:140px;border-radius:8px;background:#fff}
+code{font:13px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--bg);padding:2px 6px;border-radius:6px;word-break:break-all}
+footer{color:var(--muted);font-size:14px;padding:48px 0 32px;text-align:center}
+</style></head><body><div class="wrap">
+<header><div class="brand"><img src="icon.svg" alt=""><span>LogiBattery</span></div>
+<select id="lang" aria-label="Idioma / Language"><option value="pt-BR">Português</option><option value="en">English</option><option value="es">Español</option></select></header>
+<section class="hero"><h1 data-i="title"></h1><p data-i="lead"></p>
+<a class="btn" href="https://github.com/LucasStop/LogiBattery/releases/latest" data-i="download"></a>
+<div class="note" data-i="req"></div></section>
+<div class="shot"><img src="shots/t02-widget-medio.png" alt=""></div>
+<section class="grid">
+<div class="card"><h3 data-i="f1t"></h3><p data-i="f1p"></p></div>
+<div class="card"><h3 data-i="f2t"></h3><p data-i="f2p"></p></div>
+<div class="card"><h3 data-i="f3t"></h3><p data-i="f3p"></p></div>
+<div class="card"><h3 data-i="f4t"></h3><p data-i="f4p"></p></div>
+</section>
+<h2 data-i="shotsT"></h2><p class="sub" data-i="shotsP"></p>
+<section class="shots"><div class="shot"><img src="shots/t04-popover.png" alt=""></div><div class="shot"><img src="shots/t03-widget-grande.png" alt=""></div></section>
+<h2 data-i="supT"></h2>
+<section class="support"><div><p class="sub" data-i="supP"></p>
+<button class="btn alt" id="pix" data-i="pix"></button> <div class="note"><span data-i="pixKey"></span> <code>dd226f83-02f0-4c80-bd23-322c9f5fa7ee</code></div></div> <!-- gitleaks:allow -->
+<img class="qr" src="pix-qr.svg" width="140" height="140" alt="QR Code Pix"></section>
+<footer><a href="https://github.com/LucasStop/LogiBattery" data-i="src"></a> · MIT</footer>
+</div>
+<script>
+const T={
+"pt-BR":{title:"A bateria do mouse e do teclado, de relance.",lead:"App gratuito e de código aberto para macOS. Lê receptores Logitech (Unifying, Bolt, Lightspeed), Bluetooth e a bateria do Mac, na barra de menus e em widgets.",download:"Baixar grátis",req:"macOS 14 ou mais recente",f1t:"Leitura nativa",f1p:"HID++ direto do receptor, sem o Logi Options+, e qualquer periférico Bluetooth conectado.",f2t:"Widgets Liquid Glass",f2p:"Pequeno, médio e grande, com a cor do nível mantida nos estilos translúcido e tonalizado.",f3t:"Avisos e histórico",f3p:"Bateria baixa, crítica e carga completa, com gráfico de 24 horas a 30 dias.",f4t:"Leve e privado",f4p:"Consumo quase zero de CPU e memória. Sem rede, sem conta, sem coleta de dados.",shotsT:"Menu e widget grande",shotsP:"Mesmo visual dos Ajustes e do widget Baterias do macOS.",supT:"Apoie o projeto",supP:"O app é e continua gratuito. Se ele ajuda no seu dia, você pode contribuir por Pix (Brasil).",pix:"Copiar chave Pix",pixKey:"Chave aleatória:",qr:"QR Code do Pix",src:"Código no GitHub",copied:"Chave copiada"},
+"en":{title:"Your mouse and keyboard battery, at a glance.",lead:"A free, open source macOS app. Reads Logitech receivers (Unifying, Bolt, Lightspeed), Bluetooth devices and the Mac battery, in the menu bar and in widgets.",download:"Download for free",req:"macOS 14 or later",f1t:"Native reading",f1p:"HID++ straight from the receiver, no Logi Options+ needed, plus any connected Bluetooth peripheral.",f2t:"Liquid Glass widgets",f2p:"Small, medium and large, keeping the level color in the translucent and tinted styles.",f3t:"Alerts and history",f3p:"Low, critical and full charge alerts, with a 24 hour to 30 day chart.",f4t:"Light and private",f4p:"Near-zero CPU and memory. No network, no account, no data collection.",shotsT:"Menu and large widget",shotsP:"Same look as macOS Settings and the Batteries widget.",supT:"Support the project",supP:"The app is and stays free. If it helps your day, you can chip in with Pix (Brazil).",pix:"Copy Pix key",pixKey:"Random key:",qr:"Pix QR code",src:"Source on GitHub",copied:"Key copied"},
+"es":{title:"La batería de tu ratón y teclado, de un vistazo.",lead:"App gratuita y de código abierto para macOS. Lee receptores Logitech (Unifying, Bolt, Lightspeed), Bluetooth y la batería del Mac, en la barra de menús y en widgets.",download:"Descargar gratis",req:"macOS 14 o posterior",f1t:"Lectura nativa",f1p:"HID++ directo del receptor, sin Logi Options+, y cualquier periférico Bluetooth conectado.",f2t:"Widgets Liquid Glass",f2p:"Pequeño, mediano y grande, con el color del nivel en los estilos translúcido y tintado.",f3t:"Avisos e historial",f3p:"Avisos de batería baja, crítica y carga completa, con gráfico de 24 horas a 30 días.",f4t:"Ligera y privada",f4p:"Consumo casi nulo de CPU y memoria. Sin red, sin cuenta, sin recopilar datos.",shotsT:"Menú y widget grande",shotsP:"Mismo aspecto que Ajustes del Sistema y el widget Baterías.",supT:"Apoya el proyecto",supP:"La app es y seguirá siendo gratuita. Si te ayuda, puedes contribuir por Pix (Brasil).",pix:"Copiar clave Pix",pixKey:"Clave aleatoria:",qr:"QR del Pix",src:"Código en GitHub",copied:"Clave copiada"}};
+const sel=document.getElementById("lang");
+function apply(l){document.documentElement.lang=l;sel.value=l;document.querySelectorAll("[data-i]").forEach(e=>e.textContent=T[l][e.dataset.i]);try{localStorage.setItem("lang",l)}catch(e){}}
+let l="pt-BR";try{l=localStorage.getItem("lang")}catch(e){}
+if(!T[l]){const n=(navigator.language||"pt-BR");l=n.startsWith("es")?"es":n.startsWith("en")?"en":"pt-BR"}
+sel.onchange=()=>apply(sel.value);apply(l);
+document.getElementById("pix").onclick=e=>{navigator.clipboard.writeText("dd226f83-02f0-4c80-bd23-322c9f5fa7ee");const b=e.target;b.textContent=T[sel.value].copied;setTimeout(()=>b.textContent=T[sel.value].pix,1500)}; // gitleaks:allow
+</script></body></html>
