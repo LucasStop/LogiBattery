@@ -64,6 +64,18 @@ final class DeviceDedupeTests: XCTestCase {
         await viewModel.refresh()
         XCTAssertEqual(viewModel.devices.map(\.name), ["MX Master 3S"])
     }
+
+    func testHIDPPReadingBeatsGenericSystemBluetoothReading() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let hidpp = Device(id: "ble:255", name: "MX Master 3S", kind: .mouse, percent: 85,
+                           chargeState: .charging, path: .bluetooth, readAt: now)
+        let generic = Device(id: "bt-hid-MX Master 3S", name: "MX Master 3S", kind: .mouse, percent: 80,
+                             chargeState: .discharging, path: .bluetooth, readAt: now.addingTimeInterval(1))
+        let merged = DeviceDeduplicator.merge([generic, hidpp])
+        XCTAssertEqual(merged.count, 1)
+        XCTAssertEqual(merged.first?.id, "ble:255")
+        XCTAssertEqual(merged.first?.chargeState, .charging)
+    }
 }
 
 private struct FixedScanner: DeviceScanning {
