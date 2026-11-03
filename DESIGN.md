@@ -137,6 +137,7 @@ Todo componente documenta: anatomia, variantes, tamanhos, estados e comportament
 |---|---|---|---|---|---|
 | Botão | primary, secondary, ghost | sm, md | todos | `LogiBattery/UI/Components/` | componente + visual |
 | Switch e stepper (ajustes) | padrão | md | padrão, foco, desabilitado | `LogiBattery/UI/Components/` | componente + a11y |
+| Linha de ajuste com ícone (#67) | quadrado colorido de 24 pt, raio 6 (`r-sm`), SF Symbol branco de 14 pt; cores `blue`, `orange`, `red`, `green`, `purple`, `gray` | md | padrão, foco | `LogiBattery/UI/Settings/` (`Form(.grouped)` + `Section`) | componente + a11y |
 | Cartão de aparelho | mouse, teclado, Mac, fone, genérico | popover, widget | ok, baixo, crítico, carregando, cheio, sem leitura | `LogiBattery/UI/Components/` | componente + visual |
 | Indicador de bateria | célula + número | sm, md, lg | ok, baixo, crítico, carregando, cheio, sem leitura | `LogiBattery/UI/Components/` | componente + visual |
 | Gráfico de histórico | linha por aparelho | popover, widget grande | vazio, carregando, dados | `LogiBattery/UI/Components/` | visual |
