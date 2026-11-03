@@ -33,6 +33,18 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 - Smoke: `xcodebuild build` dos dois alvos (app e widget) e a suíte de unitários, primeiro job do CI. Smoke com hardware, manual, antes de cada release: receptor, Bluetooth e o mesmo aparelho pelos dois caminhos, incluindo trocar o mouse do receptor para o Bluetooth com o app aberto (ele deve aparecer como Bluetooth em até ~15 s, sem reiniciar o app). Receptor: `LOGIBATTERY_HW=1 TEST_RUNNER_LOGIBATTERY_HW=1 xcodebuild test -scheme LogiBattery -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO` roda `HardwareSmokeTests` (pulado sem a variável).
 - Regressão: a suíte completa roda em todo PR. Bug corrigido entra com teste que falha antes da correção, no mesmo PR.
 - Aceitação: cada história do `PRD.md` tem ao menos um teste (ou checagem manual descrita) ligado ao critério de aceite. Mapa em [Rastreabilidade](#5-rastreabilidade).
+- Visual do widget (#64), manual, em todo PR que mexe no widget: pequeno e médio ao lado do Baterias da Apple em cada estilo de Ajustes > Aparência > Estilo dos ícones e widgets, e com Mesa e Dock > Atenuar widgets na mesa. Para ver a mudança: reinstalar, `pkill -x LogiBatteryWidget; killall chronod` e esperar uns 40 s. Prints em `design/screenshots/t01-t02-widget-*.png` (macOS 27, 2026-11-03; na ordem: médio da Apple, nosso médio, nosso pequeno, pequeno da Apple).
+
+  | Estilo | Modo | Esperado | Print |
+  |---|---|---|---|
+  | Tom escuro (sistema escuro) | `.fullColor` | base cinza-escura do sistema, anéis na cor do nível | `tom-escuro` |
+  | Padrão (sistema escuro) | `.fullColor` | igual ao tom escuro | `padrao` |
+  | Padrão (sistema claro) | `.fullColor` | base branca, ícone e texto escuros | `padrao-sistema-claro` |
+  | Translúcido | `.accented` | vidro do sistema, anel na cor do nível, ícone e texto brancos | `translucido` |
+  | Tonalizado | `.accented` | vidro tingido, anel na cor do nível, ícone e texto na cor do tom | `tonalizado` |
+  | Atenuar widgets: sempre | `.vibrant` | ícone e texto dessaturados, anel na cor do nível mais apagada, legível | `atenuado` |
+
+  Limite conhecido: no padrão e no tom escuro o Baterias da Apple mostra o papel de parede atrás e o nosso não. A base translúcida é do sistema, só para widget da Apple; widget de terceiro (o nosso e o Stats) recebe a base opaca (spike da #64 em DESIGN.md §3.7).
 - Exploratório: antes de cada release, 30 min: dormir e acordar o Mac, desligar o aparelho, trocar de receptor, negar a permissão.
 - Não funcionais: desempenho (XCTest measure + Instruments; meta: leitura completa abaixo de 2 s por aparelho), segurança (gitleaks + revisão de entitlements e Keychain), acessibilidade (Accessibility Inspector manual; `performAccessibilityAudit` fora junto com o E2E do popover), compatibilidade (macOS 14 e o mais recente; Apple Silicon e Intel se houver máquina).
 
