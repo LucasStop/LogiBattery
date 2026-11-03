@@ -30,7 +30,8 @@ struct DeviceRow: View {
             Text(device.percent.map { "\($0)%" } ?? "—")
                 .font(.callout.weight(.semibold)).monospacedDigit()
                 .foregroundStyle(gray ? .secondary : .primary)
-            BatteryCell(percent: device.percent, tint: gray ? .secondary : device.tint(thresholds)).frame(width: 44)
+            BatteryCell(percent: device.percent, tint: gray ? .secondary : device.tint(thresholds), gray: gray)
+                .frame(width: 44)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 9)
