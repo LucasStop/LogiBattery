@@ -19,8 +19,18 @@ enum DeviceDeduplicator {
         return order.compactMap { best[$0] }
     }
 
-    /// Mais recente vence; empate fica com o Bluetooth, que é o caminho direto.
+    /// Mais recente vence; no mesmo ciclo de leitura, HID++ direto vence leitura genérica do sistema (`bt-*`) e
+    /// Bluetooth vence receptor. Leitura com percentual vence leitura sem percentual.
     private static func wins(_ candidate: Device, over current: Device) -> Bool {
+        if (candidate.percent != nil) != (current.percent != nil) {
+            return candidate.percent != nil
+        }
+        let candidateIsSystemBT = candidate.id.hasPrefix("bt-")
+        let currentIsSystemBT = current.id.hasPrefix("bt-")
+        if candidateIsSystemBT != currentIsSystemBT,
+           abs(candidate.readAt.timeIntervalSince(current.readAt)) < 5 {
+            return !candidateIsSystemBT
+        }
         if candidate.readAt != current.readAt { return candidate.readAt > current.readAt }
         return candidate.path == .bluetooth && current.path != .bluetooth
     }

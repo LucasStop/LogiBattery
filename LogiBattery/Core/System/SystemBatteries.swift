@@ -1,13 +1,15 @@
 import Foundation
 import IOBluetooth
+import IOKit
 import IOKit.ps
 
-/// Bateria que o próprio macOS já conhece: a do Mac (`IOPowerSources`) e a de fone Bluetooth (`IOBluetooth`).
+/// Bateria que o próprio macOS já conhece: a do Mac (`IOPowerSources`) e a de qualquer periférico Bluetooth
+/// conectado que informe nível por `IORegistry` (`BatteryPercent`, GATT `0x180F` / Apple HID) ou `IOBluetooth` (#88).
 enum SystemBatteries {
     /// IOBluetooth sem garantia de thread: lê na main, junto da UI.
     @MainActor
     static func read(now: Date) -> [Device] {
-        macs(now: now) + headsets(now: now)
+        macs(now: now) + DeviceDeduplicator.merge(ioRegistryBluetooth(now: now) + pairedBluetooth(now: now))
     }
 
     /// Dicionário de `IOPSGetPowerSourceDescription`; só a bateria interna (no-break e afins ficam de fora).
@@ -35,6 +37,76 @@ enum SystemBatteries {
                       chargeState: .unknown, path: .bluetooth, readAt: now)
     }
 
+    /// Aparelho pareado e conectado via `IOBluetoothDevice` (áudio ou periférico com nível nas chaves KVC, #88).
+    static func bluetoothDevice(name: String, major: UInt32, minor: UInt32 = 0,
+                                levels: [Int], now: Date) -> Device? {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard DeviceIdentity.isPrintable(trimmed) else { return nil }
+        let percent = levels.first(where: { $0 > 0 })
+        if major == UInt32(kBluetoothDeviceClassMajorAudio) {
+            return Device(id: "bt-audio-\(trimmed)", name: trimmed, kind: .headphones, percent: percent,
+                          chargeState: .unknown, path: .bluetooth, readAt: now)
+        }
+        guard let percent else { return nil }
+        let kind = kindFromBluetoothClass(major: major, minor: minor, name: trimmed)
+        return Device(id: "bt-dev-\(trimmed)", name: trimmed, kind: kind, percent: percent,
+                      chargeState: .unknown, path: .bluetooth, readAt: now)
+    }
+
+    /// Periférico Bluetooth no `IORegistry` (`AppleDeviceManagementHIDEventService` / `IOHIDDevice`) com
+    /// `BatteryPercent` (Magic Mouse/Keyboard/Trackpad, Keychron, NuPhy, mouses/teclados BLE GATT `0x180F`, #88).
+    static func hidBluetoothDevice(properties: [String: Any], now: Date) -> Device? {
+        let transport = (properties["Transport"] as? String ?? "").lowercased()
+        let isBluetooth = transport.contains("bluetooth")
+            || (properties["BluetoothDevice"] as? Bool == true)
+            || properties["BD_ADDR"] != nil
+        guard isBluetooth,
+              let percent = properties["BatteryPercent"] as? Int, (1...100).contains(percent),
+              let rawName = properties["Product"] as? String else { return nil }
+        let name = rawName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard DeviceIdentity.isPrintable(name) else { return nil }
+        let kind = kindFromHIDProperties(properties, name: name)
+        let isCharging = (properties["IsCharging"] as? Bool == true)
+            || ((properties["BatteryStatusFlags"] as? Int ?? 0) & 0x02 != 0)
+        return Device(id: "bt-hid-\(name)", name: name, kind: kind, percent: percent,
+                      chargeState: isCharging ? .charging : .discharging, path: .bluetooth, readAt: now)
+    }
+
+    private static func kindFromBluetoothClass(major: UInt32, minor: UInt32, name: String) -> DeviceKind {
+        if major == UInt32(kBluetoothDeviceClassMajorAudio) { return .headphones }
+        if major == UInt32(kBluetoothDeviceClassMajorPeripheral) {
+            switch minor & 0x30 {
+            case 0x10, 0x30: return .keyboard
+            case 0x20: return .mouse
+            default: break
+            }
+        }
+        return DeviceKind(name: name)
+    }
+
+    private static func kindFromHIDProperties(_ properties: [String: Any], name: String) -> DeviceKind {
+        var pairs: [(page: Int, usage: Int)] = []
+        if let page = properties["PrimaryUsagePage"] as? Int, let usage = properties["PrimaryUsage"] as? Int {
+            pairs.append((page, usage))
+        }
+        if let list = properties["DeviceUsagePairs"] as? [[String: Any]] {
+            for item in list {
+                if let page = item["DeviceUsagePage"] as? Int, let usage = item["DeviceUsage"] as? Int {
+                    pairs.append((page, usage))
+                }
+            }
+        }
+        if pairs.contains(where: { ($0.page == 0x01 && ($0.usage == 0x06 || $0.usage == 0x07)) }) {
+            return .keyboard
+        }
+        if pairs.contains(where: {
+            ($0.page == 0x01 && ($0.usage == 0x01 || $0.usage == 0x02)) || ($0.page == 0x0D && $0.usage == 0x05)
+        }) {
+            return .mouse
+        }
+        return DeviceKind(name: name)
+    }
+
     private static func macs(now: Date) -> [Device] {
         guard let info = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
               let sources = IOPSCopyPowerSourcesList(info)?.takeRetainedValue() as? [CFTypeRef],
@@ -47,21 +119,39 @@ enum SystemBatteries {
         }
     }
 
+    private static func ioRegistryBluetooth(now: Date) -> [Device] {
+        var iterator: io_iterator_t = 0
+        let matching = IOServiceMatching("IOHIDDevice")
+        guard IOServiceGetMatchingServices(kIOMainPortDefault, matching, &iterator) == KERN_SUCCESS else { return [] }
+        defer { IOObjectRelease(iterator) }
+        var devices: [Device] = []
+        while case let entry = IOIteratorNext(iterator), entry != 0 {
+            defer { IOObjectRelease(entry) }
+            var unmanaged: Unmanaged<CFMutableDictionary>?
+            guard IORegistryEntryCreateCFProperties(entry, &unmanaged, kCFAllocatorDefault, 0) == KERN_SUCCESS,
+                  let properties = unmanaged?.takeRetainedValue() as? [String: Any],
+                  let device = hidBluetoothDevice(properties: properties, now: now) else { continue }
+            devices.append(device)
+        }
+        return devices
+    }
+
     // ponytail: `batteryPercent*` são chaves privadas do IOBluetoothDevice; se uma versão do macOS tirar, o fone só
     // some da lista. Trocar por API pública quando a Apple abrir uma.
     @MainActor
-    private static func headsets(now: Date) -> [Device] {
+    private static func pairedBluetooth(now: Date) -> [Device] {
         (IOBluetoothDevice.pairedDevices() ?? []).compactMap { item in
-            guard let device = item as? IOBluetoothDevice, device.isConnected(),
-                  device.deviceClassMajor == BluetoothDeviceClassMajor(kBluetoothDeviceClassMajorAudio)
-            else { return nil }
+            guard let device = item as? IOBluetoothDevice, device.isConnected() else { return nil }
             func level(_ key: String) -> Int {
                 guard device.responds(to: NSSelectorFromString(key)) else { return 0 }
                 return device.value(forKey: key) as? Int ?? 0
             }
-            return headset(name: device.name ?? "Bluetooth", single: level("batteryPercentSingle"),
-                           combined: level("batteryPercentCombined"),
-                           buds: [level("batteryPercentLeft"), level("batteryPercentRight")], now: now)
+            let levels = [level("batteryPercentSingle"), level("batteryPercentCombined"),
+                          level("batteryPercentLeft"), level("batteryPercentRight")].filter { $0 > 0 }
+            return bluetoothDevice(name: device.name ?? "Bluetooth",
+                                   major: UInt32(device.deviceClassMajor),
+                                   minor: UInt32(device.deviceClassMinor),
+                                   levels: levels, now: now)
         }
     }
 }

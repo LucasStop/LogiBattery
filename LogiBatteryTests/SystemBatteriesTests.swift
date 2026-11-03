@@ -65,4 +65,47 @@ final class SystemBatteriesTests: XCTestCase {
         XCTAssertNil(headset.percent)
         XCTAssertEqual(headset.id, "bt-audio-X")
     }
+
+    func testHIDBluetoothKeyboardAndMouseFromIORegistry() throws {
+        let keyboard = try XCTUnwrap(SystemBatteries.hidBluetoothDevice(properties: [
+            "Transport": "Bluetooth Low Energy",
+            "Product": "Keychron K2",
+            "BatteryPercent": 74,
+            "PrimaryUsagePage": 0x01,
+            "PrimaryUsage": 0x06
+        ], now: now))
+        XCTAssertEqual(keyboard.name, "Keychron K2")
+        XCTAssertEqual(keyboard.kind, .keyboard)
+        XCTAssertEqual(keyboard.percent, 74)
+        XCTAssertEqual(keyboard.chargeState, .discharging)
+        XCTAssertEqual(keyboard.path, .bluetooth)
+
+        let trackpad = try XCTUnwrap(SystemBatteries.hidBluetoothDevice(properties: [
+            "Transport": "Bluetooth",
+            "Product": "Magic Trackpad",
+            "BatteryPercent": 58,
+            "IsCharging": true,
+            "DeviceUsagePairs": [["DeviceUsagePage": 0x0D, "DeviceUsage": 0x05]]
+        ], now: now))
+        XCTAssertEqual(trackpad.kind, .mouse)
+        XCTAssertEqual(trackpad.chargeState, .charging)
+
+        XCTAssertNil(SystemBatteries.hidBluetoothDevice(properties: [
+            "Transport": "USB",
+            "Product": "Wired Mouse",
+            "BatteryPercent": 100
+        ], now: now))
+    }
+
+    func testBluetoothPeripheralFromIOBluetoothClass() throws {
+        let mouse = try XCTUnwrap(SystemBatteries.bluetoothDevice(
+            name: "Magic Mouse", major: 0x05, minor: 0x20,
+            levels: [82], now: now))
+        XCTAssertEqual(mouse.kind, .mouse)
+        XCTAssertEqual(mouse.percent, 82)
+
+        XCTAssertNil(SystemBatteries.bluetoothDevice(
+            name: "Magic Mouse", major: 0x05, minor: 0x20,
+            levels: [], now: now))
+    }
 }

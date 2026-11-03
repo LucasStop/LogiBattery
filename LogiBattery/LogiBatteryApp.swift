@@ -72,11 +72,12 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
 private let discovery = HIDDiscovery()
 
 /// Descobre as interfaces a cada leitura: receptor ou aparelho conectado agora aparece sem reiniciar o app.
-/// Soma a bateria do Mac e do fone Bluetooth, que o macOS já conhece.
+/// Soma a bateria do Mac e de qualquer periférico Bluetooth conectado no macOS, deduplicando com HID++ (#88).
 private struct LiveScanner: DeviceScanning {
     func scan() async -> [Device] {
         let peripherals = await DeviceScanner(endpoints: discovery.endpoints()).scan()
-        return await peripherals + SystemBatteries.read(now: .now)
+        let system = await SystemBatteries.read(now: .now)
+        return DeviceDeduplicator.merge(peripherals + system)
     }
 }
 
