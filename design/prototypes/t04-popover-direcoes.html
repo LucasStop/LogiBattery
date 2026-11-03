@@ -1,0 +1,67 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T04 · Popover, direções A e B</title><link rel="stylesheet" href="proto.css">
+<style>
+/* Só deste protótipo (#66). Materiais aproximados: o vidro real (glassEffect) só existe no app. */
+.theme.light{--shell:rgba(246,246,248,.88);--shell-edge:rgba(0,0,0,.12);--g-bg:rgba(255,255,255,.34);--g-edge:rgba(255,255,255,.75);--g-hi:rgba(255,255,255,.95);--m-bg:rgba(255,255,255,.72);--m-edge:rgba(0,0,0,.06);--hair:rgba(0,0,0,.09);--track:rgba(0,0,0,.09);--wall:linear-gradient(135deg,#8fb4ff,#f3a6c8 55%,#ffd48a)}
+.theme.dark{--shell:rgba(36,36,40,.88);--shell-edge:rgba(255,255,255,.14);--g-bg:rgba(255,255,255,.09);--g-edge:rgba(255,255,255,.24);--g-hi:rgba(255,255,255,.34);--m-bg:rgba(70,70,76,.62);--m-edge:rgba(255,255,255,.08);--hair:rgba(255,255,255,.1);--track:rgba(255,255,255,.14);--wall:linear-gradient(135deg,#1b2a52,#4a2a63 55%,#6a3a2a)}
+.mat{display:grid;gap:var(--s2);justify-items:start}
+.stage{background:var(--wall);padding:var(--s4);border-radius:var(--r-lg)}
+.pop2{width:320px;display:grid;gap:var(--s2);padding:var(--s2);border-radius:20px;background:var(--shell);border:1px solid var(--shell-edge);box-shadow:0 12px 32px rgba(0,0,0,.28);backdrop-filter:blur(40px) saturate(1.6)}
+.pop2 .top{display:flex;justify-content:space-between;align-items:baseline;padding:var(--s1) var(--s2) 0}
+.sec{border-radius:14px;overflow:hidden}
+.glass .sec{background:var(--g-bg);border:1px solid var(--g-edge);box-shadow:inset 0 1px 0 var(--g-hi),0 1px 6px rgba(0,0,0,.1);backdrop-filter:blur(18px) saturate(2)}
+.regm .sec{background:var(--m-bg);border:1px solid var(--m-edge);backdrop-filter:blur(30px) saturate(1.5)}
+.sec>*+*{border-top:1px solid var(--hair)}
+/* A: linha estilo Central de Controle */
+.rowA{display:flex;align-items:center;gap:var(--s3);padding:10px var(--s3)}
+.bub{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--lvl,var(--disabled)) 22%,var(--track));color:var(--fg)}
+.bub .sf{font-size:20px}
+.rowA .nm{flex:1;min-width:0}.rowA .nm b{display:block;font-size:13px;line-height:16px}
+.rowA .pct,.rowL .pct{font-size:13px}
+/* B: anéis no topo, lista embaixo */
+.strip{display:grid;grid-template-columns:repeat(4,1fr);padding:var(--s4) var(--s2) var(--s3)}
+.strip .slot{gap:8px}
+.pr{position:relative;width:56px;aspect-ratio:1;display:grid;place-items:center;color:var(--fg)}
+.pr::before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(var(--lvl,var(--track)) calc(var(--p,0)*1%),var(--track) 0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5.5px))}
+.pr .sf{font-size:22px}
+.strip .pct{font-size:15px;line-height:18px}
+.rowL{display:flex;align-items:center;gap:var(--s3);padding:9px var(--s3)}
+.rowL .nm{flex:1;min-width:0}.rowL .nm b{display:block;font-size:13px;line-height:16px}
+/* rodapé, vazio e erro */
+.act{display:flex;justify-content:space-between;align-items:center;padding:8px var(--s3);font-size:13px;color:var(--fg)}
+.act .chev{color:var(--muted)}
+.sec .empty,.sec .banner{background:none;border-radius:0}
+.sec .banner{border-left:0;padding:var(--s3)}
+.rec{max-width:78ch;padding:var(--s3) var(--s4);border-left:3px solid #0a64f0;background:#fff;border-radius:var(--r-sm);margin:0 0 var(--s5)}
+.sk{display:inline-block;width:34px;height:13px;border-radius:4px;background:var(--track)}
+h3.dir{font-size:15px;margin:0 0 var(--s2)}
+</style></head><body>
+<h1>T04 · Popover, direções A e B (#66)</h1>
+<p class="lead">Popover da barra de menus no visual nativo da Apple, em duas direções, com os ícones próprios da F3 (selo de conexão dentro do símbolo, sem <code>TransportBadge</code>). Sem mudança de comportamento: mesmas leituras, mesma ordem (menor nível primeiro), Histórico, Ajustes e Sair. Cada estado mostra as duas variantes de material: <b>glassEffect</b> nas seções (macOS 26+) e <b>.regularMaterial</b> (macOS 14 e 15), em claro e escuro, sobre um papel de parede para o vidro aparecer. Nomes e valores fictícios. O original continua em <a href="t04-popover.html">t04-popover.html</a>.</p>
+<div class="rec"><b>Recomendação: A.</b> Uma linha por aparelho já traz ícone com o selo, nome, estado, hora da leitura e percentual, sem repetir informação. B mostra cada aparelho duas vezes (anel e lista), cresce cerca de 100 pt em altura e a faixa tem 4 posições fixas, então não escala com 5 ou mais aparelhos. B só ganha na leitura de relance, que o widget médio já entrega. Ponto aberto: <code>other</code> assumido com símbolo próprio (<code>lb.other.bluetooth</code>, desenhado aqui só como aproximação) conforme a #75.</div>
+<div id="root"></div>
+<script src="symbols.js"></script><script src="custom-symbols.js"></script>
+<script>
+// lb.other.bluetooth (aproximação para o protótipo; o oficial sai de design/symbols/make.py, #75)
+{const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><defs><mask id="m"><rect width="24" height="24" fill="#fff"/><circle cx="18" cy="18" r="6.4" fill="#000"/></mask></defs><g mask="url(#m)" fill="none" stroke="#000" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="1.6" fill="#000" stroke="none"/><path d="M7.4 7.4a5.1 5.1 0 0 0 0 7.2M14.6 7.4a5.1 5.1 0 0 1 0 7.2M4.6 4.6a9 9 0 0 0 0 12.8M17.4 4.6a9 9 0 0 1 0 12.8"/></g><path d="m15.6 15.6 4.8 4.8-2.4 2V13.6l2.4 2-4.8 4.8" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+SF['lb.other.bluetooth']={w:24,h:24,d:'data:image/svg+xml;base64,'+btoa(svg)};}
+const D=[{n:'MX Master 3S',i:'lb.mouse.bluetooth',p:18,c:'low',s:'Baixa'},{n:'PRO X TKL',i:'lb.keyboard.receiver',p:52,c:'ok',s:''},{n:'Logitech Pebble',i:'lb.other.bluetooth',p:64,c:'ok',s:''},{n:'MX Keys Mini',i:'lb.keyboard.bluetooth',p:78,c:'chg',s:'Carregando'}];
+const lab=d=>`${d.n}, ${d.p}%${d.s?', '+d.s.toLowerCase():''}`;
+const sub=(d,l)=>(d.s&&!l?`<span class="lvl">${d.s}</span> · `:'')+'há 1 min';
+const cell=(p,l)=>`<span class="cell" style="--p:${l?0:p}"><i></i></span>`;
+const pct=(d,l)=>l?'<span class="sk"></span>':`${d.p}%`;
+const bar='<div class="menubar"><span class="cell low" style="--p:18"><i></i></span><span class="pct">18%</span></div>';
+const foot='<div class="sec"><div class="act">Histórico<span class="chev">›</span></div><div class="act">Ajustes…<span class="chev">›</span></div><div class="act">Sair</div></div>';
+const hdr=c=>`<div class="top"><b class="h3">LogiBattery</b><span class="caption">${c}</span></div>`;
+const rowA=(d,l)=>`<div class="rowA ${l?'none':d.c}" role="group" aria-label="${lab(d)}"><span class="bub" data-i="${d.i}"></span><div class="nm"><b>${d.n}</b><span class="caption">${sub(d,l)}</span></div><span class="pct">${pct(d,l)}</span>${cell(d.p,l)}</div>`;
+const rowL=(d,l)=>`<div class="rowL ${l?'none':d.c}" role="group" aria-label="${lab(d)}"><div class="nm"><b>${d.n}</b><span class="caption">${sub(d,l)}</span></div><span class="pct">${pct(d,l)}</span>${cell(d.p,l)}</div>`;
+const slot=(d,l)=>`<div class="slot ${l?'none':d.c}"><div class="pr" style="--p:${l?0:d.p}"><span data-i="${d.i}"></span></div><span class="pct">${pct(d,l)}</span></div>`;
+const empty='<div class="empty"><b>Nenhum aparelho Logitech encontrado</b>Ligue o mouse ou o teclado, ou conecte o receptor USB.</div>';
+const err='<div class="banner" role="alert"><div><b>Permissão necessária</b><span class="muted">O macOS bloqueou o Monitoramento de Entrada. Sem ela não dá para ler a bateria.</span><div style="margin-top:8px"><button class="btn primary">Abrir Privacidade</button></div></div></div>';
+const body={
+ A:{padrao:`<div class="sec">${D.map(d=>rowA(d)).join('')}</div>`,carregando:`<div class="sec">${D.slice(0,3).map(d=>rowA(d,1)).join('')}</div>`},
+ B:{padrao:`<div class="sec"><div class="strip" aria-hidden="true">${D.map(d=>slot(d)).join('')}</div></div><div class="sec">${D.map(d=>rowL(d)).join('')}</div>`,carregando:`<div class="sec"><div class="strip" aria-hidden="true">${D.map(d=>slot(d,1)).join('')}</div></div><div class="sec">${D.slice(0,3).map(d=>rowL(d,1)).join('')}</div>`}};
+const st=[['padrao','Padrão (um item por aparelho, mesmo por receptor e Bluetooth)','Atualizado há 1 min'],['vazio','Vazio','Sem leituras'],['carregando','Carregando (placeholder após 300 ms, nunca zero)','Lendo…'],['erro','Erro de permissão','Sem acesso']];
+const pop=(dir,k,cap,m)=>{const b=k==='vazio'?`<div class="sec">${empty}</div>`:k==='erro'?`<div class="sec">${err}</div>`:body[dir][k];
+ return `<div class="mat"><p class="tag">${m==='glass'?'glassEffect · macOS 26+':'.regularMaterial · macOS 14 e 15'}</p><div class="stage ${m==='glass'?'glass':'regm'}">${bar}<div class="pop2" style="margin-top:8px">${hdr(cap)}${b}${foot}</div></div></div>`};
+document.getElementById('root').innerHTML=[['A','A · Linhas no estilo Central de Controle'],['B','B · Anéis do widget médio no topo, lista embaixo']].map(([dir,t])=>`<h3 class="dir">${t}</h3>`+st.map(([k,h,cap])=>`<section class="state"><h2>${h}</h2><div class="pair">${pop(dir,k,cap,'glass')}${pop(dir,k,cap,'reg')}</div></section>`).join('')).join('');
+</script><script src="proto.js"></script></body></html>
