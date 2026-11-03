@@ -94,3 +94,10 @@ h1{font-size:22px;line-height:28px;margin:0 0 var(--s1)}
 .slot .pct{font-size:16px;line-height:19px;color:var(--fg);display:flex;align-items:center;gap:3px}
 .none .pct{color:var(--muted)}
 .slot .pct .via{color:var(--muted);line-height:0}.slot .pct .via svg{width:11px;height:11px}
+
+/* símbolos compostos de protótipo (#75): base + selo de conexão no canto de baixo à direita */
+.cs{position:relative;display:inline-block;width:26px;height:26px;line-height:0}
+.cs>.sf,.cs>svg{position:absolute;left:0;top:0;font-size:24px}
+.cs>svg{width:26px;height:26px}
+.cs .bdg{position:absolute;right:-5px;bottom:-5px;width:14px;height:14px;border-radius:50%;background:var(--surface);display:grid;place-items:center}
+.cs .bdg svg{width:11px;height:11px;stroke-width:2.2}
