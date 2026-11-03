@@ -110,6 +110,15 @@ final class SnapshotContractTests: XCTestCase {
         XCTAssertEqual(ordered.map(\.id), ["mac", "c", "a"])
     }
 
+    /// #100: aparelho que não respondeu ao último scan (leitura mais velha que o resto) vai para o fim, mesmo com
+    /// nível menor.
+    func testWidgetOrderPutsUnseenDevicesLast() {
+        let stale = Device(id: "g305", name: "G305", kind: .mouse, percent: 10, chargeState: .discharging,
+                           path: .receiver, readAt: now.addingTimeInterval(-27 * 60))
+        let ordered = Snapshot.widgetOrder([stale, device("a", percent: 80), device("b", percent: 50)])
+        XCTAssertEqual(ordered.map(\.id), ["b", "a", "g305"])
+    }
+
     func testMacAndHeadphonesRoundTrip() throws {
         let store = SnapshotStore(directory: directory)
         let mac = Device(id: "mac", name: "MacBook", kind: .laptop, percent: 90, chargeState: .charging,
