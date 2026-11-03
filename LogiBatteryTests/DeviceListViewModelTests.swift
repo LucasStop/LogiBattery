@@ -101,3 +101,41 @@ private final class CountingScanner: DeviceScanning, @unchecked Sendable {
         return []
     }
 }
+
+/// Teclado Lightspeed dorme ~12 s parado e não responde à leitura; a lista mantém a última leitura dele.
+@MainActor
+final class KeepLastReadingTests: XCTestCase {
+    private func keyboard(_ readAt: Date, id: String = "usb-c547-1:1") -> Device {
+        Device(id: id, name: "PRO X TKL", kind: .keyboard, percent: 77, chargeState: .discharging, path: .receiver,
+               readAt: readAt)
+    }
+
+    private func mouse(_ readAt: Date) -> Device {
+        Device(id: "usb-c548-2:2", name: "MX Master 3S", kind: .mouse, percent: 90, chargeState: .discharging,
+               path: .receiver, readAt: readAt)
+    }
+
+    func testSleepingDeviceKeepsLastReading() async {
+        let now = Date.now
+        let viewModel = DeviceListViewModel(scanner: ScriptedScanner([[mouse(now), keyboard(now)], [mouse(now)]]))
+        await viewModel.refresh()
+        await viewModel.refresh()
+        XCTAssertEqual(viewModel.devices.map(\.name), ["PRO X TKL", "MX Master 3S"])
+        XCTAssertEqual(viewModel.devices.first?.readAt, now)
+    }
+
+    func testReadingOlderThanADayIsDropped() async {
+        let old = Date.now.addingTimeInterval(-DeviceListViewModel.keepFor - 60)
+        let viewModel = DeviceListViewModel(scanner: ScriptedScanner([[keyboard(old)], []]))
+        await viewModel.refresh()
+        await viewModel.refresh()
+        XCTAssertEqual(viewModel.devices, [])
+    }
+
+    func testDeviceBackWithNewIdReplacesKeptReading() async {
+        let back = keyboard(.now, id: "ble-b382-3:255")
+        let viewModel = DeviceListViewModel(scanner: ScriptedScanner([[keyboard(.now)], [], [back]]))
+        for _ in 0..<3 { await viewModel.refresh() }
+        XCTAssertEqual(viewModel.devices, [back])
+    }
+}

@@ -85,3 +85,38 @@ final class SnapshotContractTests: XCTestCase {
         XCTAssertEqual(ordered.map(\.id), ["c", "a", "b"])
     }
 }
+
+/// O widget só recarrega quando muda o que ele mostra: recarregar a cada leitura esgota o orçamento do WidgetKit.
+final class WidgetReloadTests: XCTestCase {
+    private let now = Date(timeIntervalSince1970: 1_800_000_000)
+
+    private func device(_ name: String, _ percent: Int?, _ path: DevicePath = .receiver,
+                        minutesAgo: Double = 0) -> Device {
+        Device(id: UUID().uuidString, name: name, kind: .mouse, percent: percent, chargeState: .discharging,
+               path: path, readAt: now.addingTimeInterval(-minutesAgo * 60))
+    }
+
+    func testNewReadingTimeAloneDoesNotReload() {
+        let old = [device("MX Master 3S", 90, minutesAgo: 1), device("PRO X TKL", 77, minutesAgo: 5)]
+        let new = [device("PRO X TKL", 77, minutesAgo: 5), device("MX Master 3S", 90)]
+        XCTAssertFalse(Snapshot.meaningfullyDiffers(old, new, at: now))
+    }
+
+    func testPercentPathOrDeviceSetChangeReloads() {
+        let old = [device("MX Master 3S", 90)]
+        XCTAssertTrue(Snapshot.meaningfullyDiffers(old, [device("MX Master 3S", 89)], at: now))
+        XCTAssertTrue(Snapshot.meaningfullyDiffers(old, [device("MX Master 3S", 90, .bluetooth)], at: now))
+        XCTAssertTrue(Snapshot.meaningfullyDiffers(old, old + [device("PRO X TKL", 77)], at: now))
+        XCTAssertTrue(Snapshot.meaningfullyDiffers(old, [], at: now))
+    }
+
+    func testOldReadingTurningFreshReloads() {
+        let old = [device("PRO X TKL", 77, minutesAgo: 40)]
+        XCTAssertTrue(Snapshot.meaningfullyDiffers(old, [device("PRO X TKL", 77)], at: now))
+    }
+
+    func testReadingTurnsOldAfterThirtyMinutes() {
+        XCTAssertFalse(device("PRO X TKL", 77, minutesAgo: 29).isOld(at: now))
+        XCTAssertTrue(device("PRO X TKL", 77, minutesAgo: 31).isOld(at: now))
+    }
+}

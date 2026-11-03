@@ -112,6 +112,7 @@ Por componente, registrar em `design/components.md` a anatomia e a regra de uso;
 - Navegação: ícone na barra de menu abre o popover; ajustes em janela própria; profundidade máxima 2.
 - Listas: aparelhos ordenados do menor para o maior nível; sem busca nem paginação.
 - Widget: três tamanhos; o pequeno mostra até 4 aparelhos em anéis com o percentual embaixo, o médio até 3, o grande a lista e o gráfico.
+- Leitura velha: aparelho sem leitura nova há mais de 30 min (dormindo ou fora de alcance) continua na lista com a hora da última leitura, e anel, número e célula ficam em `muted` (`.secondary`), no widget e no popover. Volta à cor na primeira leitura nova. Aprovado por Lucas em 2026-11-03.
 
 ## 6. Acessibilidade
 - Meta: WCAG 2.2 AA.
@@ -150,6 +151,7 @@ Nenhuma tela é desenvolvida sem protótipo aprovado. O inventário e o status d
 
 ## Histórico
 - 2026-10-27: criação do design system (rascunho).
+- 2026-11-03: leitura com mais de 30 min em cinza (widget e popover).
 
 ## Ícone do app
 Opção A aprovada por Lucas em 2026-10-29: anel de carga verde (gradiente `#5EE59A` a `#1F9D55`) sobre fundo escuro `#1C2333`/`#0B0F19`, com raio branco no centro. Fonte em `design/icon/appicon.svg` (1024 pt, margem de 100 pt); os PNGs de `LogiBattery/Assets.xcassets/AppIcon.appiconset` saem dela com `rsvg-convert`.

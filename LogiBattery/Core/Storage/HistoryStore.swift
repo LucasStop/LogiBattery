@@ -29,7 +29,8 @@ struct HistoryStore: Sendable {
         SnapshotStore.appGroup.map { HistoryStore(directory: $0.directory) }
     }
 
-    /// Guarda um ponto quando o valor ou o estado mudou, ou depois de `minInterval` sem mudança.
+    /// Guarda um ponto, no instante da leitura, quando o valor ou o estado mudou ou depois de `minInterval` sem
+    /// mudança. Leitura mantida de aparelho dormindo não é mais nova que o último ponto e fica de fora.
     func record(_ devices: [Device], at now: Date) throws {
         let cutoff = now.addingTimeInterval(-Self.retention)
         let stored = load()
@@ -37,10 +38,16 @@ struct HistoryStore: Sendable {
         var latest = Dictionary(points.map { ($0.identity, $0) }, uniquingKeysWith: { _, new in new })
         for device in devices {
             guard let percent = device.percent else { continue }
-            if let last = latest[device.identity], last.percent == percent, last.chargeState == device.chargeState,
-               now.timeIntervalSince(last.timestamp) < Self.minInterval { continue }
+            if let last = latest[device.identity] {
+                // O JSON guarda segundos inteiros: até 1 s depois do último ponto é a mesma leitura.
+                let elapsed = device.readAt.timeIntervalSince(last.timestamp)
+                if elapsed < 1 { continue }
+                if last.percent == percent, last.chargeState == device.chargeState, elapsed < Self.minInterval {
+                    continue
+                }
+            }
             let point = HistoryPoint(deviceId: device.id, deviceName: device.name, percent: percent,
-                                     chargeState: device.chargeState, timestamp: now)
+                                     chargeState: device.chargeState, timestamp: device.readAt)
             points.append(point)
             latest[device.identity] = point
         }

@@ -16,9 +16,9 @@ final class ConnectionSwitchTests: XCTestCase {
         try? FileManager.default.removeItem(at: directory)
     }
 
-    private func device(_ name: String, _ percent: Int, _ path: DevicePath, id: String) -> Device {
+    private func device(_ name: String, _ percent: Int, _ path: DevicePath, id: String, step: Int = 0) -> Device {
         Device(id: id, name: name, kind: name.contains("Master") ? .mouse : .keyboard, percent: percent,
-               chargeState: .discharging, path: path, readAt: start)
+               chargeState: .discharging, path: path, readAt: start.addingTimeInterval(Double(step) * 300))
     }
 
     func testSwitchingConnectionKeepsOneRowOneSeriesAndRightMenuPercent() async throws {
@@ -26,10 +26,12 @@ final class ConnectionSwitchTests: XCTestCase {
         let keyboard = "PRO X TKL"
         let steps: [[Device]] = [
             [device(mouse, 90, .receiver, id: "usb-c548-1:2"), device(keyboard, 78, .receiver, id: "usb-c547-2:1")],
-            [device(mouse, 90, .bluetooth, id: "ble-b034-3:255"), device(keyboard, 78, .receiver, id: "usb-c547-2:1")],
-            [device(mouse, 90, .bluetooth, id: "ble-b034-3:255"),
-             device(keyboard, 77, .bluetooth, id: "ble-b382-4:255")],
-            [device(mouse, 89, .receiver, id: "usb-c548-5:2"), device(keyboard, 77, .receiver, id: "usb-c547-6:1")]
+            [device(mouse, 90, .bluetooth, id: "ble-b034-3:255", step: 1),
+             device(keyboard, 78, .receiver, id: "usb-c547-2:1", step: 1)],
+            [device(mouse, 90, .bluetooth, id: "ble-b034-3:255", step: 2),
+             device(keyboard, 77, .bluetooth, id: "ble-b382-4:255", step: 2)],
+            [device(mouse, 89, .receiver, id: "usb-c548-5:2", step: 3),
+             device(keyboard, 77, .receiver, id: "usb-c547-6:1", step: 3)]
         ]
         let history = HistoryStore(directory: directory)
         let snapshots = SnapshotStore(directory: directory)
@@ -67,7 +69,7 @@ final class ConnectionSwitchTests: XCTestCase {
     func testSwitchingPathDoesNotDuplicateUnchangedHistoryPoint() throws {
         let history = HistoryStore(directory: directory)
         try history.record([device("PRO X TKL", 78, .receiver, id: "usb-c547-2:1")], at: start)
-        let moved = device("PRO X TKL", 78, .bluetooth, id: "ble-b382-4:255")
+        let moved = device("PRO X TKL", 78, .bluetooth, id: "ble-b382-4:255", step: 1)
         try history.record([moved], at: start.addingTimeInterval(60))
         XCTAssertEqual(history.points(since: .distantPast).count, 1)
     }
@@ -79,7 +81,7 @@ final class ConnectionSwitchTests: XCTestCase {
     }
 }
 
-private final class ScriptedScanner: DeviceScanning, @unchecked Sendable {
+final class ScriptedScanner: DeviceScanning, @unchecked Sendable {
     private let lock = NSLock()
     private var steps: [[Device]]
 

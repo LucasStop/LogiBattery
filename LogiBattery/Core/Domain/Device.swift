@@ -89,6 +89,11 @@ enum DeviceIdentity {
 
 extension Device {
     var identity: String { DeviceIdentity.key(name) }
+
+    /// Leitura mantida de aparelho que dorme ou saiu de alcance; widget e popover mostram em cinza (DESIGN.md).
+    func isOld(at date: Date) -> Bool {
+        date.timeIntervalSince(readAt) > Snapshot.staleAfter
+    }
 }
 
 enum BatteryLevel: Equatable, Sendable {

@@ -18,6 +18,18 @@ struct Snapshot: Codable, Equatable, Sendable {
     static func widgetOrder(_ devices: [Device]) -> [Device] {
         devices.sorted { ($0.percent ?? .max) < ($1.percent ?? .max) }
     }
+
+    /// Muda o que o widget mostra? `readAt` avança a cada leitura e não conta (o "há X min" anda pela timeline);
+    /// recarregar o widget a cada leitura esgota o orçamento do WidgetKit.
+    static func meaningfullyDiffers(_ old: [Device], _ new: [Device], at date: Date) -> Bool {
+        func shown(_ devices: [Device]) -> Set<[String]> {
+            Set(devices.map {
+                [$0.identity, $0.percent.map(String.init) ?? "", $0.chargeState.rawValue, $0.path.rawValue,
+                 $0.kind.rawValue, String($0.isOld(at: date))]
+            })
+        }
+        return shown(old) != shown(new)
+    }
 }
 
 struct SnapshotStore: Sendable {
