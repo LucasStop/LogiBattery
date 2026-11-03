@@ -49,8 +49,9 @@ struct BatteryCell: View {
 
 extension Device {
     /// Cor do nível; carregando usa `info` (DESIGN.md), igual ao protótipo.
-    var tint: Color {
-        chargeState == .charging ? Color(light: 0x2B6CB0, dark: 0x63B3ED) : BatteryLevel(percent: percent).color
+    func tint(_ thresholds: BatteryThresholds) -> Color {
+        chargeState == .charging ? Color(light: 0x2B6CB0, dark: 0x63B3ED)
+            : BatteryLevel(percent: percent, thresholds: thresholds).color
     }
 
     var symbolName: String {

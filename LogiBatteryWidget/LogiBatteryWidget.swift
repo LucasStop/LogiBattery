@@ -38,16 +38,19 @@ struct BatteryWidgetView: View {
 
     private var devices: [Device] { Snapshot.widgetOrder(entry.snapshot?.devices ?? []) }
     private var isStale: Bool { entry.snapshot?.isStale(at: entry.date) ?? false }
+    private var thresholds: BatteryThresholds { entry.snapshot?.levelThresholds ?? BatteryThresholds() }
 
     var body: some View {
         Group {
             if devices.isEmpty {
                 EmptyWidget()
             } else if family == .systemSmall {
-                SmallWidget(devices: Array(devices.prefix(4)), isStale: isStale, date: entry.date)
+                SmallWidget(devices: Array(devices.prefix(4)), isStale: isStale, date: entry.date,
+                            thresholds: thresholds)
             } else {
                 ListWidget(devices: Array(devices.prefix(family == .systemMedium ? 3 : 4)), isStale: isStale,
-                           date: entry.date, series: family == .systemLarge ? entry.series : [])
+                           date: entry.date, thresholds: thresholds,
+                           series: family == .systemLarge ? entry.series : [])
             }
         }
         .containerBackground(.fill.tertiary, for: .widget)
@@ -69,18 +72,20 @@ private struct SmallWidget: View {
     let devices: [Device]
     let isStale: Bool
     let date: Date
+    let thresholds: BatteryThresholds
 
     var body: some View {
         let columns = [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)]
         LazyVGrid(columns: columns, spacing: 8) {
             ForEach(devices) { device in
                 let gray = isStale || device.isOld(at: date)
+                let level = BatteryLevel(percent: device.percent, thresholds: thresholds)
                 VStack(spacing: 2) {
                     ZStack {
                         Circle().stroke(.quaternary, lineWidth: 5)
                         Circle()
                             .trim(from: 0, to: CGFloat(min(max(device.percent ?? 0, 0), 100)) / 100)
-                            .stroke(gray ? .secondary : device.tint,
+                            .stroke(gray ? .secondary : device.tint(thresholds),
                                     style: StrokeStyle(lineWidth: 5, lineCap: .round))
                             .rotationEffect(.degrees(-90))
                         Image(systemName: device.symbolName).font(.system(size: 15)).foregroundStyle(.secondary)
@@ -90,7 +95,7 @@ private struct SmallWidget: View {
                         TransportBadge(path: device.path)
                         Text(device.percent.map { "\($0)%" } ?? "—")
                             .font(.system(size: 13, weight: .semibold)).monospacedDigit()
-                            .foregroundStyle(gray ? .secondary : BatteryLevel(percent: device.percent).color)
+                            .foregroundStyle(gray ? .secondary : level.color)
                     }
                 }
                 .accessibilityElement(children: .ignore)
@@ -105,6 +110,7 @@ private struct ListWidget: View {
     let devices: [Device]
     let isStale: Bool
     let date: Date
+    let thresholds: BatteryThresholds
     let series: [HistorySeries]
 
     var body: some View {
@@ -113,6 +119,7 @@ private struct ListWidget: View {
                 .font(.caption).foregroundStyle(.secondary)
             ForEach(devices) { device in
                 let gray = isStale || device.isOld(at: date)
+                let level = BatteryLevel(percent: device.percent, thresholds: thresholds)
                 HStack(spacing: 8) {
                     Image(systemName: device.symbolName).foregroundStyle(.secondary).frame(width: 18)
                     VStack(alignment: .leading, spacing: 2) {
@@ -124,11 +131,11 @@ private struct ListWidget: View {
                         }
                     }
                     Spacer(minLength: 4)
-                    StatusLine(device: device, isStale: gray)
+                    StatusLine(device: device, isStale: gray, level: level)
                     Text(device.percent.map { "\($0)%" } ?? "—")
                         .font(.title3.weight(.semibold)).monospacedDigit()
-                        .foregroundStyle(gray ? .secondary : BatteryLevel(percent: device.percent).color)
-                    BatteryCell(percent: device.percent, tint: gray ? .secondary : device.tint)
+                        .foregroundStyle(gray ? .secondary : level.color)
+                    BatteryCell(percent: device.percent, tint: gray ? .secondary : device.tint(thresholds))
                         .frame(width: 44)
                 }
                 .accessibilityElement(children: .combine)
@@ -144,14 +151,15 @@ private struct ListWidget: View {
 private struct StatusLine: View {
     let device: Device
     let isStale: Bool
+    let level: BatteryLevel
 
     var body: some View {
         if isStale {
             Text("widget.stale").font(.caption2).foregroundStyle(.secondary)
         } else if let label = device.chargeState.labelKey {
             Text(label).font(.caption2).foregroundStyle(.secondary)
-        } else if let label = BatteryLevel(percent: device.percent).labelKey {
-            Text(label).font(.caption2).foregroundStyle(BatteryLevel(percent: device.percent).color)
+        } else if let label = level.labelKey {
+            Text(label).font(.caption2).foregroundStyle(level.color)
         }
     }
 }

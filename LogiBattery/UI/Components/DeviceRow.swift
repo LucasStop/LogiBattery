@@ -5,7 +5,8 @@ struct DeviceRow: View {
     let device: Device
 
     var body: some View {
-        let level = BatteryLevel(percent: device.percent)
+        let thresholds = SettingsModel.shared.values.thresholds
+        let level = BatteryLevel(percent: device.percent, thresholds: thresholds)
         // Leitura velha (aparelho dormindo ou fora de alcance) fica cinza, como no widget.
         let gray = device.isOld(at: .now)
         HStack(spacing: 8) {
@@ -27,7 +28,7 @@ struct DeviceRow: View {
             }
             Text(device.percent.map { "\($0)%" } ?? "—")
                 .font(.title3.weight(.semibold)).monospacedDigit()
-            BatteryCell(percent: device.percent, tint: gray ? .secondary : device.tint).frame(width: 44)
+            BatteryCell(percent: device.percent, tint: gray ? .secondary : device.tint(thresholds)).frame(width: 44)
         }
         .padding(8)
         .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))

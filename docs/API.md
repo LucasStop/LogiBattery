@@ -40,14 +40,15 @@ Formato único (RFC 9457, `application/problem+json`): `type`, `title`, `status`
 - Depreciação: o host e o widget são entregues juntos; campo removido só depois de duas versões.
 
 ## 6. Limites e desempenho
-- Tamanho máximo do snapshot: 64 KB. Atualização do widget: a cada leitura, por `reloadAllTimelines()`.
+- Tamanho máximo do snapshot: 64 KB. O snapshot é regravado a cada leitura; o widget só recarrega (`reloadAllTimelines()`) quando muda o que ele mostra ou os limites (ver ARCHITECTURE §4).
 
 ## 7. Endpoints
 
 | Método e rota | Papel | Descrição | Teste |
 |---|---|---|---|
-| `snapshot.json` (leitura) | widget | Lista de aparelhos com `id`, `name`, `kind`, `percent`, `chargeState`, `path`, `updatedAt` (momento da leitura), mais `schemaVersion` e `generatedAt`; widget marca desatualizado após 30 min do `generatedAt` | `SnapshotContractTests` |
+| `snapshot.json` (leitura) | widget | Lista de aparelhos com `id`, `name`, `kind`, `percent`, `chargeState`, `path`, `updatedAt` (momento da leitura), mais `schemaVersion`, `generatedAt` e `thresholds` (`{low, critical}`, limites de nível dos Ajustes; opcional, ausente vale 20/10); widget marca desatualizado após 30 min do `generatedAt` | `SnapshotContractTests` |
 | `snapshot.json` (escrita) | host | Substitui o arquivo de forma atômica após cada leitura | `SnapshotContractTests` |
 
 ## 8. Histórico de mudanças do contrato
 - 2026-10-27: contrato inicial do snapshot (`schemaVersion` 1).
+- 2026-11-03: campo opcional `thresholds`, compatível com o `schemaVersion` 1 (snapshot antigo sem ele lê com os limites padrão).

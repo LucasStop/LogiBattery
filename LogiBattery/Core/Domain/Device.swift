@@ -96,15 +96,20 @@ extension Device {
     }
 }
 
+/// Limites de nível dos Ajustes (US-11). Vão no snapshot porque o widget não lê os ajustes do app.
+struct BatteryThresholds: Codable, Equatable, Sendable {
+    var low = 20
+    var critical = 10
+}
+
 enum BatteryLevel: Equatable, Sendable {
     case normal, low, critical, unknown
 
-    // ponytail: limites fixos 20% e 10% (padrão do PRD); passam a vir dos ajustes na US-11.
-    init(percent: Int?) {
+    init(percent: Int?, thresholds: BatteryThresholds = BatteryThresholds()) {
         switch percent {
         case nil: self = .unknown
-        case let value? where value < 10: self = .critical
-        case let value? where value < 20: self = .low
+        case let value? where value < thresholds.critical: self = .critical
+        case let value? where value < thresholds.low: self = .low
         default: self = .normal
         }
     }

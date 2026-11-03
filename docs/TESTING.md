@@ -58,7 +58,7 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 | US-08 | Carga completa avisa uma vez por ciclo | `FullChargeRuleTests` | unitário |
 | US-09 | Histórico em gráfico por período | `HistoryStoreTests`, `HistoryRetentionTests`; snapshot do gráfico | integração, visual |
 | US-10 | Abrir no login | `LoginItemTests` (fake); manual | integração, manual |
-| US-11 | Ajustes persistem e valem na próxima leitura | `SettingsStoreTests` | integração |
+| US-11 | Ajustes persistem e valem na próxima leitura; cores seguem os limites no app e no widget | `SettingsTests`, `SnapshotContractTests` (limites no snapshot) | integração |
 | US-12 | Guia de permissão e atalho ao painel | `PermissionStateTests`; manual | unitário, manual |
 
 ## 6. Comandos
