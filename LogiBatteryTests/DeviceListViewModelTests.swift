@@ -132,6 +132,27 @@ final class KeepLastReadingTests: XCTestCase {
         XCTAssertEqual(viewModel.devices, [])
     }
 
+    /// #100: receptor que parou de responder fica no fim da lista, atrás de quem respondeu ao último scan.
+    func testUnseenReceiverDeviceSortsAfterConnectedOnes() async {
+        let headset = Device(id: "bt-headset", name: "QCY MeloBuds Pro", kind: .headphones, percent: 100,
+                             chargeState: .unknown, path: .bluetooth, readAt: .now)
+        let earlier = mouse(.now.addingTimeInterval(-600))
+        let viewModel = DeviceListViewModel(scanner: ScriptedScanner([[earlier, headset], [headset]]))
+        await viewModel.refresh()
+        await viewModel.refresh()
+        XCTAssertEqual(viewModel.devices.map(\.name), ["QCY MeloBuds Pro", "MX Master 3S"])
+    }
+
+    /// #100: mouse Bluetooth fora do scan foi desconectado (o sistema sabe na hora): some, sem esperar 24 h.
+    func testUnseenBluetoothDeviceIsDropped() async {
+        let bluetoothMouse = Device(id: "ble:1", name: "MX Master 3S", kind: .mouse, percent: 85,
+                                    chargeState: .discharging, path: .bluetooth, readAt: .now)
+        let viewModel = DeviceListViewModel(scanner: ScriptedScanner([[bluetoothMouse], []]))
+        await viewModel.refresh()
+        await viewModel.refresh()
+        XCTAssertEqual(viewModel.devices, [])
+    }
+
     /// Fone fora do scan foi desligado ou guardado (o sistema sabe na hora): some, como no widget da Apple.
     func testDisconnectedHeadsetIsNotKept() async {
         let headset = Device(id: "bt-headset", name: "QCY MeloBuds Pro", kind: .headphones, percent: 100,
