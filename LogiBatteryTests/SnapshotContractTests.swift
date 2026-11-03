@@ -79,6 +79,23 @@ final class SnapshotContractTests: XCTestCase {
         XCTAssertEqual(BatteryLevel(percent: nil), .unknown)
     }
 
+    func testBatteryLevelFollowsConfiguredThresholds() {
+        let thresholds = BatteryThresholds(low: 30, critical: 15)
+        XCTAssertEqual(BatteryLevel(percent: 25, thresholds: thresholds), .low)
+        XCTAssertEqual(BatteryLevel(percent: 14, thresholds: thresholds), .critical)
+        XCTAssertEqual(BatteryLevel(percent: 30, thresholds: thresholds), .normal)
+        XCTAssertEqual(AppSettings(lowThreshold: 30, criticalThreshold: 15).thresholds, thresholds)
+    }
+
+    func testThresholdsRoundTripAndOldSnapshotFallsBackToDefaults() throws {
+        let store = SnapshotStore(directory: directory)
+        try store.write([device("a", percent: 25)], at: now, thresholds: BatteryThresholds(low: 30, critical: 15))
+        XCTAssertEqual(store.read()?.thresholds, BatteryThresholds(low: 30, critical: 15))
+        let old = #"{"schemaVersion":1,"generatedAt":"2027-01-15T08:00:00Z","devices":[]}"#
+        try Data(old.utf8).write(to: directory.appendingPathComponent("snapshot.json"))
+        XCTAssertEqual(try XCTUnwrap(store.read()).levelThresholds, BatteryThresholds())
+    }
+
     func testWidgetOrderPutsLowestFirstAndUnknownLast() throws {
         let devices = [device("a", percent: 80), device("b", percent: nil), device("c", percent: 7)]
         let ordered = Snapshot.widgetOrder(devices)

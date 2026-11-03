@@ -8,6 +8,7 @@ struct AppSettings: Codable, Equatable, Sendable {
     var intervalMinutes = 1
 
     var interval: Duration { .seconds(intervalMinutes * 60) }
+    var thresholds: BatteryThresholds { BatteryThresholds(low: lowThreshold, critical: criticalThreshold) }
 
     /// Mantém os valores em faixa e o limite crítico abaixo do baixo.
     func normalized() -> AppSettings {

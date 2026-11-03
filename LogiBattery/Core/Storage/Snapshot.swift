@@ -9,6 +9,10 @@ struct Snapshot: Codable, Equatable, Sendable {
     let schemaVersion: Int
     let generatedAt: Date
     let devices: [Device]
+    /// Opcional: snapshot gravado antes do campo existir cai no padrão (docs/API.md).
+    var thresholds: BatteryThresholds?
+
+    var levelThresholds: BatteryThresholds { thresholds ?? BatteryThresholds() }
 
     func isStale(at date: Date) -> Bool {
         date.timeIntervalSince(generatedAt) > Self.staleAfter
@@ -55,8 +59,9 @@ struct SnapshotStore: Sendable {
             .map(SnapshotStore.init)
     }
 
-    func write(_ devices: [Device], at date: Date) throws {
-        let snapshot = Snapshot(schemaVersion: Snapshot.schemaVersion, generatedAt: date, devices: devices)
+    func write(_ devices: [Device], at date: Date, thresholds: BatteryThresholds = BatteryThresholds()) throws {
+        let snapshot = Snapshot(schemaVersion: Snapshot.schemaVersion, generatedAt: date, devices: devices,
+                                thresholds: thresholds)
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.sortedKeys]

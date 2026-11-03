@@ -40,8 +40,8 @@ Base: cores semânticas do sistema (`NSColor`/`Color`) para acompanhar o tema e 
 | `primary-hover` | acento a 85% | acento a 85% | Hover e pressionado |
 | `primary-foreground` | `white` | `white` | Texto sobre o primário |
 | `success` (nível ok e cheio) | #1F9D55 | #34C77B | Bateria acima do limite, carga cheia |
-| `warning` (nível baixo) | #B7791F | #F2B13C | Bateria abaixo do limite baixo |
-| `danger` (nível crítico) | #C53030 | #FF6B6B | Bateria abaixo do limite crítico |
+| `warning` (nível baixo) | #B7791F | #F2B13C | Bateria abaixo do limite baixo dos Ajustes (padrão 20%) |
+| `danger` (nível crítico) | #C53030 | #FF6B6B | Bateria abaixo do limite crítico dos Ajustes (padrão 10%), no app e no widget |
 | `info` (carregando) | #2B6CB0 | #63B3ED | Aparelho no carregador |
 | `focus-ring` | `keyboardFocusIndicatorColor` | idem | Foco de teclado |
 | `disabled` | `disabledControlTextColor` | idem | Controle desabilitado, aparelho sem leitura |
