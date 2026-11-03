@@ -19,7 +19,7 @@ final class DeviceListViewModel {
         self.scanner = scanner
         self.publish = publish
         if let restoring, !restoring.isStale(at: now) {
-            devices = Snapshot.widgetOrder(restoring.devices)
+            devices = Snapshot.widgetOrder(restoring.devices.filter { DeviceIdentity.isPrintable($0.name) })
             lastRefresh = restoring.generatedAt
         }
     }
@@ -44,7 +44,8 @@ final class DeviceListViewModel {
         }
         let seen = Set(fresh.map(\.identity))
         let kept = devices.filter {
-            $0.kind != .headphones && !seen.contains($0.identity) && now.timeIntervalSince($0.readAt) < Self.keepFor
+            $0.kind != .headphones && DeviceIdentity.isPrintable($0.name)
+                && !seen.contains($0.identity) && now.timeIntervalSince($0.readAt) < Self.keepFor
         }
         devices = Snapshot.widgetOrder(fresh + kept)
         hasLoaded = true

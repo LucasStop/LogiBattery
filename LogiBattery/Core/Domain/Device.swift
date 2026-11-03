@@ -87,6 +87,12 @@ enum DeviceIdentity {
     static func key(_ name: String) -> String {
         name.lowercased().split(separator: " ").joined(separator: " ")
     }
+
+    static func isPrintable(_ name: String) -> Bool {
+        !name.isEmpty && name.unicodeScalars.allSatisfy {
+            $0.value >= 0x20 && $0.value != 0x7F && $0.value != 0xFFFD
+        }
+    }
 }
 
 extension Device {
