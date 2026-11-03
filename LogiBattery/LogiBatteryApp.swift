@@ -7,6 +7,8 @@ struct LogiBatteryApp: App {
     @State private var viewModel = DeviceListViewModel(
         scanner: LiveScanner(), restoring: SnapshotStore.appGroup?.read(), publish: publishSnapshot)
     @State private var permission = PermissionModel()
+    @AppStorage(SettingsModel.showMenuBarIconKey) private var showMenuBarIcon = true
+    @NSApplicationDelegateAdaptor private var appDelegate: AppDelegate
     @Environment(\.openWindow) private var openWindow
 
     init() {
@@ -19,7 +21,8 @@ struct LogiBatteryApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra {
+        // Escondido, só some o ícone: a leitura roda no `init` e o widget segue atualizando (US-14).
+        MenuBarExtra(isInserted: $showMenuBarIcon) {
             DeviceList(viewModel: viewModel, permission: permission)
         } label: {
             // Largura fixa: se o item muda de tamanho ao aparecer a porcentagem, o macOS ancora o popover
@@ -54,6 +57,15 @@ struct LogiBatteryApp: App {
             SettingsView()
         }
         .windowResizability(.contentSize)
+    }
+}
+
+/// Abrir o app de novo (Spotlight, Finder, clique no widget) traz o ícone escondido de volta: sem ele não há
+/// outro caminho até os Ajustes.
+private final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        UserDefaults.standard.set(true, forKey: SettingsModel.showMenuBarIconKey)
+        return true
     }
 }
 

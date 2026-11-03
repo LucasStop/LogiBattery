@@ -127,6 +127,7 @@ Por componente, registrar em `design/components.md` a anatomia e a regra de uso;
 - Mensagens: curtas, no ativo, sem culpar o usuário; erro diz causa e próximo passo.
 - Formatos: datas e horas do sistema, relativas quando recentes ("há 3 min"); porcentagem inteira "42%"; números do locale.
 - Capitalização: só a primeira palavra em botões e títulos.
+- Opção que esconde algo diz na legenda como trazer de volta (ex.: "Mostrar ícone na barra de menus": "Escondido, o app segue lendo e atualizando o widget. Para ver o ícone de novo, abra o LogiBattery pelo Spotlight ou pelo Finder.").
 - Internacionalização: strings em `Localizable.xcstrings` (String Catalog), pt-BR e en desde o início.
 
 ## 8. Regras (anti "AI slop")
@@ -154,6 +155,7 @@ Nenhuma tela é desenvolvida sem protótipo aprovado. O inventário e o status d
 - 2026-10-27: criação do design system (rascunho).
 - 2026-11-03: leitura com mais de 30 min em cinza (widget e popover).
 - 2026-11-03: grade de anéis no widget pequeno (2x2, sem percentual) e médio (4x1); selo de conexão dentro do anel; ícones de Mac e fone (#55).
+- 2026-11-03: opção de esconder o ícone da barra de menus, com a legenda de como voltar (#56).
 
 ## Ícone do app
 Opção A aprovada por Lucas em 2026-10-29: anel de carga verde (gradiente `#5EE59A` a `#1F9D55`) sobre fundo escuro `#1C2333`/`#0B0F19`, com raio branco no centro. Fonte em `design/icon/appicon.svg` (1024 pt, margem de 100 pt); os PNGs de `LogiBattery/Assets.xcassets/AppIcon.appiconset` saem dela com `rsvg-convert`.
