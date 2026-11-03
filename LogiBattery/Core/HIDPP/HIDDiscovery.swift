@@ -7,9 +7,8 @@ final class HIDDiscovery: @unchecked Sendable {
     private static let hidppUsagePage = 0xFF00
     private static let hidppUsage = 0x01
 
-    private let manager = IOHIDManagerCreate(kCFAllocatorDefault, IOOptionBits(kIOHIDOptionsTypeNone))
-    // Manager à parte só para eventos: os dispositivos do `manager` usam fila própria (IOHIDTransport) e o IOKit
-    // recusa agendar o mesmo dispositivo em run loop e em fila.
+    // Manager só para eventos: os dispositivos dos transportes usam fila própria (IOHIDTransport) e o IOKit recusa
+    // agendar o mesmo dispositivo em run loop e em fila.
     private let watcher = IOHIDManagerCreate(kCFAllocatorDefault, IOOptionBits(kIOHIDOptionsTypeNone))
     private var transports: [String: IOHIDTransport] = [:]
     private let continuation: AsyncStream<Void>.Continuation
@@ -19,8 +18,6 @@ final class HIDDiscovery: @unchecked Sendable {
 
     init() {
         (changes, continuation) = AsyncStream.makeStream(bufferingPolicy: .bufferingNewest(1))
-        IOHIDManagerSetDeviceMatching(manager, [kIOHIDVendorIDKey: Self.vendorID] as CFDictionary)
-        IOHIDManagerOpen(manager, IOOptionBits(kIOHIDOptionsTypeNone))
         IOHIDManagerSetDeviceMatching(watcher, [kIOHIDVendorIDKey: Self.vendorID] as CFDictionary)
         let onChange: IOHIDDeviceCallback = { context, _, _, _ in
             guard let context else { return }
@@ -36,13 +33,11 @@ final class HIDDiscovery: @unchecked Sendable {
     deinit {
         IOHIDManagerUnscheduleFromRunLoop(watcher, CFRunLoopGetMain(), CFRunLoopMode.commonModes.rawValue)
         IOHIDManagerClose(watcher, IOOptionBits(kIOHIDOptionsTypeNone))
-        IOHIDManagerClose(manager, IOOptionBits(kIOHIDOptionsTypeNone))
     }
 
     /// Receptores USB (interface HID++ `0xFF00`/`0x01`) e aparelhos Bluetooth (HID++ no próprio serviço HID).
     func endpoints() -> [HIDEndpoint] {
-        let devices = (IOHIDManagerCopyDevices(manager) as? Set<IOHIDDevice>) ?? []
-        let found: [HIDEndpoint] = devices.compactMap { device in
+        let found: [HIDEndpoint] = Self.currentDevices().compactMap { device in
             let transportName = IOHIDDeviceGetProperty(device, kIOHIDTransportKey as CFString) as? String ?? ""
             let product = String(Self.int(device, kIOHIDProductIDKey), radix: 16)
             let path: DevicePath
@@ -64,6 +59,24 @@ final class HIDDiscovery: @unchecked Sendable {
         // Solta o transporte de aparelho que saiu (ex.: trocou de receptor para Bluetooth).
         transports = transports.filter { entry in found.contains { $0.id == entry.key } }
         return found.sorted { $0.id < $1.id }
+    }
+
+    /// Lido do IORegistry a cada chamada: um `IOHIDManager` fora de run loop congela a lista na abertura e não vê
+    /// aparelho que conecta depois (ex.: mouse que troca do receptor para o Bluetooth).
+    private static func currentDevices() -> [IOHIDDevice] {
+        let matching = IOServiceMatching(kIOHIDDeviceKey) as NSMutableDictionary
+        matching[kIOHIDVendorIDKey] = vendorID
+        var iterator: io_iterator_t = 0
+        guard IOServiceGetMatchingServices(kIOMainPortDefault, matching, &iterator) == KERN_SUCCESS else { return [] }
+        defer { IOObjectRelease(iterator) }
+        var devices: [IOHIDDevice] = []
+        var service = IOIteratorNext(iterator)
+        while service != 0 {
+            if let device = IOHIDDeviceCreate(kCFAllocatorDefault, service) { devices.append(device) }
+            IOObjectRelease(service)
+            service = IOIteratorNext(iterator)
+        }
+        return devices
     }
 
     private static func registryID(_ device: IOHIDDevice) -> String {
