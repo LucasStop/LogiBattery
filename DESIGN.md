@@ -78,7 +78,7 @@ Base: cores semânticas do sistema (`NSColor`/`Color`) para acompanhar o tema e 
 
 ### 3.3 Espaçamento e layout
 - Grid base: 4 pt. Escala: 4, 8, 12, 16, 24, 32. Sem número mágico fora da escala.
-- Popover: largura 320 pt. Widget: margens do sistema hoje; medidas e margens do Baterias na §3.8.
+- Popover: largura 320 pt. Widget: medidas e margens do Baterias na §3.8; o grande e o estado vazio usam as margens do sistema.
 - Breakpoints: N/A (macOS); o widget tem três famílias (pequeno, médio, grande). Abordagem: desktop.
 - Densidade: confortável. Alvo de clique mínimo: 24 x 24 pt.
 
@@ -114,7 +114,7 @@ Base: cores semânticas do sistema (`NSColor`/`Color`) para acompanhar o tema e 
 - Matriz de verificação em `docs/TESTING.md` (#64): estilo padrão, escuro, claro e tingido; sistema claro e escuro; mesa ativa e inativa.
 
 ### 3.8 Medidas do widget
-Medidas do widget Baterias da Apple no macOS 27, tiradas de prints de 2026-11-03 (1 px = 1 pt) com contagem de pixel. Tolerância: ±1 pt. Implementação em `RingMetrics` (#63); até lá o código usa os valores da §5.
+Medidas do widget Baterias da Apple no macOS 27, tiradas de prints de 2026-11-03 (1 px = 1 pt) com contagem de pixel e conferidas com o nosso widget ao lado. Tolerância: ±1 pt. Implementação: `RingMetrics` em `LogiBatteryWidget/LogiBatteryWidget.swift` (#63).
 
 | Token | Pequeno | Médio | Regra |
 |---|---|---|---|
@@ -122,8 +122,8 @@ Medidas do widget Baterias da Apple no macOS 27, tiradas de prints de 2026-11-03
 | `ring.stroke` | 6 pt | 6 pt | ponta redonda; trilha em `quaternary` |
 | `ring.gap` | 12 pt | sobra das 4 colunas | entre anéis |
 | `icon.ring` | 24 pt | 24 pt | cor primária, centro do anel, igual nos dois tamanhos |
-| `text.ringPercent` | sem percentual | 17 pt semibold, `monospacedDigit` | 15 pt abaixo do anel, cor primária; anel e texto centralizados na vertical |
-| `widget.margin` | 11 pt | 9 pt nas laterais | `.contentMarginsDisabled()` com padding próprio; o grande segue com as margens do sistema |
+| `text.ringPercent` | sem percentual | 16 pt semibold, `monospacedDigit` | topo do dígito 18 pt abaixo do anel, cor primária; anel e texto centralizados na vertical |
+| `widget.margin` | o que sobra, com a grade de 140 pt centrada | 10 pt nas laterais | `.contentMarginsDisabled()`; o grande e o vazio seguem com as margens do sistema (`widgetContentMargins`) |
 
 ## 4. Componentes
 
@@ -151,7 +151,7 @@ Por componente, registrar em `design/components.md` a anatomia e a regra de uso;
 - Estado de erro: diz o que houve (ex.: permissão negada) e leva ao painel de Privacidade.
 - Navegação: ícone na barra de menu abre o popover; ajustes em janela própria; profundidade máxima 2.
 - Listas: aparelhos ordenados do menor para o maior nível; sem busca nem paginação.
-- Widget: três tamanhos. Pequeno e médio usam a grade de anéis com 4 posições fixas (2x2 e 4x1), Mac primeiro e o resto do menor para o maior nível; posição sem aparelho mostra só o anel vazio (`quaternary`, fora do VoiceOver). O ícone do aparelho (`computermouse`, `keyboard`, `laptopcomputer`, `headphones`) fica no centro do anel. Pequeno: selo de conexão (Bluetooth ou receptor; o Mac não tem) dentro do anel, logo abaixo do ícone, e sem percentual (lotava a grade; o VoiceOver lê o número). Médio, igual ao médio da Apple: anel de 54 pt com traço de 6 pt, ícone de 22 pt e percentual de 15 pt semibold em cor primária embaixo do anel, com o selo ao lado do percentual (#60). O grande segue com a lista e o gráfico. Aprovado por Lucas em 2026-11-03.
+- Widget: três tamanhos. Pequeno e médio usam a grade de anéis com 4 posições fixas (2x2 e 4x1), Mac primeiro e o resto do menor para o maior nível; posição sem aparelho mostra só o anel vazio (`quaternary`, fora do VoiceOver). O ícone do aparelho (`computermouse`, `keyboard`, `laptopcomputer`, `headphones`) fica no centro do anel, em cor primária. Medidas do Baterias da Apple na §3.8 (#63). Pequeno: selo de conexão (Bluetooth ou receptor; o Mac não tem) dentro do anel, logo abaixo do ícone, e sem percentual (lotava a grade; o VoiceOver lê o número). Médio, igual ao médio da Apple: percentual semibold em cor primária embaixo do anel, com o selo ao lado do percentual (#60). O grande segue com a lista e o gráfico. Aprovado por Lucas em 2026-11-03.
 - Leitura velha: aparelho sem leitura nova há mais de 30 min (dormindo ou fora de alcance) continua na lista com a hora da última leitura, e anel, número e célula ficam em `muted` (`.secondary`), no widget e no popover. Volta à cor na primeira leitura nova. Aprovado por Lucas em 2026-11-03.
 
 ## 6. Acessibilidade
@@ -207,6 +207,7 @@ Nenhuma tela é desenvolvida sem protótipo aprovado. O inventário e o status d
 - 2026-11-03: opção de esconder o ícone da barra de menus, com a legenda de como voltar (#56).
 - 2026-11-03: médio no visual do médio da Apple, selo ao lado do percentual (#60).
 - 2026-11-03: Apple nativa como referência no formato do VoltAgent: visão geral, ícones próprios, materiais e Liquid Glass, medidas do widget, faça e não faça (#62).
+- 2026-11-03: widget pequeno e médio nas medidas do Baterias (anel de 64 e 62 pt, ícone de 24 pt em cor primária, percentual de 16 pt), conferidas em print ao lado do da Apple; protótipos com os SF Symbols de verdade (#63).
 
 ## Ícone do app
 Opção A aprovada por Lucas em 2026-10-29: anel de carga verde (gradiente `#5EE59A` a `#1F9D55`) sobre fundo escuro `#1C2333`/`#0B0F19`, com raio branco no centro. Fonte em `design/icon/appicon.svg` (1024 pt, margem de 100 pt); os PNGs de `LogiBattery/Assets.xcassets/AppIcon.appiconset` saem dela com `rsvg-convert`.
