@@ -14,6 +14,12 @@
             "state": "translated",
             "value": "LogiBattery"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LogiBattery"
+          }
         }
       }
     },
@@ -29,6 +35,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Charging"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cargando"
           }
         }
       }
@@ -46,6 +58,12 @@
             "state": "translated",
             "value": "Fully charged"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carga completa"
+          }
         }
       }
     },
@@ -61,6 +79,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Low"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baja"
           }
         }
       }
@@ -78,6 +102,12 @@
             "state": "translated",
             "value": "Critical"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crítica"
+          }
         }
       }
     },
@@ -93,6 +123,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Batteries"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baterías"
           }
         }
       }
@@ -110,6 +146,12 @@
             "state": "translated",
             "value": "Batteries · outdated"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baterías · desactualizado"
+          }
         }
       }
     },
@@ -125,6 +167,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Last reading"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última lectura"
           }
         }
       }
@@ -142,6 +190,12 @@
             "state": "translated",
             "value": "No Logitech device found"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se encontró ningún dispositivo"
+          }
         }
       }
     },
@@ -157,6 +211,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Open LogiBattery to start reading."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abre LogiBattery para iniciar la lectura."
           }
         }
       }
@@ -174,6 +234,12 @@
             "state": "translated",
             "value": "Battery of your Logitech mouse and keyboard."
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Batería de tu Mac, dispositivos Logitech y Bluetooth."
+          }
         }
       }
     },
@@ -189,6 +255,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Updated"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualizado"
           }
         }
       }
@@ -206,6 +278,12 @@
             "state": "translated",
             "value": "Reading…"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leyendo…"
+          }
         }
       }
     },
@@ -221,6 +299,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "No Logitech device found"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se encontró ningún dispositivo"
           }
         }
       }
@@ -238,6 +322,12 @@
             "state": "translated",
             "value": "Turn on the mouse or keyboard, or plug in the USB receiver."
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enciende el ratón o el teclado, o conecta el receptor USB."
+          }
         }
       }
     },
@@ -253,6 +343,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quit LogiBattery"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salir de LogiBattery"
           }
         }
       }
@@ -270,6 +366,12 @@
             "state": "translated",
             "value": "Low battery. Charge it soon."
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Batería baja. Recárgala pronto."
+          }
         }
       }
     },
@@ -285,6 +387,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Critical battery. Plug in the charger now."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Batería crítica. Conecta el cargador ahora."
           }
         }
       }
@@ -302,6 +410,12 @@
             "state": "translated",
             "value": "Fully charged. You can unplug it."
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carga completa. Ya puedes desconectarlo."
+          }
         }
       }
     },
@@ -317,6 +431,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Battery by device"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Batería por dispositivo"
           }
         }
       }
@@ -334,6 +454,12 @@
             "state": "translated",
             "value": "Period"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Período"
+          }
         }
       }
     },
@@ -346,6 +472,12 @@
           }
         },
         "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "24 h"
+          }
+        },
+        "es": {
           "stringUnit": {
             "state": "translated",
             "value": "24 h"
@@ -366,6 +498,12 @@
             "state": "translated",
             "value": "7 days"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7 días"
+          }
         }
       }
     },
@@ -381,6 +519,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "30 days"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30 días"
           }
         }
       }
@@ -398,6 +542,12 @@
             "state": "translated",
             "value": "No history yet"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún sin historial"
+          }
         }
       }
     },
@@ -413,6 +563,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Readings show up here after a few hours of use."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las lecturas aparecen aquí tras algunas horas de uso."
           }
         }
       }
@@ -430,6 +586,12 @@
             "state": "translated",
             "value": "Time"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hora"
+          }
         }
       }
     },
@@ -445,6 +607,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Battery"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Batería"
           }
         }
       }
@@ -462,6 +630,12 @@
             "state": "translated",
             "value": "Device"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dispositivo"
+          }
         }
       }
     },
@@ -477,6 +651,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "History"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Historial"
           }
         }
       }
@@ -494,6 +674,12 @@
             "state": "translated",
             "value": "Receiver"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receptor"
+          }
         }
       }
     },
@@ -506,6 +692,12 @@
           }
         },
         "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bluetooth"
+          }
+        },
+        "es": {
           "stringUnit": {
             "state": "translated",
             "value": "Bluetooth"
@@ -526,6 +718,12 @@
             "state": "translated",
             "value": "Bateria interna"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Batería interna"
+          }
         }
       }
     },
@@ -541,6 +739,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Settings…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustes…"
           }
         }
       }
@@ -558,6 +762,12 @@
             "state": "translated",
             "value": "Settings"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustes"
+          }
         }
       }
     },
@@ -573,6 +783,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Low battery alert"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aviso de batería baja"
           }
         }
       }
@@ -590,6 +806,12 @@
             "state": "translated",
             "value": "Notifies once until recharged"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifica una vez hasta recargar"
+          }
         }
       }
     },
@@ -605,6 +827,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Critical battery alert"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aviso de batería crítica"
           }
         }
       }
@@ -622,6 +850,12 @@
             "state": "translated",
             "value": "Full charge alert"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aviso de carga completa"
+          }
         }
       }
     },
@@ -637,6 +871,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Once per charge cycle"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una vez por ciclo de carga"
           }
         }
       }
@@ -654,6 +894,12 @@
             "state": "translated",
             "value": "Reading interval"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intervalo de lectura"
+          }
         }
       }
     },
@@ -669,6 +915,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Applies on the next reading"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se aplica en la próxima lectura"
           }
         }
       }
@@ -686,6 +938,12 @@
             "state": "translated",
             "value": "History"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Historial"
+          }
         }
       }
     },
@@ -701,6 +959,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kept for 90 days"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardado por 90 días"
           }
         }
       }
@@ -718,6 +982,12 @@
             "state": "translated",
             "value": "Delete history…"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar historial…"
+          }
         }
       }
     },
@@ -733,6 +1003,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Delete all history?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Borrar todo el historial?"
           }
         }
       }
@@ -750,6 +1026,12 @@
             "state": "translated",
             "value": "Delete"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar"
+          }
         }
       }
     },
@@ -765,6 +1047,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cancel"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelar"
           }
         }
       }
@@ -782,6 +1070,12 @@
             "state": "translated",
             "value": "Open at login"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir al iniciar sesión"
+          }
         }
       }
     },
@@ -797,6 +1091,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Could not change it. Try again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo cambiar. Inténtalo de nuevo."
           }
         }
       }
@@ -814,6 +1114,12 @@
             "state": "translated",
             "value": "Show icon in the menu bar"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar icono en la barra de menús"
+          }
         }
       }
     },
@@ -829,6 +1135,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "When hidden, the app keeps reading and updating the widget. To bring the icon back, open LogiBattery from Spotlight or the Finder."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al ocultarlo, la app sigue leyendo y actualizando el widget. Para volver a ver el icono, abre LogiBattery desde Spotlight o el Finder."
           }
         }
       }
@@ -846,6 +1158,12 @@
             "state": "translated",
             "value": "Menu width"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ancho del menú"
+          }
         }
       }
     },
@@ -861,6 +1179,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Increase if a device name is truncated"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auméntalo si el nombre de algún dispositivo se corta"
           }
         }
       }
@@ -878,6 +1202,12 @@
             "state": "translated",
             "value": "Permission needed"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permiso necesario"
+          }
         }
       }
     },
@@ -893,6 +1223,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Allow reading your devices"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permitir lectura de los dispositivos"
           }
         }
       }
@@ -910,6 +1246,12 @@
             "state": "translated",
             "value": "LogiBattery needs Input Monitoring to read your mouse and keyboard battery. Nothing leaves your Mac."
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LogiBattery necesita Monitorización de Entrada para leer la batería del ratón y del teclado. Nada sale de tu Mac."
+          }
         }
       }
     },
@@ -925,6 +1267,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "1. Click Open Privacy."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Haz clic en Abrir Privacidad."
           }
         }
       }
@@ -942,6 +1290,12 @@
             "state": "translated",
             "value": "2. Turn on LogiBattery under Input Monitoring."
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2. Activa LogiBattery en Monitorización de Entrada."
+          }
         }
       }
     },
@@ -957,6 +1311,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "3. Come back here. Reading starts by itself."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3. Vuelve aquí. La lectura comienza sola."
           }
         }
       }
@@ -974,6 +1334,12 @@
             "state": "translated",
             "value": "Open Privacy"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir Privacidad"
+          }
         }
       }
     },
@@ -989,6 +1355,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Not now"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ahora no"
           }
         }
       }
@@ -1006,6 +1378,12 @@
             "state": "translated",
             "value": "Permission needed"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permiso necesario"
+          }
         }
       }
     },
@@ -1021,6 +1399,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "macOS blocked Input Monitoring. Without it the battery cannot be read."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS bloqueó la Monitorización de Entrada. Sin ella no se puede leer la batería."
           }
         }
       }
@@ -1038,6 +1422,12 @@
             "state": "translated",
             "value": "No readings"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin lecturas"
+          }
         }
       }
     },
@@ -1053,6 +1443,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "No access"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin acceso"
           }
         }
       }
@@ -1070,6 +1466,12 @@
             "state": "translated",
             "value": "Next page"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Página siguiente"
+          }
         }
       }
     },
@@ -1085,6 +1487,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Alerts"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avisos"
           }
         }
       }
@@ -1102,6 +1510,12 @@
             "state": "translated",
             "value": "Reading"
           }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lectura"
+          }
         }
       }
     },
@@ -1114,6 +1528,12 @@
           }
         },
         "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "General"
+          }
+        },
+        "es": {
           "stringUnit": {
             "state": "translated",
             "value": "General"
@@ -1133,6 +1553,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "History"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Historial"
           }
         }
       }
