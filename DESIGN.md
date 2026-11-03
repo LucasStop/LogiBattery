@@ -56,7 +56,7 @@ Base: cores semânticas do sistema (`NSColor`/`Color`) para acompanhar o tema e 
 
 | Estilo | Tamanho / linha | Peso | Uso |
 |---|---|---|---|
-| `display` | 34 / 40 pt | semibold, números tabulares | Porcentagem grande (hoje sem uso no widget pequeno, que usa anéis 13 pt semibold) |
+| `display` | 34 / 40 pt | semibold, números tabulares | Porcentagem grande (hoje sem uso: o widget usa anéis, com 13 pt semibold embaixo só no médio) |
 | `h1` | 22 / 28 pt | semibold | Título de janela de ajustes |
 | `h2` | 17 / 22 pt | semibold | Seção |
 | `h3` | 13 / 18 pt | semibold | Nome do aparelho |
@@ -94,12 +94,13 @@ Todo componente documenta: anatomia, variantes, tamanhos, estados e comportament
 |---|---|---|---|---|---|
 | Botão | primary, secondary, ghost | sm, md | todos | `LogiBattery/UI/Components/` | componente + visual |
 | Switch e stepper (ajustes) | padrão | md | padrão, foco, desabilitado | `LogiBattery/UI/Components/` | componente + a11y |
-| Cartão de aparelho | mouse, teclado, genérico | popover, widget | ok, baixo, crítico, carregando, cheio, sem leitura | `LogiBattery/UI/Components/` | componente + visual |
+| Cartão de aparelho | mouse, teclado, Mac, fone, genérico | popover, widget | ok, baixo, crítico, carregando, cheio, sem leitura | `LogiBattery/UI/Components/` | componente + visual |
 | Indicador de bateria | célula + número | sm, md, lg | ok, baixo, crítico, carregando, cheio, sem leitura | `LogiBattery/UI/Components/` | componente + visual |
 | Gráfico de histórico | linha por aparelho | popover, widget grande | vazio, carregando, dados | `LogiBattery/UI/Components/` | visual |
 | Popover | lista | 320 pt | vazio, erro de permissão | `LogiBattery/UI/` | componente + E2E |
 | Banner de permissão | aviso | md | padrão | `LogiBattery/UI/Components/` | componente + a11y |
 | Widget | small, medium, large | 3 famílias | com dados, sem dados, desatualizado | `LogiBatteryWidget/` | visual |
+| Grade de anéis (widget) | 2x2 (pequeno), 4x1 (médio) | 4 posições fixas | com aparelho, posição vazia, leitura velha | `LogiBatteryWidget/` (`RingWidget`, `RingSlot`) | visual |
 
 Por componente, registrar em `design/components.md` a anatomia e a regra de uso; o que não tiver variante documentada não existe.
 
@@ -111,7 +112,7 @@ Por componente, registrar em `design/components.md` a anatomia e a regra de uso;
 - Estado de erro: diz o que houve (ex.: permissão negada) e leva ao painel de Privacidade.
 - Navegação: ícone na barra de menu abre o popover; ajustes em janela própria; profundidade máxima 2.
 - Listas: aparelhos ordenados do menor para o maior nível; sem busca nem paginação.
-- Widget: três tamanhos; o pequeno mostra até 4 aparelhos em anéis com o percentual embaixo, o médio até 3, o grande a lista e o gráfico.
+- Widget: três tamanhos. Pequeno e médio usam a grade de anéis com 4 posições fixas (2x2 e 4x1), Mac primeiro e o resto do menor para o maior nível; posição sem aparelho mostra só o anel vazio (`quaternary`, fora do VoiceOver). Dentro do anel, o ícone do aparelho (`computermouse`, `keyboard`, `laptopcomputer`, `headphones`) no centro e o selo de conexão (Bluetooth ou receptor; o Mac não tem) logo abaixo. O percentual vai embaixo do anel só no médio: no pequeno lotava a grade, e o VoiceOver lê o número. O grande segue com a lista e o gráfico. Aprovado por Lucas em 2026-11-03.
 - Leitura velha: aparelho sem leitura nova há mais de 30 min (dormindo ou fora de alcance) continua na lista com a hora da última leitura, e anel, número e célula ficam em `muted` (`.secondary`), no widget e no popover. Volta à cor na primeira leitura nova. Aprovado por Lucas em 2026-11-03.
 
 ## 6. Acessibilidade
@@ -153,6 +154,7 @@ Nenhuma tela é desenvolvida sem protótipo aprovado. O inventário e o status d
 ## Histórico
 - 2026-10-27: criação do design system (rascunho).
 - 2026-11-03: leitura com mais de 30 min em cinza (widget e popover).
+- 2026-11-03: grade de anéis no widget pequeno (2x2, sem percentual) e médio (4x1); selo de conexão dentro do anel; ícones de Mac e fone (#55).
 - 2026-11-03: opção de esconder o ícone da barra de menus, com a legenda de como voltar (#56).
 
 ## Ícone do app
