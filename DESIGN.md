@@ -142,6 +142,8 @@ Todo componente documenta: anatomia, variantes, tamanhos, estados e comportament
 | Indicador de bateria | célula + número | sm, md, lg | ok, baixo, crítico, carregando, cheio, sem leitura | `LogiBattery/UI/Components/` | componente + visual |
 | Gráfico de histórico | linha por aparelho | popover, widget grande | vazio, carregando, dados | `LogiBattery/UI/Components/` | visual |
 | Popover | lista | 320 pt | vazio, erro de permissão | `LogiBattery/UI/` | componente + E2E |
+| Seção de vidro do popover (#66) | `glassEffect` (macOS 26+), `.regularMaterial` (antes) | 320 pt, raio 14 | padrão, vazio, carregando, erro | `LogiBattery/UI/Components/` | componente + visual |
+| Faixa de anéis do popover (#66, direção B) | anéis do widget médio no topo (ícone próprio com selo e percentual), lista de aparelhos embaixo | 320 pt, 4 posições fixas | com aparelho, posição vazia, leitura velha | `LogiBattery/UI/Components/` | componente + visual |
 | Banner de permissão | aviso | md | padrão | `LogiBattery/UI/Components/` | componente + a11y |
 | Widget | small, medium, large | 3 famílias | com dados, sem dados, desatualizado | `LogiBatteryWidget/` | visual |
 | Grade de anéis (widget) | 2x2 (pequeno), 4x1 (médio) | 4 posições fixas | com aparelho, posição vazia, leitura velha | `LogiBatteryWidget/` (`RingWidget`, `RingSlot`) | visual |
