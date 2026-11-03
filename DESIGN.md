@@ -154,9 +154,9 @@ Nenhuma tela é desenvolvida sem protótipo aprovado. O inventário e o status d
 ## Histórico
 - 2026-10-27: criação do design system (rascunho).
 - 2026-11-03: leitura com mais de 30 min em cinza (widget e popover).
-- 2026-11-03: médio no visual do médio da Apple, selo ao lado do percentual (#60).
 - 2026-11-03: grade de anéis no widget pequeno (2x2, sem percentual) e médio (4x1); selo de conexão dentro do anel; ícones de Mac e fone (#55).
 - 2026-11-03: opção de esconder o ícone da barra de menus, com a legenda de como voltar (#56).
+- 2026-11-03: médio no visual do médio da Apple, selo ao lado do percentual (#60).
 
 ## Ícone do app
 Opção A aprovada por Lucas em 2026-10-29: anel de carga verde (gradiente `#5EE59A` a `#1F9D55`) sobre fundo escuro `#1C2333`/`#0B0F19`, com raio branco no centro. Fonte em `design/icon/appicon.svg` (1024 pt, margem de 100 pt); os PNGs de `LogiBattery/Assets.xcassets/AppIcon.appiconset` saem dela com `rsvg-convert`.
