@@ -5,6 +5,7 @@ struct SettingsView: View {
     @State private var model = SettingsModel.shared
     @State private var login = LoginItemModel()
     @State private var confirmDelete = false
+    @AppStorage(SettingsModel.showMenuBarIconKey) private var showMenuBarIcon = true
 
     var body: some View {
         Form {
@@ -22,6 +23,9 @@ struct SettingsView: View {
                         range: 1...60, step: 1) { "\($0) min" }
                 Toggle(isOn: Binding(get: { login.isEnabled }, set: { login.setEnabled($0) })) {
                     label("settings.login", hint: login.failed ? "settings.login.error" : nil)
+                }
+                Toggle(isOn: $showMenuBarIcon) {
+                    label("settings.menuBarIcon", hint: "settings.menuBarIcon.hint")
                 }
             }
             Section {

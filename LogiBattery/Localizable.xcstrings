@@ -801,6 +801,38 @@
         }
       }
     },
+    "settings.menuBarIcon": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar ícone na barra de menus"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show icon in the menu bar"
+          }
+        }
+      }
+    },
+    "settings.menuBarIcon.hint": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escondido, o app segue lendo e atualizando o widget. Para ver o ícone de novo, abra o LogiBattery pelo Spotlight ou pelo Finder."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When hidden, the app keeps reading and updating the widget. To bring the icon back, open LogiBattery from Spotlight or the Finder."
+          }
+        }
+      }
+    },
     "permission.window": {
       "localizations": {
         "pt-BR": {

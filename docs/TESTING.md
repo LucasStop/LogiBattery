@@ -62,6 +62,7 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 | US-11 | Ajustes persistem e valem na próxima leitura; cores seguem os limites no app e no widget | `SettingsTests`, `SnapshotContractTests` (limites no snapshot) | integração |
 | US-12 | Guia de permissão e atalho ao painel | `PermissionModelTests`; manual | unitário, manual |
 | US-13 | Mac e fone Bluetooth aparecem; fone desligado some | `SystemBatteriesTests`, `KeepLastReadingTests` (fone não é mantido), `SnapshotContractTests` (Mac primeiro, tipos novos); smoke: `snapshot.json` com Mac e fone | unitário, manual |
+| US-14 | Ícone escondido some, leitura segue e o ícone volta ao reabrir o app | manual: desligar o toggle (o `generatedAt` do `snapshot.json` continua avançando), `open ~/Applications/LogiBattery.app` traz o ícone de volta, clique no widget idem, logout e login com o ícone escondido | manual |
 
 ## 6. Comandos
 

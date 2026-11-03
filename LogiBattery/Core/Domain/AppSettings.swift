@@ -35,6 +35,10 @@ final class SettingsModel {
         }
     }
 
+    /// Chave própria (`@AppStorage`) e não campo de `AppSettings`: campo novo ali quebra o decode dos ajustes
+    /// já salvos, e o Codable sintetizado não usa o valor padrão para chave ausente.
+    nonisolated static let showMenuBarIconKey = "showMenuBarIcon"
+
     private static let key = "settings"
     @ObservationIgnored private let defaults: UserDefaults
 
