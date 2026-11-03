@@ -13,7 +13,7 @@ Status do design system: aprovada em 2026-10-27
 - Conceito visual: um indicador de nível (a célula da bateria) como forma central; o número é o protagonista, a cor só sinaliza urgência.
 - Referências que gosto: widget Baterias e Ajustes do macOS (nativo, legível, sem enfeite); Logi Options+ só como referência de informação, não de visual.
 - Anti-referências: painel de gamer com RGB, gauge decorativo, tema que briga com o macOS.
-- Logo / ícone: a definir em `design/brand/`; ícone de barra de menu como template image (monocromático, 18 pt), ícone do app em estilo macOS.
+- Logo / ícone: ícone do app na seção [Ícone do app](#ícone-do-app) (opção A, `design/icon/appicon.svg`); na barra de menu, SF Symbol `battery.*` monocromático com o menor percentual ao lado.
 
 ## 2. Princípios de design
 - O número vem primeiro: porcentagem legível a 1 metro de distância, antes de qualquer decoração.
@@ -23,7 +23,7 @@ Status do design system: aprovada em 2026-10-27
 
 ## 3. Tokens
 
-Tokens vivem em código em `LogiBattery/UI/Tokens.swift` e no `Assets.xcassets` (cores com variante clara e escura). Este arquivo documenta; o código é a implementação. Componente nunca usa valor literal, só token.
+Os tokens próprios (cores de nível) vivem em código em `LogiBattery/UI/Components/BatteryCell.swift` (`BatteryLevel.color`, `Device.tint`, com variante clara e escura); o resto são cores semânticas do sistema. Este arquivo documenta; o código é a implementação. Componente nunca usa valor literal, só token.
 
 ### 3.1 Cor
 Base: cores semânticas do sistema (`NSColor`/`Color`) para acompanhar o tema e o acento do usuário. Só os tokens de nível de bateria são próprios.

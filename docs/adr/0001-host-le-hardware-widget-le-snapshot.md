@@ -1,6 +1,6 @@
 # ADR 0001 — App host lê o hardware; widget só lê o snapshot
 
-- Status: proposta
+- Status: aceita (implementada no MVP, 2026-10-29)
 - Data: 2026-10-27
 
 ## Contexto

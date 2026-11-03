@@ -36,7 +36,7 @@ erDiagram
 
 ## 5. Dados pessoais e LGPD
 - Dados pessoais coletados: nenhum. A série do aparelho é guardada só como hash. Nada sai do Mac.
-- Retenção e exclusão: 90 dias por padrão (configurável); opção de apagar todo o histórico nos ajustes. Mascaramento em logs e em ambientes de teste: nunca dado real fora de produção.
+- Retenção e exclusão: 90 dias, fixo (`HistoryStore.retention`; não há ajuste); opção de apagar todo o histórico nos ajustes. Mascaramento em logs e em ambientes de teste: nunca dado real fora de produção.
 
 ## 6. Backup e recuperação
 - Sem backup próprio (dado reconstruível, baixo valor); o Time Machine cobre o container se o usuário quiser. RPO/RTO: N/A.
