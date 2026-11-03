@@ -1,4 +1,5 @@
 import SwiftUI
+import WidgetKit
 
 /// Cor por nível (DESIGN.md §3.1); cor nunca é o único sinal, o texto do nível acompanha.
 extension BatteryLevel {
@@ -31,19 +32,38 @@ extension Color {
 }
 
 /// Célula de bateria: barra preenchida até o percentual.
+/// Nos modos translúcido e tonalizado do widget (macOS 15+), desenha a barra como imagem em cor cheia (#64).
 struct BatteryCell: View {
     let percent: Int?
     let tint: Color
+    var gray = false
 
     var body: some View {
         GeometryReader { proxy in
+            let width = proxy.size.width * CGFloat(min(max(percent ?? 0, 0), 100)) / 100
             ZStack(alignment: .leading) {
                 Capsule().fill(.quaternary)
-                Capsule().fill(tint).frame(width: proxy.size.width * CGFloat(min(max(percent ?? 0, 0), 100)) / 100)
+                if width > 0 {
+                    fillBar(width: width, height: proxy.size.height)
+                }
             }
         }
         .frame(height: 6)
         .accessibilityHidden(true)
+    }
+
+    @ViewBuilder
+    private func fillBar(width: CGFloat, height: CGFloat) -> some View {
+        if #available(macOS 15, *), !gray {
+            Image(size: CGSize(width: width, height: height)) { context in
+                let rect = CGRect(origin: .zero, size: CGSize(width: width, height: height))
+                let radius = min(width, height) / 2
+                context.fill(Path(roundedRect: rect, cornerRadius: radius), with: .color(tint))
+            }
+            .widgetAccentedRenderingMode(.fullColor)
+        } else {
+            Capsule().fill(tint).frame(width: width).widgetAccentable()
+        }
     }
 }
 

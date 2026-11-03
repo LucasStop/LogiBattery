@@ -229,7 +229,7 @@ private struct ListWidget: View {
                 let gray = isStale || device.isOld(at: date)
                 let level = BatteryLevel(percent: device.percent, thresholds: thresholds)
                 HStack(spacing: 8) {
-                    device.symbol.font(.system(size: 16)).foregroundStyle(.secondary).frame(width: 18)
+                    device.symbol.font(.system(size: 16)).foregroundStyle(.secondary).frame(width: 20)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(device.name).font(.headline).lineLimit(1)
                         if !compactRows {
@@ -240,9 +240,9 @@ private struct ListWidget: View {
                     Spacer(minLength: 4)
                     StatusLine(device: device, isStale: gray, level: level)
                     Text(device.percent.map { "\($0)%" } ?? "—")
-                        .font(.title3.weight(.semibold)).monospacedDigit()
-                        .foregroundStyle(gray ? .secondary : level.color)
-                    BatteryCell(percent: device.percent, tint: gray ? .secondary : device.tint(thresholds))
+                        .font(.callout.weight(.semibold)).monospacedDigit()
+                        .foregroundStyle(gray ? .secondary : .primary)
+                    BatteryCell(percent: device.percent, tint: gray ? .secondary : device.tint(thresholds), gray: gray)
                         .frame(width: 44)
                 }
                 .accessibilityElement(children: .combine)
