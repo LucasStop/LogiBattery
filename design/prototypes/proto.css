@@ -83,9 +83,13 @@ h1{font-size:22px;line-height:28px;margin:0 0 var(--s1)}
 .w-m .rings{grid-template-columns:repeat(4,1fr);align-items:center}
 .slot{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:0}
 .ring{position:relative;width:100%;max-width:56px;aspect-ratio:1;border-radius:50%;background:conic-gradient(var(--lvl) calc(var(--p,0)*1%),var(--border) 0);color:var(--muted)}
-.w-m .ring{max-width:68px}
 .ring::before{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--surface)}
 .ring .ico{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);line-height:0}
 .ring .via{position:absolute;left:50%;top:calc(50% + 10px);transform:translateX(-50%);line-height:0}
 .ring .via svg{width:11px;height:11px}
-.slot .pct{font-size:13px;color:var(--lvl)}
+.slot .pct{font-size:15px;color:var(--fg);display:flex;align-items:center;gap:3px}
+.none .pct{color:var(--muted)}
+.slot .pct .via{color:var(--muted);line-height:0}.slot .pct .via svg{width:11px;height:11px}
+.w-m .ring{max-width:54px}
+.w-m .ring .ico{color:var(--fg)}.w-m .ring .ico svg{width:22px;height:22px}
+.w-m .slot{gap:10px}
