@@ -16,6 +16,7 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 |---|---|---|---|---|---|
 | Domínio (dedupe, regra de aviso, política de leitura) | Aviso repetido ou perdido, duplicata de aparelho | estático, unitário, aceitação | Swift Testing / XCTest | local, PR | Mutação só no núcleo crítico (custo) |
 | HID++ (transporte e protocolo) | Frame mal interpretado, bateria errada, voltagem mal convertida | unitário (frames gravados), contrato do protocolo, smoke com hardware | Swift Testing com frames gravados e fake de `IOHIDDevice`; smoke manual com receptor e Bluetooth | local, PR (sem hardware) | Hardware real fora do CI; HID++ 1.0 fora do MVP |
+| Bateria do sistema (Mac e fone Bluetooth) | % errado, estado de carga trocado, fone desligado que não some | unitário (dicionário do `IOPowerSources` gravado, níveis do fone) | XCTest (`SystemBatteriesTests`, `KeepLastReadingTests`) | local, PR | Leitura real do `IOPowerSources` e do `IOBluetooth` só no smoke manual: depende do hardware e da permissão de Bluetooth |
 | Persistência (snapshot e histórico) | Snapshot corrompido, histórico perdido, retenção errada | integração, migração | XCTest com App Group em diretório temporário; teste de migração de schema (quando houver) | PR | |
 | Permissões do sistema (Input Monitoring, Bluetooth) | Leitura vazia sem explicação, entitlement faltando | unitário (estado), segurança | XCTest com fake de `IOHIDCheckAccess`; gitleaks + revisão de entitlements | PR | Fluxo real do painel de Privacidade só manual |
 | Camada web / API / endpoints | - | - | N/A (app nativo, sem API de rede) | - | Contrato app e widget (snapshot JSON) coberto na linha de Persistência |
@@ -60,6 +61,7 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 | US-10 | Abrir no login | `LoginItemTests` (fake); manual | integração, manual |
 | US-11 | Ajustes persistem e valem na próxima leitura; cores seguem os limites no app e no widget | `SettingsTests`, `SnapshotContractTests` (limites no snapshot) | integração |
 | US-12 | Guia de permissão e atalho ao painel | `PermissionModelTests`; manual | unitário, manual |
+| US-13 | Mac e fone Bluetooth aparecem; fone desligado some | `SystemBatteriesTests`, `KeepLastReadingTests` (fone não é mantido), `SnapshotContractTests` (Mac primeiro, tipos novos); smoke: `snapshot.json` com Mac e fone | unitário, manual |
 
 ## 6. Comandos
 

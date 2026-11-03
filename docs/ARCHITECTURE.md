@@ -21,6 +21,7 @@ Inventário. `-` quando a parte não existe.
 | API / backend | - | - | - | - | - |
 | Domínio | Modelo de aparelho, deduplicação, regras de aviso, política de leitura | Swift puro | `LogiBattery/Core/Domain` | HIDPP (via protocolo) | Não |
 | HID++ (transporte e protocolo) | Enumerar receptores e Bluetooth, falar HID++ 1.0/2.0, ler bateria e carga | `IOHIDManager`, Swift | `LogiBattery/Core/HIDPP` | Sistema (IOKit) | Número de série do aparelho |
+| Bateria do sistema | Ler a bateria interna do Mac e a de fone Bluetooth conectado (US-13) | `IOPowerSources`, `IOBluetooth` (chaves KVC privadas) | `LogiBattery/Core/System/SystemBatteries.swift` | Sistema | Não |
 | Persistência | Snapshot JSON e histórico de leituras no App Group | JSON + SwiftData (ou SQLite) | `LogiBattery/Core/Storage` | App Group | Não |
 | Autenticação e permissões | Estado de Input Monitoring e Bluetooth, guia ao painel de Privacidade | TCC, `IOHIDCheckAccess` | `LogiBattery/Core/Permissions` | Sistema | Não |
 | Integrações externas | Notificações e login item | `UserNotifications`, `SMAppService` | `LogiBattery/Core/System` | Sistema | Não |
@@ -35,6 +36,7 @@ Inventário. `-` quando a parte não existe.
 flowchart LR
   HW[Receptor e Bluetooth Logitech] --> HID[HID++ transporte]
   HID --> DOM[Domínio: monitor, dedupe, avisos]
+  SYS[Bateria do Mac e fone Bluetooth] --> DOM
   DOM --> STO[(App Group: snapshot + histórico)]
   DOM --> NOT[Notificações]
   STO --> POP[Popover e ajustes]
@@ -48,6 +50,7 @@ Só o app host acessa o hardware. O widget lê o snapshot e nunca fala com HID.
 - Leitura (US-01, US-02, US-03, US-04): o monitor enumera dispositivos HID com vendor `0x046D`; para cada receptor, pergunta aos índices 1 a 6 quem está pareado; resolve a feature de bateria `0x1004` (Unified Battery; `0x1000` e `0x1001` não estão implementadas porque nenhum aparelho do Lucas as usa, e aparelho sem `0x1004` não aparece; HID++ 1.0 fora do MVP); deduplica por nome (série quando houver aparelho repetido; ver `DeviceDeduplicator`); grava snapshot e ponto de histórico.
 - Widget (US-05): o host grava o snapshot a cada leitura (`generatedAt` é o sinal de que está vivo) e só chama `WidgetCenter.shared.reloadAllTimelines()` quando muda o que o widget mostra (`Snapshot.meaningfullyDiffers`: aparelho, %, estado, caminho ou leitura velha) ou quando o snapshot anterior já estava desatualizado; recarregar a cada leitura esgota o orçamento do WidgetKit. O widget lê o JSON e devolve uma entrada por minuto durante 15 min, então o "há X min" e o cinza andam sem reload. Histórico e snapshot são gravados em separado: erro em um não impede o outro, e vai para o `Logger` (`com.lucasstop.LogiBattery`, categoria `storage`) sem nome nem série. O host lê no intervalo dos ajustes (padrão 1 min) mesmo sem o popover aberto, e relê em até ~2 s quando um aparelho conecta ou desconecta ou manda um frame HID++ espontâneo (`HIDDiscovery.changes`). Depois dessa releitura, repete a leitura 5, 10 e 15 s depois: aparelho recém-conectado (ex.: mouse trocando para Bluetooth) ainda está acordando e falha a primeira leitura, e esperar o próximo ciclo de 1 min deixaria o widget sem ele. A lista de interfaces sai do IORegistry a cada leitura (`HIDDiscovery.endpoints()`); um `IOHIDManager` fora de run loop congela a lista na abertura e não via aparelho que conectou depois.
 - Aviso (US-07, US-08): a regra de aviso compara a leitura nova com o último estado notificado por aparelho; dispara uma vez e rearma quando a bateria sobe acima do limite ou um novo ciclo de carga começa.
+- Bateria do sistema (US-13): a cada leitura, o host soma aos aparelhos HID++ a bateria interna do Mac (`IOPowerSources`, só `InternalBattery`) e os fones Bluetooth conectados de classe áudio (`IOBluetoothDevice`, chaves `batteryPercent*`; fone de dois lados sem nível único usa o lado mais fraco). Fone fora da leitura foi desligado e some na hora, sem a regra das 24 h; o Mac vem primeiro na ordem do widget e do popover. O Mac entra nos avisos e no ícone da barra como qualquer aparelho.
 - Permissão (US-12): sem Input Monitoring a enumeração retorna vazio; o app mostra o guia em vez de lista vazia.
 
 ## 5. Dados
@@ -57,7 +60,7 @@ Só o app host acessa o hardware. O widget lê o snapshot e nunca fala com HID.
 ## 6. Segurança e privacidade
 - Autenticação / autorização: não há conta. Permissões do sistema: Input Monitoring e Bluetooth.
 - Segredos: variáveis de ambiente, nunca no repositório. Lista em `.env.example`.
-- Dados pessoais e LGPD: nenhum dado pessoal; o número de série do aparelho não sai do Mac. Sem rede, sem telemetria, sem log com série em claro.
+- Dados pessoais e LGPD: nenhum dado pessoal coletado; o número de série do aparelho não sai do Mac. O nome do Mac e o do fone podem conter o nome do usuário: ficam só no App Group, nunca em log. Sem rede, sem telemetria, sem log com série em claro.
 
 ## 7. Ambientes e deploy
 - Ambientes: local e CI. Sem preview, sem produção hospedada.
@@ -74,6 +77,7 @@ Só o app host acessa o hardware. O widget lê o snapshot e nunca fala com HID.
 - Aparelho dormindo não responde (o PRO X TKL por Lightspeed dorme ~12 s depois da última tecla e a leitura dá erro): o `DeviceListViewModel` mantém a última leitura de quem não veio no scan por até 24 h (`keepFor`), com a hora; passados 30 min ela fica cinza. O histórico grava o ponto no instante da leitura (`readAt`) e não regrava leitura mantida. Só frame do próprio aparelho dispara releitura (`IOHIDTransport.isDeviceEvent`: notificação HID++ 1.0 ou evento com software id 0); resposta a pedido do Logi Options+ não conta.
 - Input Monitoring e sandbox diferem entre assinatura local e distribuída: validar na issue de distribuição.
 - Aparelho só com `0x1000` ou `0x1001` não aparece. Se surgir um, implementar a feature com fixture do aparelho; a `0x1001` (voltagem) pede tabela por modelo.
+- As chaves `batteryPercent*` do `IOBluetoothDevice` são privadas: uma versão do macOS pode tirá-las, e o fone só some da lista (ADR 0002).
 - Receptor e Bluetooth do mesmo aparelho podem divergir um instante: regra de dedupe prioriza a leitura mais recente.
 
 ## 10. Decisões (ADR)
@@ -81,6 +85,7 @@ Só o app host acessa o hardware. O widget lê o snapshot e nunca fala com HID.
 | ADR | Decisão | Status |
 |---|---|---|
 | [0001](adr/0001-host-le-hardware-widget-le-snapshot.md) | App host lê o hardware e publica snapshot por App Group; o widget só lê | aceita |
+| [0002](adr/0002-bateria-do-sistema-via-iopowersources-e-iobluetooth.md) | Bateria do Mac por `IOPowerSources` e do fone por chaves privadas do `IOBluetoothDevice` | aceita |
 
 ## 11. Spike HID++ (issue #10, 2026-10-29)
 

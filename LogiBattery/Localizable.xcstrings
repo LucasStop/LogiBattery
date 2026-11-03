@@ -513,6 +513,22 @@
         }
       }
     },
+    "path.internal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Internal battery"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bateria interna"
+          }
+        }
+      }
+    },
     "popover.settings": {
       "localizations": {
         "pt-BR": {

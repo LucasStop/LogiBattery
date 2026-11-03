@@ -23,6 +23,7 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_LSUIElement: YES
         INFOPLIST_KEY_CFBundleDisplayName: LogiBattery
+        INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "Para mostrar a bateria do fone Bluetooth junto com os outros aparelhos."
         CODE_SIGN_ENTITLEMENTS: LogiBattery/LogiBattery.entitlements
         ENABLE_HARDENED_RUNTIME: YES
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon

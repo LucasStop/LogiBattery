@@ -28,7 +28,8 @@ final class DeviceListViewModel {
     static let keepFor: TimeInterval = 24 * 3600
 
     /// Aparelho dormindo (o teclado Lightspeed dorme ~12 s parado) não responde e sumiria entre leituras;
-    /// fica a última leitura dele, que passa a cinza depois de `Snapshot.staleAfter`.
+    /// fica a última leitura dele, que passa a cinza depois de `Snapshot.staleAfter`. Fone fora do scan foi
+    /// desligado (o sistema sabe na hora) e some, como no widget da Apple.
     func refresh() async {
         guard !isRefreshing else { return }
         isRefreshing = true
@@ -36,7 +37,9 @@ final class DeviceListViewModel {
         let fresh = await scanner.scan()
         let now = Date.now
         let seen = Set(fresh.map(\.identity))
-        let kept = devices.filter { !seen.contains($0.identity) && now.timeIntervalSince($0.readAt) < Self.keepFor }
+        let kept = devices.filter {
+            $0.kind != .headphones && !seen.contains($0.identity) && now.timeIntervalSince($0.readAt) < Self.keepFor
+        }
         devices = Snapshot.widgetOrder(fresh + kept)
         hasLoaded = true
         lastRefresh = now
