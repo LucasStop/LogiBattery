@@ -9,7 +9,7 @@ Fluxo e regras em [README.md](README.md). Tela só vai para desenvolvimento com 
 | T03 | Widget grande | US-05, US-09 | padrão, sem dados, desatualizado | prototypes/t03-widget-grande.html | implementada | 2026-10-27 | Lista e gráfico. Linha cinza para leitura com mais de 30 min (aprovado em 2026-11-03) |
 | T04 | Popover da barra de menu | US-01, US-02, US-03, US-04, US-06 | padrão, vazio, carregando, erro de permissão | prototypes/t04-popover.html | implementada | 2026-10-27 | Ícone indica o menor nível; com Histórico, Ajustes e Sair |
 | T05 | Histórico (gráfico por aparelho) | US-09 | padrão, vazio, carregando | prototypes/t05-historico.html | implementada | 2026-10-27 | 24 h, 7 dias, 30 dias |
-| T06 | Ajustes | US-07, US-08, US-10, US-11, US-14 | padrão | prototypes/t06-ajustes.html | implementada | 2026-10-27 | Limites, intervalo, login, apagar histórico. Opção de esconder o ícone da barra de menus (aprovado em 2026-11-03, #56) |
+| T06 | Ajustes | US-07, US-08, US-10, US-11, US-14 | padrão | prototypes/t06-ajustes-sistema.html | em revisão | 2026-10-27 | Revisão #67: visual dos Ajustes do Sistema (seções com cabeçalho, ícone num quadrado colorido por linha, `Form(.grouped)`), mesmas opções; versão aprovada anterior em prototypes/t06-ajustes.html. Limites, intervalo, login, apagar histórico. Opção de esconder o ícone da barra de menus (aprovado em 2026-11-03, #56) |
 | T07 | Guia de permissão | US-12 | padrão | prototypes/t07-permissao.html | implementada | 2026-10-27 | Leva ao painel de Privacidade |
 | T08 | Notificações (baixa e carga cheia) | US-07, US-08 | baixa, crítica, cheia | prototypes/t08-notificacoes.html | implementada | 2026-10-27 | Texto e ações do sistema; sem ações (Ver aparelhos, Silenciar) |
 
