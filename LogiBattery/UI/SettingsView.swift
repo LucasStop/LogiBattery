@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// Janela de ajustes (T06, #67): visual dos Ajustes do Sistema (`Form(.grouped)`, seções com cabeçalho e ícone em
@@ -6,6 +7,7 @@ struct SettingsView: View {
     @State private var model = SettingsModel.shared
     @State private var login = LoginItemModel()
     @State private var confirmDelete = false
+    @State private var pixCopied = false
     @AppStorage(SettingsModel.showMenuBarIconKey) private var showMenuBarIcon = true
     @AppStorage(SettingsModel.popoverWidthKey) private var popoverWidth = SettingsModel.defaultPopoverWidth
 
@@ -45,6 +47,28 @@ struct SettingsView: View {
                     label("settings.history", hint: "settings.history.hint", icon: "trash.fill", tint: .red)
                 }
             }
+            Section("settings.section.about") {
+                LabeledContent {
+                    Text(AboutInfo.version).monospacedDigit().foregroundStyle(.secondary)
+                } label: {
+                    label("settings.version", hint: "settings.version.hint", icon: "info.circle.fill", tint: .gray)
+                }
+                LabeledContent {
+                    Button("settings.github.open") { NSWorkspace.shared.open(AboutInfo.repositoryURL) }
+                } label: {
+                    label("settings.github", hint: "settings.github.hint",
+                          icon: "chevron.left.forwardslash.chevron.right", tint: .gray)
+                }
+                LabeledContent {
+                    Button(pixCopied ? "settings.pix.copied" : "settings.pix.copy") {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(AboutInfo.pixKey, forType: .string)
+                        pixCopied = true
+                    }
+                } label: {
+                    label("settings.pix", hint: "settings.pix.hint", icon: "diamond.fill", tint: .green)
+                }
+            }
         }
         .formStyle(.grouped)
         .frame(width: 420)
@@ -78,6 +102,16 @@ struct SettingsView: View {
                 label(title, hint: hint, icon: icon, tint: tint)
             }
         }
+    }
+}
+
+/// Dados da seção Sobre (#91). Links abrem no navegador padrão via `NSWorkspace`; o app não tem entitlement de rede.
+enum AboutInfo {
+    static let repositoryURL = URL(string: "https://github.com/LucasStop/LogiBattery")!
+    /// Chave Pix aleatória pública, feita para ser divulgada.
+    static let pixKey = "dd226f83-02f0-4c80-bd23-322c9f5fa7ee" // gitleaks:allow (chave pública de doação)
+    static var version: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
     }
 }
 

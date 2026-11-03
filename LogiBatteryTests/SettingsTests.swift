@@ -107,3 +107,14 @@ private final class SettingsRecordingNotifier: AlertNotifying {
     var alerts: [BatteryAlert] = []
     func notify(_ alert: BatteryAlert) { alerts.append(alert) }
 }
+
+final class AboutInfoTests: XCTestCase {
+    func testPixKeyIsRandomKeyUUID() {
+        XCTAssertNotNil(UUID(uuidString: AboutInfo.pixKey))
+    }
+
+    func testRepositoryURLIsHTTPSGitHub() {
+        XCTAssertEqual(AboutInfo.repositoryURL.scheme, "https")
+        XCTAssertEqual(AboutInfo.repositoryURL.host, "github.com")
+    }
+}
