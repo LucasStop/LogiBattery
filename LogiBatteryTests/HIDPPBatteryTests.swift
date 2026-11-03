@@ -41,3 +41,19 @@ final class HIDPPBatteryTests: XCTestCase {
         XCTAssertEqual(frame.bytes.count, 20)
     }
 }
+
+/// Frames reais capturados com o Logi Options+ aberto: só evento do aparelho dispara releitura.
+final class DeviceEventFilterTests: XCTestCase {
+    func testDeviceEventsCount() {
+        XCTAssertTrue(IOHIDTransport.isDeviceEvent([0x10, 0x01, 0x41, 0x11, 0xA1, 0xB0, 0x40]))
+        XCTAssertTrue(IOHIDTransport.isDeviceEvent([0x11, 0x01, 0x07, 0x00, 0x4C, 0x08, 0x00, 0x00]))
+        XCTAssertTrue(IOHIDTransport.isDeviceEvent([0x11, 0x01, 0x04, 0x00, 0x01, 0x01, 0x01, 0x00]))
+    }
+
+    func testErrorsAndAnswersToOtherRequestsDoNotCount() {
+        XCTAssertFalse(IOHIDTransport.isDeviceEvent([0x10, 0xFF, 0x8F, 0x83, 0xB5, 0x09, 0x00]))
+        XCTAssertFalse(IOHIDTransport.isDeviceEvent([0x11, 0x01, 0x07, 0x11, 0x4C, 0x08, 0x00, 0x00]))
+        XCTAssertFalse(IOHIDTransport.isDeviceEvent([0x11, 0x01, 0xFF, 0x07, 0x11, 0x05, 0x00, 0x00]))
+        XCTAssertFalse(IOHIDTransport.isDeviceEvent([0x02, 0x00, 0x01, 0x00, 0x00]))
+    }
+}

@@ -14,43 +14,59 @@ final class HistoryStoreTests: XCTestCase {
         try? FileManager.default.removeItem(at: directory)
     }
 
-    private func device(_ id: String, _ percent: Int?, _ state: ChargeState = .discharging) -> Device {
+    private func device(_ id: String, _ percent: Int?, _ state: ChargeState = .discharging,
+                        minutes: Double = 0) -> Device {
         Device(id: id, name: "Device \(id)", kind: .mouse, percent: percent, chargeState: state, path: .bluetooth,
-               readAt: start)
+               readAt: start.addingTimeInterval(minutes * 60))
+    }
+
+    /// Grava como o app: o instante da gravação é o da leitura.
+    private func record(_ store: HistoryStore, _ devices: [Device]) throws {
+        try store.record(devices, at: devices.map(\.readAt).max() ?? start)
     }
 
     func testRecordsFirstReadingAndSkipsUnchangedOnesWithinInterval() throws {
         let store = HistoryStore(directory: directory)
-        try store.record([device("a", 80)], at: start)
-        try store.record([device("a", 80)], at: start.addingTimeInterval(5 * 60))
+        try record(store, [device("a", 80)])
+        try record(store, [device("a", 80, minutes: 5)])
         XCTAssertEqual(store.points(since: .distantPast).count, 1)
     }
 
     func testRecordsOnPercentOrChargeStateChange() throws {
         let store = HistoryStore(directory: directory)
-        try store.record([device("a", 80)], at: start)
-        try store.record([device("a", 79)], at: start.addingTimeInterval(300))
-        try store.record([device("a", 79, .charging)], at: start.addingTimeInterval(600))
+        try record(store, [device("a", 80)])
+        try record(store, [device("a", 79, minutes: 5)])
+        try record(store, [device("a", 79, .charging, minutes: 10)])
         XCTAssertEqual(store.points(since: .distantPast).map(\.percent), [80, 79, 79])
     }
 
     func testRecordsUnchangedReadingAfterHalfAnHour() throws {
         let store = HistoryStore(directory: directory)
-        try store.record([device("a", 80)], at: start)
-        try store.record([device("a", 80)], at: start.addingTimeInterval(31 * 60))
+        try record(store, [device("a", 80)])
+        try record(store, [device("a", 80, minutes: 31)])
         XCTAssertEqual(store.points(since: .distantPast).count, 2)
+    }
+
+    /// Aparelho dormindo segue na lista com a leitura antiga; ela não vira ponto novo no histórico.
+    func testKeptReadingOfSleepingDeviceIsNotRecordedAgain() throws {
+        let store = HistoryStore(directory: directory)
+        try record(store, [device("a", 80), device("b", 60)])
+        try record(store, [device("a", 80), device("b", 59, minutes: 10)])
+        try store.record([device("a", 80), device("b", 59, minutes: 10)], at: start.addingTimeInterval(40 * 60))
+        XCTAssertEqual(store.points(since: .distantPast).map(\.percent), [80, 60, 59])
+        XCTAssertEqual(store.points(since: .distantPast).map(\.timestamp).max(), start.addingTimeInterval(600))
     }
 
     func testIgnoresDevicesWithoutPercentAndKeepsDevicesSeparate() throws {
         let store = HistoryStore(directory: directory)
-        try store.record([device("a", nil), device("b", 50), device("c", 60)], at: start)
+        try record(store, [device("a", nil), device("b", 50), device("c", 60)])
         XCTAssertEqual(Set(store.points(since: .distantPast).map(\.deviceId)), ["b", "c"])
     }
 
     func testPointsSinceFiltersByTime() throws {
         let store = HistoryStore(directory: directory)
-        try store.record([device("a", 80)], at: start)
-        try store.record([device("a", 70)], at: start.addingTimeInterval(3600))
+        try record(store, [device("a", 80)])
+        try record(store, [device("a", 70, minutes: 60)])
         XCTAssertEqual(store.points(since: start.addingTimeInterval(1800)).map(\.percent), [70])
     }
 
@@ -58,7 +74,7 @@ final class HistoryStoreTests: XCTestCase {
         try Data("oops".utf8).write(to: directory.appendingPathComponent("history.json"))
         let store = HistoryStore(directory: directory)
         XCTAssertEqual(store.points(since: .distantPast), [])
-        try store.record([device("a", 80)], at: start)
+        try record(store, [device("a", 80)])
         XCTAssertEqual(store.points(since: .distantPast).count, 1)
     }
 }
@@ -70,13 +86,14 @@ final class HistoryRetentionTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: directory) }
         let now = Date(timeIntervalSince1970: 1_800_000_000)
         let store = HistoryStore(directory: directory)
-        func device(_ percent: Int) -> Device {
-            Device(id: "a", name: "A", kind: .mouse, percent: percent, chargeState: .discharging, path: .receiver,
-                   readAt: now)
+        func record(_ percent: Int, daysAgo: Double) throws {
+            let readAt = now.addingTimeInterval(-daysAgo * 86_400)
+            try store.record([Device(id: "a", name: "A", kind: .mouse, percent: percent, chargeState: .discharging,
+                                     path: .receiver, readAt: readAt)], at: readAt)
         }
-        try store.record([device(90)], at: now.addingTimeInterval(-91 * 86_400))
-        try store.record([device(80)], at: now.addingTimeInterval(-89 * 86_400))
-        try store.record([device(70)], at: now)
+        try record(90, daysAgo: 91)
+        try record(80, daysAgo: 89)
+        try record(70, daysAgo: 0)
         XCTAssertEqual(store.points(since: .distantPast).map(\.percent), [80, 70])
     }
 }

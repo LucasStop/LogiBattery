@@ -1,3 +1,4 @@
+import OSLog
 import SwiftUI
 import WidgetKit
 
@@ -9,6 +10,8 @@ struct LogiBatteryApp: App {
     @Environment(\.openWindow) private var openWindow
 
     init() {
+        // O host dos testes é o app: sem isso ele lê o hardware e grava no App Group durante o `xcodebuild test`.
+        guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
         let viewModel = viewModel
         Task {
             await viewModel.run(interval: { SettingsModel.shared.values.interval }, changes: discovery.changes)
@@ -65,16 +68,29 @@ private struct LiveScanner: DeviceScanning {
 
 @MainActor private let alerts = AlertCoordinator(notifier: UserNotificationNotifier())
 
-/// Grava o snapshot do widget e pede a ele que recarregue (ADR 0001).
+private let storageLog = Logger(subsystem: "com.lucasstop.LogiBattery", category: "storage")
+
+/// Grava histórico e snapshot (um não bloqueia o outro) e recarrega o widget só quando o que ele mostra mudou
+/// (ADR 0001). O snapshot é gravado sempre: `generatedAt` é o sinal de que o app está vivo.
 @MainActor
 private func publishSnapshot(_ devices: [Device]) {
     alerts.handle(devices)
     guard let store = SnapshotStore.appGroup else { return }
+    let now = Date.now
+    let previous = store.read()
     do {
-        try HistoryStore.appGroup?.record(devices, at: .now)
-        try store.write(devices, at: .now)
-        WidgetCenter.shared.reloadAllTimelines()
+        try HistoryStore.appGroup?.record(devices, at: now)
     } catch {
-        // Sem log com dado do usuário; o widget segue com o snapshot anterior.
+        // Sem nome nem série do aparelho no log.
+        storageLog.error("history write failed: \(error.localizedDescription, privacy: .public)")
+    }
+    do {
+        try store.write(devices, at: now)
+    } catch {
+        storageLog.error("snapshot write failed: \(error.localizedDescription, privacy: .public)")
+        return
+    }
+    if previous.map({ $0.isStale(at: now) || Snapshot.meaningfullyDiffers($0.devices, devices, at: now) }) ?? true {
+        WidgetCenter.shared.reloadAllTimelines()
     }
 }

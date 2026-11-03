@@ -48,11 +48,11 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 
 | História (PRD) | Critério de aceite | Teste(s) | Nível |
 |---|---|---|---|
-| US-01 | Aparelho por receptor aparece com nome e % | `HIDPPBatteryTests`, `ReceiverEnumerationTests`; smoke com receptor | unitário, manual |
+| US-01 | Aparelho por receptor aparece com nome e % | `HIDPPBatteryTests`, `ReceiverEnumerationTests`, `KeepLastReadingTests` (aparelho dormindo não some), `DeviceEventFilterTests`; smoke com receptor | unitário, manual |
 | US-02 | Aparelho Bluetooth aparece com nome e % | `BluetoothDeviceTests`; smoke Bluetooth | unitário, manual |
 | US-03 | Mesmo aparelho em dois caminhos vira um item | `DeviceDedupeTests` | unitário |
 | US-04 | Estado carregando e cheio | `ChargeStateTests` | unitário |
-| US-05 | Widget mostra nome, % e estado nos 3 tamanhos | `SnapshotContractTests`; snapshot visual por tamanho | integração, visual |
+| US-05 | Widget mostra nome, % e estado nos 3 tamanhos | `SnapshotContractTests`, `WidgetReloadTests` (reload só com mudança, leitura velha); snapshot visual por tamanho | integração, visual |
 | US-06 | Popover lista aparelhos; ícone mostra o menor nível | `PopoverViewModelTests`; XCUITest do popover | componente, E2E |
 | US-07 | Bateria baixa avisa uma vez e rearma | `LowBatteryRuleTests` | unitário |
 | US-08 | Carga completa avisa uma vez por ciclo | `FullChargeRuleTests` | unitário |

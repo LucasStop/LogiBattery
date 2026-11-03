@@ -24,13 +24,22 @@ final class DeviceListViewModel {
         }
     }
 
+    /// Quanto tempo a última leitura de um aparelho que não respondeu continua na lista.
+    static let keepFor: TimeInterval = 24 * 3600
+
+    /// Aparelho dormindo (o teclado Lightspeed dorme ~12 s parado) não responde e sumiria entre leituras;
+    /// fica a última leitura dele, que passa a cinza depois de `Snapshot.staleAfter`.
     func refresh() async {
         guard !isRefreshing else { return }
         isRefreshing = true
         defer { isRefreshing = false }
-        devices = Snapshot.widgetOrder(await scanner.scan())
+        let fresh = await scanner.scan()
+        let now = Date.now
+        let seen = Set(fresh.map(\.identity))
+        let kept = devices.filter { !seen.contains($0.identity) && now.timeIntervalSince($0.readAt) < Self.keepFor }
+        devices = Snapshot.widgetOrder(fresh + kept)
         hasLoaded = true
-        lastRefresh = .now
+        lastRefresh = now
         publish(devices)
     }
 

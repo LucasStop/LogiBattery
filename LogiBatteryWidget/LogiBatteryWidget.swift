@@ -14,9 +14,15 @@ struct BatteryProvider: TimelineProvider {
         completion(entry())
     }
 
+    /// Uma entrada por minuto: o "há X min" e o cinza de leitura velha andam sem o host recarregar o widget,
+    /// que só recarrega quando a leitura muda (orçamento do WidgetKit).
     func getTimeline(in context: Context, completion: @escaping (Timeline<BatteryEntry>) -> Void) {
-        // Reavalia o "desatualizado" mesmo sem o host recarregar a timeline.
-        completion(Timeline(entries: [entry()], policy: .after(.now.addingTimeInterval(15 * 60))))
+        let first = entry()
+        let entries = (0..<15).map {
+            BatteryEntry(date: first.date.addingTimeInterval(Double($0) * 60), snapshot: first.snapshot,
+                         series: first.series)
+        }
+        completion(Timeline(entries: entries, policy: .after(first.date.addingTimeInterval(15 * 60))))
     }
 
     private func entry() -> BatteryEntry {
@@ -38,10 +44,10 @@ struct BatteryWidgetView: View {
             if devices.isEmpty {
                 EmptyWidget()
             } else if family == .systemSmall {
-                SmallWidget(devices: Array(devices.prefix(4)), isStale: isStale)
+                SmallWidget(devices: Array(devices.prefix(4)), isStale: isStale, date: entry.date)
             } else {
                 ListWidget(devices: Array(devices.prefix(family == .systemMedium ? 3 : 4)), isStale: isStale,
-                           series: family == .systemLarge ? entry.series : [])
+                           date: entry.date, series: family == .systemLarge ? entry.series : [])
             }
         }
         .containerBackground(.fill.tertiary, for: .widget)
@@ -62,17 +68,19 @@ private struct EmptyWidget: View {
 private struct SmallWidget: View {
     let devices: [Device]
     let isStale: Bool
+    let date: Date
 
     var body: some View {
         let columns = [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)]
         LazyVGrid(columns: columns, spacing: 8) {
             ForEach(devices) { device in
+                let gray = isStale || device.isOld(at: date)
                 VStack(spacing: 2) {
                     ZStack {
                         Circle().stroke(.quaternary, lineWidth: 5)
                         Circle()
                             .trim(from: 0, to: CGFloat(min(max(device.percent ?? 0, 0), 100)) / 100)
-                            .stroke(isStale ? .secondary : device.tint,
+                            .stroke(gray ? .secondary : device.tint,
                                     style: StrokeStyle(lineWidth: 5, lineCap: .round))
                             .rotationEffect(.degrees(-90))
                         Image(systemName: device.symbolName).font(.system(size: 15)).foregroundStyle(.secondary)
@@ -82,7 +90,7 @@ private struct SmallWidget: View {
                         TransportBadge(path: device.path)
                         Text(device.percent.map { "\($0)%" } ?? "—")
                             .font(.system(size: 13, weight: .semibold)).monospacedDigit()
-                            .foregroundStyle(isStale ? .secondary : BatteryLevel(percent: device.percent).color)
+                            .foregroundStyle(gray ? .secondary : BatteryLevel(percent: device.percent).color)
                     }
                 }
                 .accessibilityElement(children: .ignore)
@@ -96,6 +104,7 @@ private struct SmallWidget: View {
 private struct ListWidget: View {
     let devices: [Device]
     let isStale: Bool
+    let date: Date
     let series: [HistorySeries]
 
     var body: some View {
@@ -103,6 +112,7 @@ private struct ListWidget: View {
             Text(isStale ? "widget.title.stale" : "widget.title")
                 .font(.caption).foregroundStyle(.secondary)
             ForEach(devices) { device in
+                let gray = isStale || device.isOld(at: date)
                 HStack(spacing: 8) {
                     Image(systemName: device.symbolName).foregroundStyle(.secondary).frame(width: 18)
                     VStack(alignment: .leading, spacing: 2) {
@@ -114,11 +124,11 @@ private struct ListWidget: View {
                         }
                     }
                     Spacer(minLength: 4)
-                    StatusLine(device: device, isStale: isStale)
+                    StatusLine(device: device, isStale: gray)
                     Text(device.percent.map { "\($0)%" } ?? "—")
                         .font(.title3.weight(.semibold)).monospacedDigit()
-                        .foregroundStyle(isStale ? .secondary : BatteryLevel(percent: device.percent).color)
-                    BatteryCell(percent: device.percent, tint: isStale ? .secondary : device.tint)
+                        .foregroundStyle(gray ? .secondary : BatteryLevel(percent: device.percent).color)
+                    BatteryCell(percent: device.percent, tint: gray ? .secondary : device.tint)
                         .frame(width: 44)
                 }
                 .accessibilityElement(children: .combine)

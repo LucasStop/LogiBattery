@@ -74,8 +74,16 @@ final class IOHIDTransport: HIDPPTransport, @unchecked Sendable {
     }
 
     private func notifyIfUnsolicited(_ report: [UInt8]) {
-        guard report[0] == 0x10 || report[0] == 0x11, report[2] != Self.errorFeature, report[2] != 0xFF else { return }
-        onActivity()
+        if Self.isDeviceEvent(report) { onActivity() }
+    }
+
+    /// Frame que veio do aparelho sem pedido: notificação HID++ 1.0 (`0x40`...`0x7F`, ex.: `0x41` conexão) ou
+    /// evento HID++ 2.0 (software id 0). Erro e resposta a pedido de outro app (Logi Options+ usa o software id
+    /// dele) não contam.
+    static func isDeviceEvent(_ report: [UInt8]) -> Bool {
+        guard report.count >= 4, report[0] == 0x10 || report[0] == 0x11 else { return false }
+        if (0x40..<0x80).contains(report[2]) { return true }
+        return report[2] < 0x40 && report[3] & 0x0F == 0
     }
 
     private func finish(_ token: Int, _ result: Result<HIDPPFrame, Error>) {
