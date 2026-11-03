@@ -34,8 +34,14 @@ final class DeviceListViewModel {
         guard !isRefreshing else { return }
         isRefreshing = true
         defer { isRefreshing = false }
-        let fresh = await scanner.scan()
         let now = Date.now
+        // Fone conectado que o sistema devolveu sem nível agora mantém a última leitura (issue #70).
+        let fresh = await scanner.scan().map { device in
+            guard device.kind == .headphones, device.percent == nil,
+                  let last = devices.first(where: { $0.identity == device.identity && $0.percent != nil })
+            else { return device }
+            return last
+        }
         let seen = Set(fresh.map(\.identity))
         let kept = devices.filter {
             $0.kind != .headphones && !seen.contains($0.identity) && now.timeIntervalSince($0.readAt) < Self.keepFor

@@ -142,6 +142,19 @@ final class KeepLastReadingTests: XCTestCase {
         XCTAssertEqual(viewModel.devices.map(\.name), ["MX Master 3S"])
     }
 
+    /// Issue #70: fone conectado que veio sem nível nesta leitura mantém a última leitura (cinza depois de 30 min).
+    func testConnectedHeadsetWithoutLevelKeepsLastReading() async {
+        let before = Date.now.addingTimeInterval(-60)
+        let known = Device(id: "bt-audio-QCY", name: "QCY MeloBuds Pro", kind: .headphones, percent: 80,
+                           chargeState: .unknown, path: .bluetooth, readAt: before)
+        let noLevel = Device(id: "bt-audio-QCY", name: "QCY MeloBuds Pro", kind: .headphones, percent: nil,
+                             chargeState: .unknown, path: .bluetooth, readAt: .now)
+        let viewModel = DeviceListViewModel(scanner: ScriptedScanner([[known], [noLevel]]))
+        await viewModel.refresh()
+        await viewModel.refresh()
+        XCTAssertEqual(viewModel.devices, [known])
+    }
+
     func testDeviceBackWithNewIdReplacesKeptReading() async {
         let back = keyboard(.now, id: "ble-b382-3:255")
         let viewModel = DeviceListViewModel(scanner: ScriptedScanner([[keyboard(.now)], [], [back]]))
