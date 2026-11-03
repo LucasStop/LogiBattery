@@ -1,3 +1,4 @@
+import SwiftUI
 import XCTest
 @testable import LogiBattery
 
@@ -32,6 +33,28 @@ final class DeviceSymbolTests: XCTestCase {
         for name in ["lb.mouse.bluetooth", "lb.mouse.receiver", "lb.keyboard.bluetooth", "lb.keyboard.receiver",
                      "lb.headphones.bluetooth"] {
             XCTAssertNotNil(NSImage(named: name), name)
+        }
+    }
+
+    /// Regressão da #74: sem o glifo da escala, o símbolo sai vazio (o popover usa a pequena).
+    @MainActor
+    func testCustomSymbolsDrawInEveryScale() throws {
+        for name in ["lb.mouse.bluetooth", "lb.mouse.receiver", "lb.keyboard.bluetooth", "lb.keyboard.receiver",
+                     "lb.headphones.bluetooth"] {
+            for scale in [Image.Scale.small, .medium, .large] {
+                let view = Image(name).imageScale(scale).font(.system(size: 24)).foregroundStyle(.black)
+                    .frame(width: 64, height: 64)
+                let renderer = ImageRenderer(content: view)
+                let image = try XCTUnwrap(renderer.cgImage)
+                XCTAssertGreaterThan(inkedPixels(image), 20, "\(name) \(scale)")
+            }
+        }
+    }
+
+    private func inkedPixels(_ image: CGImage) -> Int {
+        let rep = NSBitmapImageRep(cgImage: image)
+        return (0..<rep.pixelsWide).reduce(0) { sum, column in
+            sum + (0..<rep.pixelsHigh).filter { (rep.colorAt(x: column, y: $0)?.alphaComponent ?? 0) > 0.5 }.count
         }
     }
 }

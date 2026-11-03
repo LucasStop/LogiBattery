@@ -1,7 +1,7 @@
 """Gera os SF Symbols próprios do LogiBattery (#65): o símbolo do aparelho com o selo de conexão recortado no canto
 de baixo à direita, como os `.badge` da Apple.
 
-Saídas: `LogiBattery/Symbols.xcassets/lb.*.symbolset` (template estático só com o Regular-M; o app usa só o peso regular) e
+Saídas: `LogiBattery/Symbols.xcassets/lb.*.symbolset` (template estático com o peso regular nas escalas S, M e L; o app usa só o peso regular) e
 `design/prototypes/custom-symbols.js` (prévia do protótipo).
 
 Uso, na raiz do repo, com o app SF Symbols instalado:
@@ -28,6 +28,9 @@ SYMBOLS = {
     'lb.keyboard.receiver': ('keyboard', 'rx', 106, -8),
     'lb.headphones.bluetooth': ('headphones', 'bt', 88, -6),
 }
+# Escala, fator sobre o desenho do template (que é o Small) e linha de base no template. Fatores medidos no
+# `computermouse` do sistema a 100 pt: largura 75 (S), 93 (M) e 119 (L) para 74,1 unidades de desenho.
+SCALES = [('S', 75 / 74.1, 696), ('M', 93 / 74.1, 1126), ('L', 119 / 74.1, 1556)]
 TEMPLATES = {}
 
 
@@ -92,15 +95,23 @@ def symbol_svg(base, path):
     old_right = float(re.search(r'id="right-margin-Regular-S"[^>]*x1="([\d.]+)"', svg).group(1))
     bearing = old_right - left - regular(base).bounds[2]
     right = left + path.bounds[2] + bearing
-    svg = re.sub(r'\s*<line id="(left|right)-margin-(Ultralight|Black)-S"[^>]*/>', '', svg)
-    svg = re.sub(r'\s*<g id="(Ultralight|Black)-S".*?</g>', '', svg, flags=re.S)
-    svg = re.sub(r'(id="right-margin-Regular-S"[^>]*x1=")[\d.]+(" x2=")[\d.]+', rf'\g<1>{right:.2f}\g<2>{right:.2f}', svg)
-    svg = re.sub(r'(<g id="Regular-S"[^>]*>\s*<path [^>]*?d=")[^"]+(")', rf'\g<1>{svg_d(path)}\g<2>', svg, flags=re.S)
-    # O actool exige o Regular-M; no template ele tem o mesmo tamanho do S, só desce para a linha de base do M.
-    svg = svg.replace('<g id="Regular-S" transform="matrix(1 0 0 1 ', '<g id="Regular-M" transform="matrix(1 0 0 1 ')
-    svg = re.sub(r'(<g id="Regular-M" transform="matrix\(1 0 0 1 [\d.]+) 696\)', r'\1 1126)', svg)
-    return re.sub(r'id="(left|right)-margin-Regular-S"(.*?)y1="600.785" y2="720.121"',
-                  r'id="\1-margin-Regular-M"\2y1="1030.79" y2="1150.12"', svg)
+    style = re.search(r'<path class="([^"]+)"', re.search(r'<g id="Regular-S".*?</g>', svg, re.S).group(0)).group(1)
+    margin = 'style="fill:none;stroke:#00AEEF;stroke-width:0.5;opacity:1.0;"'
+    lines, groups = [], []
+    # Template estático: sem os pesos Ultralight e Black, o actool não deriva as escalas, então vão as três à mão.
+    for scale, k, baseline in SCALES:
+        width = (right - left) * k
+        top, bottom = baseline - 95.215, baseline + 24.121
+        lines += [f'<line id="{side}-margin-Regular-{scale}" {margin} x1="{x:.2f}" x2="{x:.2f}" y1="{top:.3f}" '
+                  f'y2="{bottom:.3f}"/>' for side, x in (('left', left), ('right', left + width))]
+        scaled = Path()
+        path.draw(TransformPen(scaled.getPen(), (k, 0, 0, k, 0, 0)))
+        groups.append(f'<g id="Regular-{scale}" transform="matrix(1 0 0 1 {left:.2f} {baseline})">\n'
+                      f'   <path class="{style}" d="{svg_d(scaled)}"/>\n  </g>')
+    svg = re.sub(r'\s*<line id="(left|right)-margin-[A-Za-z]+-S"[^>]*/>', '', svg)
+    svg = svg.replace('</g>\n <g id="Symbols">', '  ' + '\n  '.join(lines) + '\n </g>\n <g id="Symbols">')
+    return re.sub(r'<g id="Symbols">.*?\n </g>', '<g id="Symbols">\n  ' + '\n  '.join(groups) + '\n </g>', svg,
+                  flags=re.S)
 
 
 def main():
