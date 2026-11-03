@@ -7,7 +7,9 @@ const I={mouse:'<rect x="5" y="2" width="10" height="16" rx="5"/><path d="M10 2v
  plug:'<path d="M7 2v4M13 2v4M5 6h10v3a5 5 0 0 1-10 0zM10 14v4"/>',
  bolt:'<path d="M11 2 4 11h5l-1 7 7-9h-5z" fill="currentColor"/>'};
 const svg=n=>`<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n]}</svg>`;
-document.querySelectorAll('[data-i]').forEach(e=>e.innerHTML=svg(e.dataset.i));
+// SF Symbol de verdade (symbols.js) quando existe, como máscara na cor do texto; o selo Bluetooth não tem SF Symbol.
+const sf=n=>{const s=SF[n];return `<i class="sf" style="width:${s.w/24}em;height:${s.h/24}em;-webkit-mask-image:url(${s.d});mask-image:url(${s.d})" aria-hidden="true"></i>`};
+document.querySelectorAll('[data-i]').forEach(e=>e.innerHTML=typeof SF!=='undefined'&&SF[e.dataset.i]?sf(e.dataset.i):svg(e.dataset.i));
 // Renderiza cada .pair em claro e escuro a partir de um único markup (protótipo, não vai para o app).
 document.querySelectorAll('.pair').forEach(p=>{
   const html=p.innerHTML;
