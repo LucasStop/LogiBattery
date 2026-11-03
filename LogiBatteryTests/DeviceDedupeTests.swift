@@ -39,4 +39,15 @@ final class DeviceDedupeTests: XCTestCase {
         let devices = await DeviceScanner(endpoints: [bolt, ble]).scan()
         XCTAssertEqual(devices.map(\.name), ["MX Master 3S"])
     }
+
+    func testBluetoothRecordWithGarbledNameIsDroppedLeavingOneDevice() async throws {
+        let good = HIDEndpoint(id: "ble-b034-a", transport: try FixtureTransport(fixture: "bluetooth-mx-master-3s"),
+                               path: .bluetooth)
+        let garbled = HIDEndpoint(id: "ble-b034-b", transport: try FixtureTransport(fixture: "bluetooth-mx-master-3s") {
+            if $0[2] == 0x03, $0[3] == 0x11 { $0[4] = 0x01 }
+        }, path: .bluetooth)
+        let devices = await DeviceScanner(endpoints: [garbled, good]).scan()
+        XCTAssertEqual(devices.map(\.name), ["MX Master 3S"])
+        XCTAssertEqual(devices.map(\.kind), [.mouse])
+    }
 }

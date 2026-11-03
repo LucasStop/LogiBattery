@@ -29,11 +29,17 @@ struct DeviceScanner: DeviceScanning {
         return DeviceDeduplicator.merge(found).sorted { ($0.percent ?? .max) < ($1.percent ?? .max) }
     }
 
+    private static func isPrintable(_ scalar: Unicode.Scalar) -> Bool {
+        scalar.value >= 0x20 && scalar.value != 0x7F && scalar.value != 0xFFFD
+    }
+
     private func scan(_ endpoint: HIDEndpoint) async -> [Device] {
         var devices: [Device] = []
         for index in endpoint.deviceIndexes {
             let session = HIDPPSession(transport: endpoint.transport, deviceIndex: index)
             guard let reading = try? await session.readDevice() else { continue }
+            // Segundo registro HID do mesmo aparelho Bluetooth devolve nome em bytes sem sentido (#72); descarta.
+            if endpoint.path == .bluetooth, !reading.name.unicodeScalars.allSatisfy(Self.isPrintable) { continue }
             devices.append(Device(id: "\(endpoint.id):\(index)", name: reading.name,
                                   kind: DeviceKind(name: reading.name), percent: reading.percent,
                                   chargeState: reading.chargeState, path: endpoint.path, readAt: now()))
