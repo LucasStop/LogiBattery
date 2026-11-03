@@ -78,7 +78,7 @@ Base: cores semânticas do sistema (`NSColor`/`Color`) para acompanhar o tema e 
 
 ### 3.3 Espaçamento e layout
 - Grid base: 4 pt. Escala: 4, 8, 12, 16, 24, 32. Sem número mágico fora da escala.
-- Popover: largura 320 pt. Widget: medidas e margens do Baterias na §3.8; o grande e o estado vazio usam as margens do sistema.
+- Popover: largura padrão 320 pt (configurável nos Ajustes de 320 a 480 pt, passo de 20 pt, para acomodar nomes longos). Widget: medidas e margens do Baterias na §3.8; o grande e o estado vazio usam as margens do sistema.
 - Breakpoints: N/A (macOS); o widget tem três famílias (pequeno, médio, grande). Abordagem: desktop.
 - Densidade: confortável. Alvo de clique mínimo: 24 x 24 pt.
 
@@ -95,9 +95,9 @@ Base: cores semânticas do sistema (`NSColor`/`Color`) para acompanhar o tema e 
 - Biblioteca de ícones: SF Symbols (`computermouse`, `keyboard`, `laptopcomputer`, `headphones`, `battery.*`, `bolt.fill`, `cable.connector`) · Tamanhos: 12, 16, 20 pt, e 24 pt no anel do widget (`icon.ring`) · Traço: regular.
 - Imagens/ilustração: sem ilustração; texto alternativo obrigatório em qualquer imagem.
 
-Ícones próprios (SF Symbols personalizados, #65 e #75), no widget (pequeno, médio e grande) e no popover. `Device.symbol` escolhe o símbolo; todo aparelho com conexão tem símbolo próprio, e o `TransportBadge` separado sai (em revisão, protótipos T01 a T03, #75).
-- Formato: template estático do SF Symbols só com o Regular-M (o `actool` exige esse; o app usa só o peso regular), como Symbol Image Set em `LogiBattery/Symbols.xcassets` (alvos do app e do widget). Gerado por `design/symbols/make.py`, que exporta o template da Apple pelo CLI do app SF Symbols e compõe o selo com skia-pathops; não editar o `.svg` à mão.
-- Nome: `lb.<aparelho>.<conexão>`. Conjunto: `lb.mouse.bluetooth`, `lb.mouse.receiver`, `lb.keyboard.bluetooth`, `lb.keyboard.receiver`, `lb.headphones.bluetooth`; novos em #75: `lb.headphones.receiver`, `lb.other.bluetooth`, `lb.other.receiver` (base `dot.radiowaves.left.and.right`). O Mac segue `laptopcomputer`, sem selo.
+Ícones próprios (SF Symbols personalizados, #65 e #75), no widget (pequeno, médio e grande) e no popover. `Device.symbol` escolhe o símbolo; todo aparelho com conexão tem símbolo próprio, e não há `TransportBadge` separado.
+- Formato: template estático do SF Symbols com o peso Regular nas escalas S, M e L (`actool` exige as três; o app usa só o peso regular), como Symbol Image Set em `LogiBattery/Symbols.xcassets` (alvos do app e do widget). Gerado por `design/symbols/make.py`, que exporta o template da Apple pelo CLI do app SF Symbols e compõe o selo com skia-pathops; não editar o `.svg` à mão.
+- Nome: `lb.<aparelho>.<conexão>`. Conjunto: `lb.mouse.bluetooth`, `lb.mouse.receiver`, `lb.keyboard.bluetooth`, `lb.keyboard.receiver`, `lb.headphones.bluetooth`, `lb.headphones.receiver`, `lb.other.bluetooth`, `lb.other.receiver` (base `dot.radiowaves.left.and.right`). O Mac segue `laptopcomputer`, sem selo.
 - Desenho: o SF Symbol do aparelho é a base; o selo (raio do Bluetooth com os pontos do `BluetoothRune`, 44 unidades de altura e traço de 5,5, ou `cable.connector` com 46 de altura para o receptor) fica sobre o desenho, com recorte de folga de 5 unidades em volta, no peso regular.
 - Posição do selo: canto de baixo à direita em todos os aparelhos, avançando para fora do desenho base, como os `.badge` da Apple (escolha do Lucas em 2026-11-03, protótipo T01).
 - O selo não vira texto: o rótulo do VoiceOver continua "nome, percentual" no anel; na lista do widget grande a conexão entra pelo rótulo do símbolo, e no popover o símbolo fica oculto (a conexão já está no texto).
@@ -158,7 +158,7 @@ Por componente, registrar em `design/components.md` a anatomia e a regra de uso;
 - Estado de erro: diz o que houve (ex.: permissão negada) e leva ao painel de Privacidade.
 - Navegação: ícone na barra de menu abre o popover; ajustes em janela própria; profundidade máxima 2.
 - Listas: aparelhos ordenados do menor para o maior nível; sem busca nem paginação.
-- Widget: três tamanhos. Pequeno e médio usam a grade de anéis com 4 posições fixas (2x2 e 4x1), Mac primeiro e o resto do menor para o maior nível; posição sem aparelho mostra só o anel vazio (`quaternary`, fora do VoiceOver). O ícone do aparelho (`computermouse`, `keyboard`, `laptopcomputer`, `headphones`) fica no centro do anel, em cor primária. Medidas do Baterias da Apple na §3.8 (#63). Pequeno: selo de conexão (Bluetooth ou receptor; o Mac não tem) dentro do anel, logo abaixo do ícone, e sem percentual (lotava a grade; o VoiceOver lê o número). Médio, igual ao médio da Apple: percentual semibold em cor primária embaixo do anel, com o selo ao lado do percentual (#60). O grande segue com a lista e o gráfico. Aprovado por Lucas em 2026-11-03.
+- Widget: três tamanhos. Pequeno e médio usam a grade de anéis com 4 posições fixas por página (2x2 e 4x1), Mac primeiro e o resto do menor para o maior nível; posição sem aparelho mostra só o anel vazio (`quaternary`, fora do VoiceOver). O ícone do aparelho fica no centro do anel, em cor primária, com o selo de conexão recortado no canto de baixo à direita do próprio símbolo (`lb.*`, #65 e #75; o Mac não tem selo). Medidas do Baterias da Apple na §3.8 (#63). Pequeno: sem percentual (lotava a grade; o VoiceOver lê o número). Médio, igual ao médio da Apple: percentual semibold em cor primária embaixo do anel, com paginação a partir do 5º aparelho via `AppIntent` (#79). O grande segue com a lista e o gráfico até 4 aparelhos; com 5 ou 6 aparelhos mostra até 6 linhas sem gráfico numa página só, e a partir do 7º pagina de 6 em 6 linhas (#79). Aprovado por Lucas em 2026-11-03.
 - Leitura velha: aparelho sem leitura nova há mais de 30 min (dormindo ou fora de alcance) continua na lista com a hora da última leitura, e anel, número e célula ficam em `muted` (`.secondary`), no widget e no popover. Volta à cor na primeira leitura nova. Aprovado por Lucas em 2026-11-03.
 
 ## 6. Acessibilidade
@@ -217,6 +217,7 @@ Nenhuma tela é desenvolvida sem protótipo aprovado. O inventário e o status d
 - 2026-11-03: widget pequeno e médio nas medidas do Baterias (anel de 64 e 62 pt, ícone de 24 pt em cor primária, percentual de 16 pt), conferidas em print ao lado do da Apple; protótipos com os SF Symbols de verdade (#63).
 - 2026-11-03: símbolos próprios com o selo de conexão no canto de baixo (`lb.*`), no widget e no popover (#65).
 - 2026-11-03: fundo do widget transparente (base do sistema, vidro nos estilos translúcido e tonalizado), anel na cor do nível também no translúcido e no tonalizado (imagem em cor cheia) e matriz de estilos com prints; vidro do Baterias no estilo padrão é exclusivo da Apple (#64).
+- 2026-11-03: todos os ícones com conexão usam símbolo próprio `lb.*` (`lb.other.*` e `lb.headphones.receiver`), sem `TransportBadge` separado (#75); popover na direção B com faixa de anéis no topo e seções em vidro (#66); paginação nos widgets médio e grande com `AppIntent` (#79); Ajustes no visual dos Ajustes do Sistema com ícones coloridos por linha (#67).
 
 ## Ícone do app
 Opção A aprovada por Lucas em 2026-10-29: anel de carga verde (gradiente `#5EE59A` a `#1F9D55`) sobre fundo escuro `#1C2333`/`#0B0F19`, com raio branco no centro. Fonte em `design/icon/appicon.svg` (1024 pt, margem de 100 pt); os PNGs de `LogiBattery/Assets.xcassets/AppIcon.appiconset` saem dela com `rsvg-convert`.

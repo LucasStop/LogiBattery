@@ -50,4 +50,23 @@ final class DeviceDedupeTests: XCTestCase {
         XCTAssertEqual(devices.map(\.name), ["MX Master 3S"])
         XCTAssertEqual(devices.map(\.kind), [.mouse])
     }
+
+    @MainActor
+    func testRestoredSnapshotDropsGarbledNameInsteadOfKeepingAsSleepingDevice() async {
+        let now = Date(timeIntervalSince1970: 1_000)
+        let good = Device(id: "ble-b034-a:255", name: "MX Master 3S", kind: .mouse, percent: 85,
+                          chargeState: .discharging, path: .bluetooth, readAt: now)
+        let garbled = Device(id: "ble-b034-b:255", name: "Z\u{08}Z\u{08}Z", kind: .other, percent: 90,
+                             chargeState: .discharging, path: .bluetooth, readAt: now)
+        let snapshot = Snapshot(schemaVersion: Snapshot.schemaVersion, generatedAt: now, devices: [good, garbled])
+        let viewModel = DeviceListViewModel(scanner: FixedScanner(devices: [good]), restoring: snapshot, now: now)
+        XCTAssertEqual(viewModel.devices.map(\.name), ["MX Master 3S"])
+        await viewModel.refresh()
+        XCTAssertEqual(viewModel.devices.map(\.name), ["MX Master 3S"])
+    }
+}
+
+private struct FixedScanner: DeviceScanning {
+    let devices: [Device]
+    func scan() async -> [Device] { devices }
 }

@@ -5,7 +5,7 @@ Modelo de dados, migrações e ciclo de vida da informação. Ligado a [ARCHITEC
 Status: aprovada em 2026-10-27
 
 ## 1. Armazenamento
-- Banco: `history.json` no container do App Group (arquivo único, escrita atômica; SwiftData fica para quando o arquivo crescer, ver `HistoryStore`) · Cache/fila: N/A · Arquivos: `snapshot.json` no App Group, lido pelo widget
+- Banco: `history.json` no container do App Group (arquivo único, escrita atômica; SwiftData fica para quando o arquivo crescer, ver `HistoryStore`) · Cache/fila: N/A · Arquivos: `snapshot.json` (lido pelo widget) e `widget-pages.json` (página atual dos widgets médio e grande, #79) no App Group
 - Ambientes: local e produção são o próprio Mac do usuário; teste usa diretório temporário por execução.
 
 ## 2. Entidades

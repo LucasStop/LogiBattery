@@ -38,6 +38,14 @@ final class SettingsModel {
     /// Chave própria (`@AppStorage`) e não campo de `AppSettings`: campo novo ali quebra o decode dos ajustes
     /// já salvos, e o Codable sintetizado não usa o valor padrão para chave ausente.
     nonisolated static let showMenuBarIconKey = "showMenuBarIcon"
+    nonisolated static let popoverWidthKey = "popoverWidth"
+    nonisolated static let defaultPopoverWidth = 320
+    nonisolated static let popoverWidthRange = 320...480
+    nonisolated static let popoverWidthStep = 20
+
+    nonisolated static func normalizedPopoverWidth(_ width: Int) -> Int {
+        min(max(width, popoverWidthRange.lowerBound), popoverWidthRange.upperBound)
+    }
 
     private static let key = "settings"
     @ObservationIgnored private let defaults: UserDefaults

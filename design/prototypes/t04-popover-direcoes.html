@@ -41,9 +41,6 @@ h3.dir{font-size:15px;margin:0 0 var(--s2)}
 <div id="root"></div>
 <script src="symbols.js"></script><script src="custom-symbols.js"></script>
 <script>
-// lb.other.bluetooth (aproximação para o protótipo; o oficial sai de design/symbols/make.py, #75)
-{const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><defs><mask id="m"><rect width="24" height="24" fill="#fff"/><circle cx="18" cy="18" r="6.4" fill="#000"/></mask></defs><g mask="url(#m)" fill="none" stroke="#000" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="1.6" fill="#000" stroke="none"/><path d="M7.4 7.4a5.1 5.1 0 0 0 0 7.2M14.6 7.4a5.1 5.1 0 0 1 0 7.2M4.6 4.6a9 9 0 0 0 0 12.8M17.4 4.6a9 9 0 0 1 0 12.8"/></g><path d="m15.6 15.6 4.8 4.8-2.4 2V13.6l2.4 2-4.8 4.8" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-SF['lb.other.bluetooth']={w:24,h:24,d:'data:image/svg+xml;base64,'+btoa(svg)};}
 const D=[{n:'MX Master 3S',i:'lb.mouse.bluetooth',p:18,c:'low',s:'Baixa'},{n:'PRO X TKL',i:'lb.keyboard.receiver',p:52,c:'ok',s:''},{n:'Logitech Pebble',i:'lb.other.bluetooth',p:64,c:'ok',s:''},{n:'MX Keys Mini',i:'lb.keyboard.bluetooth',p:78,c:'chg',s:'Carregando'}];
 const lab=d=>`${d.n}, ${d.p}%${d.s?', '+d.s.toLowerCase():''}`;
 const sub=(d,l)=>(d.s&&!l?`<span class="lvl">${d.s}</span> · `:'')+'há 1 min';

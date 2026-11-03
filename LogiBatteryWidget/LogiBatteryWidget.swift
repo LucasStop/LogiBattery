@@ -1,3 +1,4 @@
+import AppIntents
 import SwiftUI
 import WidgetKit
 
@@ -5,6 +6,8 @@ struct BatteryEntry: TimelineEntry {
     let date: Date
     let snapshot: Snapshot?
     let series: [HistorySeries]
+    var mediumPage = 0
+    var largePage = 0
 }
 
 struct BatteryProvider: TimelineProvider {
@@ -20,15 +23,18 @@ struct BatteryProvider: TimelineProvider {
         let first = entry()
         let entries = (0..<15).map {
             BatteryEntry(date: first.date.addingTimeInterval(Double($0) * 60), snapshot: first.snapshot,
-                         series: first.series)
+                         series: first.series, mediumPage: first.mediumPage, largePage: first.largePage)
         }
         completion(Timeline(entries: entries, policy: .after(first.date.addingTimeInterval(15 * 60))))
     }
 
     private func entry() -> BatteryEntry {
         let points = HistoryStore.appGroup?.points(since: .now.addingTimeInterval(-HistoryPeriod.day.interval)) ?? []
+        let pages = WidgetPageStore.appGroup
         return BatteryEntry(date: .now, snapshot: SnapshotStore.appGroup?.read(),
-                            series: HistorySeries.build(points, period: .day, now: .now))
+                            series: HistorySeries.build(points, period: .day, now: .now),
+                            mediumPage: pages?.page(for: "medium") ?? 0,
+                            largePage: pages?.page(for: "large") ?? 0)
     }
 }
 
@@ -48,12 +54,16 @@ struct BatteryWidgetView: View {
             if devices.isEmpty {
                 EmptyWidget().padding(margins)
             } else if family == .systemLarge {
-                ListWidget(devices: Array(devices.prefix(4)), isStale: isStale, date: entry.date,
+                ListWidget(devices: devices, page: entry.largePage, isStale: isStale, date: entry.date,
                            thresholds: thresholds, series: entry.series)
                     .padding(margins)
+            } else if family == .systemMedium {
+                let slice = WidgetPage.slice(devices, page: entry.mediumPage, perPage: WidgetPage.mediumPerPage)
+                RingWidget(devices: slice.items, columns: 4, isStale: isStale, date: entry.date,
+                           thresholds: thresholds, slice: slice)
             } else {
-                RingWidget(devices: devices, columns: family == .systemSmall ? 2 : 4, isStale: isStale,
-                           date: entry.date, thresholds: thresholds)
+                RingWidget(devices: devices, columns: 2, isStale: isStale, date: entry.date,
+                           thresholds: thresholds, slice: nil)
             }
         }
         // Transparente: fica a base do próprio sistema, que é a mais escura e vira vidro nos estilos claro e
@@ -87,8 +97,8 @@ private enum RingMetrics {
     static let percentGap: CGFloat = 15
 }
 
-/// Até 4 aparelhos em anéis, como o widget de baterias do macOS: grade 2x2 no pequeno e linha 4x1 no médio.
-/// Posição sem aparelho fica com o anel vazio, para a grade não mudar de forma.
+/// Até 4 aparelhos em anéis por página, como o widget de baterias do macOS: grade 2x2 no pequeno e linha 4x1 no
+/// médio (com paginação a partir do 5º aparelho, T09, #79). Posição sem aparelho fica com o anel vazio.
 private struct RingWidget: View {
     static let slots = 4
     let devices: [Device]
@@ -96,6 +106,7 @@ private struct RingWidget: View {
     let isStale: Bool
     let date: Date
     let thresholds: BatteryThresholds
+    let slice: WidgetPageSlice<Device>?
 
     var body: some View {
         let filled = devices.prefix(Self.slots).map { Optional($0) }
@@ -115,13 +126,24 @@ private struct RingWidget: View {
         }
         .padding(.horizontal, medium ? RingMetrics.mediumMargin : 0)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .overlay(alignment: .topTrailing) {
+            if let slice, slice.isPaged {
+                WidgetPageButton(family: "medium")
+                    .padding(8)
+            }
+        }
+        .overlay(alignment: .bottom) {
+            if let slice, slice.isPaged {
+                WidgetPageDots(page: slice.page, pageCount: slice.pageCount)
+                    .padding(.bottom, 9)
+            }
+        }
     }
 }
 
-/// Anel com o ícone do aparelho em cor primária. Mouse, teclado e fone trazem o selo de conexão no próprio símbolo
-/// (#65); o resto leva o selo embaixo do ícone no pequeno e ao lado do percentual no médio. Sem percentual no
-/// pequeno (lotava a grade; o anel mostra o nível e o VoiceOver lê o número). No médio, como no da Apple:
-/// percentual embaixo do anel.
+/// Anel com o ícone do aparelho em cor primária. Todo aparelho com conexão traz o selo no próprio símbolo (#65 e #75).
+/// Sem percentual no pequeno (lotava a grade; o anel mostra o nível e o VoiceOver lê o número). No médio, como no da
+/// Apple: percentual embaixo do anel.
 private struct RingSlot: View {
     let device: Device?
     let gray: Bool
@@ -134,13 +156,10 @@ private struct RingSlot: View {
         VStack(spacing: RingMetrics.percentGap) {
             ring
             if medium {
-                HStack(spacing: 3) {
-                    if let device { TransportBadge(device: device) }
-                    Text(percentText)
-                        .font(.system(size: RingMetrics.percent, weight: .semibold)).monospacedDigit()
-                        .foregroundStyle(gray ? Color.secondary : Color.primary)
-                }
-                .opacity(device == nil ? 0 : 1)
+                Text(percentText)
+                    .font(.system(size: RingMetrics.percent, weight: .semibold)).monospacedDigit()
+                    .foregroundStyle(gray ? Color.secondary : Color.primary)
+                    .opacity(device == nil ? 0 : 1)
             }
         }
         // A caixa do texto sobra uns 4 pt abaixo dos dígitos; a Apple centraliza anel e dígitos, não a caixa.
@@ -156,9 +175,6 @@ private struct RingSlot: View {
             if let device {
                 progress(device)
                 device.symbol.font(.system(size: RingMetrics.icon))
-                // Topo do selo a 12 pt do centro: o ícone fica no centro mesmo sem selo (Mac) e o selo não encosta
-                // no traço.
-                if !medium { TransportBadge(device: device).offset(y: 18) }
             }
         }
         .padding(RingMetrics.stroke / 2)
@@ -197,24 +213,26 @@ private struct RingSlot: View {
 
 private struct ListWidget: View {
     let devices: [Device]
+    let page: Int
     let isStale: Bool
     let date: Date
     let thresholds: BatteryThresholds
     let series: [HistorySeries]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let slice = WidgetPage.slice(devices, page: page, perPage: WidgetPage.largePerPage)
+        let compactRows = devices.count > WidgetPage.largeChartMaxDevices
+        VStack(alignment: .leading, spacing: compactRows ? 6 : 8) {
             Text(isStale ? "widget.title.stale" : "widget.title")
                 .font(.caption).foregroundStyle(.secondary)
-            ForEach(devices) { device in
+            ForEach(slice.items) { device in
                 let gray = isStale || device.isOld(at: date)
                 let level = BatteryLevel(percent: device.percent, thresholds: thresholds)
                 HStack(spacing: 8) {
-                    device.symbol.foregroundStyle(.secondary).frame(width: 18)
+                    device.symbol.font(.system(size: 16)).foregroundStyle(.secondary).frame(width: 18)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(device.name).font(.headline).lineLimit(1)
-                        HStack(spacing: 4) {
-                            TransportBadge(device: device)
+                        if !compactRows {
                             Text(device.readAt, format: .relative(presentation: .named))
                                 .font(.caption2).foregroundStyle(.secondary)
                         }
@@ -230,9 +248,52 @@ private struct ListWidget: View {
                 .accessibilityElement(children: .combine)
             }
             Spacer(minLength: 0)
-            if !series.isEmpty { HistoryChart(series: series, compact: true).frame(maxHeight: 110) }
+            if !compactRows, !series.isEmpty {
+                HistoryChart(series: series, compact: true).frame(maxHeight: 110)
+            }
+            if slice.isPaged {
+                HStack {
+                    Text("\(slice.startItem) – \(slice.endItem) / \(slice.totalItems)")
+                        .font(.caption2).monospacedDigit().foregroundStyle(.secondary)
+                    Spacer()
+                    WidgetPageDots(page: slice.page, pageCount: slice.pageCount)
+                    Spacer()
+                    WidgetPageButton(family: "large")
+                }
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+    }
+}
+
+private struct WidgetPageButton: View {
+    let family: String
+
+    var body: some View {
+        Button(intent: NextWidgetPageIntent(family: family)) {
+            Image(systemName: "chevron.right")
+                .font(.system(size: 10, weight: .semibold))
+                .frame(width: 24, height: 24)
+                .background(.quaternary.opacity(0.6), in: Circle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text("widget.page.next"))
+    }
+}
+
+private struct WidgetPageDots: View {
+    let page: Int
+    let pageCount: Int
+
+    var body: some View {
+        HStack(spacing: 5) {
+            ForEach(0..<pageCount, id: \.self) { index in
+                Circle()
+                    .fill(index == page ? Color.primary : Color.secondary.opacity(0.35))
+                    .frame(width: 6, height: 6)
+            }
+        }
+        .accessibilityHidden(true)
     }
 }
 

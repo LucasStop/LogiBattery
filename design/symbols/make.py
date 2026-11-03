@@ -1,5 +1,5 @@
-"""Gera os SF Symbols próprios do LogiBattery (#65): o símbolo do aparelho com o selo de conexão recortado no canto
-de baixo à direita, como os `.badge` da Apple.
+"""Gera os SF Symbols próprios do LogiBattery (#65 e #75): o símbolo do aparelho com o selo de conexão recortado no
+canto de baixo à direita, como os `.badge` da Apple.
 
 Saídas: `LogiBattery/Symbols.xcassets/lb.*.symbolset` (template estático com o peso regular nas escalas S, M e L; o app usa só o peso regular) e
 `design/prototypes/custom-symbols.js` (prévia do protótipo).
@@ -27,6 +27,9 @@ SYMBOLS = {
     'lb.keyboard.bluetooth': ('keyboard', 'bt', 106, -8),
     'lb.keyboard.receiver': ('keyboard', 'rx', 106, -8),
     'lb.headphones.bluetooth': ('headphones', 'bt', 88, -6),
+    'lb.headphones.receiver': ('headphones', 'rx', 88, -6),
+    'lb.other.bluetooth': ('dot.radiowaves.left.and.right', 'bt', 106, -6),
+    'lb.other.receiver': ('dot.radiowaves.left.and.right', 'rx', 106, -6),
 }
 # Escala, fator sobre o desenho do template (que é o Small) e linha de base no template. Fatores medidos no
 # `computermouse` do sistema a 100 pt: largura 75 (S), 93 (M) e 119 (L) para 74,1 unidades de desenho.
@@ -131,7 +134,7 @@ def main():
         uri = 'data:image/svg+xml;base64,' + base64.b64encode(svg.encode()).decode()
         preview.append(f" '{name}':{{w:{(x1 - x0) * .31:.2f},h:{(y1 - y0) * .31:.2f},d:'{uri}'}}")
     File('design/prototypes/custom-symbols.js').write_text(
-        '// Gerado por design/symbols/make.py (#65): símbolos próprios com o selo dentro. Não editar à mão.\n'
+        '// Gerado por design/symbols/make.py (#65 e #75): símbolos próprios com o selo dentro. Não editar à mão.\n'
         'Object.assign(SF,{\n' + ',\n'.join(preview) + '});\n')
 
 

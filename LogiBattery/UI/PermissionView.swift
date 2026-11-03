@@ -45,10 +45,11 @@ struct PermissionBanner: View {
             Text("permission.banner.title").font(.headline)
             Text("permission.banner.body").font(.callout).foregroundStyle(.secondary)
             Button("permission.open") { model.openPrivacy() }
+                .buttonStyle(.borderedProminent)
+                .padding(.top, 2)
         }
-        .padding(8)
+        .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
         .accessibilityElement(children: .combine)
     }
 }

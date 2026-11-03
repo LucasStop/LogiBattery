@@ -83,6 +83,13 @@ final class SettingsTests: XCTestCase {
         XCTAssertEqual(model.values.interval, .seconds(600))
     }
 
+    func testPopoverWidthNormalization() {
+        XCTAssertEqual(SettingsModel.defaultPopoverWidth, 320)
+        XCTAssertEqual(SettingsModel.normalizedPopoverWidth(280), 320)
+        XCTAssertEqual(SettingsModel.normalizedPopoverWidth(380), 380)
+        XCTAssertEqual(SettingsModel.normalizedPopoverWidth(600), 480)
+    }
+
     func testDeleteAllHistoryEmptiesStore() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
