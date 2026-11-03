@@ -28,11 +28,12 @@ struct DeviceRow: View {
                 Text(label).font(.caption).foregroundStyle(gray ? .secondary : level.color)
             }
             Text(device.percent.map { "\($0)%" } ?? "—")
-                .font(.title3.weight(.semibold)).monospacedDigit()
+                .font(.callout.weight(.semibold)).monospacedDigit()
+                .foregroundStyle(gray ? .secondary : .primary)
             BatteryCell(percent: device.percent, tint: gray ? .secondary : device.tint(thresholds)).frame(width: 44)
         }
-        .padding(8)
-        .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 9)
         .accessibilityElement(children: .combine)
     }
 }
