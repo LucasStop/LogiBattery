@@ -95,13 +95,12 @@ Base: cores semânticas do sistema (`NSColor`/`Color`) para acompanhar o tema e 
 - Biblioteca de ícones: SF Symbols (`computermouse`, `keyboard`, `laptopcomputer`, `headphones`, `battery.*`, `bolt.fill`, `cable.connector`) · Tamanhos: 12, 16, 20 pt, e 24 pt no anel do widget (`icon.ring`) · Traço: regular.
 - Imagens/ilustração: sem ilustração; texto alternativo obrigatório em qualquer imagem.
 
-Ícones próprios (SF Symbols personalizados, #65). Até lá, o selo é o `TransportBadge` ao lado ou embaixo do ícone.
-- Formato: `.svg` exportado do template do app SF Symbols, importado sem aviso no app e guardado como Symbol Image Set em `LogiBattery/Assets.xcassets` (alvos do app e do widget). Uso: `Image("lb.mouse.bluetooth")`.
+Ícones próprios (SF Symbols personalizados, #65), no widget (pequeno, médio e grande) e no popover. `Device.symbol` escolhe o símbolo; aparelho sem símbolo próprio (`other`) segue com o `TransportBadge` ao lado ou embaixo do ícone.
+- Formato: template estático do SF Symbols só com o Regular-M (o `actool` exige esse; o app usa só o peso regular), como Symbol Image Set em `LogiBattery/Symbols.xcassets` (alvos do app e do widget). Gerado por `design/symbols/make.py`, que exporta o template da Apple pelo CLI do app SF Symbols e compõe o selo com skia-pathops; não editar o `.svg` à mão.
 - Nome: `lb.<aparelho>.<conexão>`. Conjunto: `lb.mouse.bluetooth`, `lb.mouse.receiver`, `lb.keyboard.bluetooth`, `lb.keyboard.receiver`, `lb.headphones.bluetooth`. O Mac segue `laptopcomputer`, sem selo.
-- Desenho: o SF Symbol do aparelho é a base; o selo (raio do Bluetooth, igual ao `BluetoothRune`, ou `cable.connector` para o receptor) fica dentro do desenho, com recorte de folga em volta, no peso regular.
-- Posição do selo: fone no arco da cabeça; mouse na traseira; teclado escolhido no protótipo da #65.
-- Monocromático (modo template): o sistema pinta o símbolo inteiro no `.accented` e no `.vibrant`.
-- O selo não vira texto: o rótulo do VoiceOver continua "nome, percentual", e a conexão entra no rótulo só onde já entra hoje.
+- Desenho: o SF Symbol do aparelho é a base; o selo (raio do Bluetooth com os pontos do `BluetoothRune`, 44 unidades de altura e traço de 5,5, ou `cable.connector` com 46 de altura para o receptor) fica sobre o desenho, com recorte de folga de 5 unidades em volta, no peso regular.
+- Posição do selo: canto de baixo à direita em todos os aparelhos, avançando para fora do desenho base, como os `.badge` da Apple (escolha do Lucas em 2026-11-03, protótipo T01).
+- O selo não vira texto: o rótulo do VoiceOver continua "nome, percentual" no anel; na lista do widget grande a conexão entra pelo rótulo do símbolo, e no popover o símbolo fica oculto (a conexão já está no texto).
 
 ### 3.7 Materiais e Liquid Glass
 - Widget: fundo `containerBackground(.clear, for: .widget)`. Sobra a base do próprio sistema: cinza-escura no sistema escuro e branca no claro. Nos estilos translúcido e tonalizado, o macOS troca essa base por vidro sozinho. O widget nunca desenha vidro próprio.
@@ -213,6 +212,7 @@ Nenhuma tela é desenvolvida sem protótipo aprovado. O inventário e o status d
 - 2026-11-03: médio no visual do médio da Apple, selo ao lado do percentual (#60).
 - 2026-11-03: Apple nativa como referência no formato do VoltAgent: visão geral, ícones próprios, materiais e Liquid Glass, medidas do widget, faça e não faça (#62).
 - 2026-11-03: widget pequeno e médio nas medidas do Baterias (anel de 64 e 62 pt, ícone de 24 pt em cor primária, percentual de 16 pt), conferidas em print ao lado do da Apple; protótipos com os SF Symbols de verdade (#63).
+- 2026-11-03: símbolos próprios com o selo de conexão no canto de baixo (`lb.*`), no widget e no popover (#65).
 - 2026-11-03: fundo do widget transparente (base do sistema, vidro nos estilos translúcido e tonalizado), anel na cor do nível também no translúcido e no tonalizado (imagem em cor cheia) e matriz de estilos com prints; vidro do Baterias no estilo padrão é exclusivo da Apple (#64).
 
 ## Ícone do app
