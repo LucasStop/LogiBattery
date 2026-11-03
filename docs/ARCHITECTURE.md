@@ -45,7 +45,7 @@ flowchart LR
 Só o app host acessa o hardware. O widget lê o snapshot e nunca fala com HID.
 
 ## 4. Fluxos principais
-- Leitura (US-01, US-02, US-03, US-04): o monitor enumera dispositivos HID com vendor `0x046D`; para cada receptor, pergunta aos índices 1 a 6 quem está pareado; resolve a feature de bateria (`0x1004`, depois `0x1000`, `0x1001`; HID++ 1.0 fora do MVP); deduplica por nome (série quando houver aparelho repetido; ver `DeviceDeduplicator`); grava snapshot e ponto de histórico.
+- Leitura (US-01, US-02, US-03, US-04): o monitor enumera dispositivos HID com vendor `0x046D`; para cada receptor, pergunta aos índices 1 a 6 quem está pareado; resolve a feature de bateria `0x1004` (Unified Battery; `0x1000` e `0x1001` não estão implementadas porque nenhum aparelho do Lucas as usa, e aparelho sem `0x1004` não aparece; HID++ 1.0 fora do MVP); deduplica por nome (série quando houver aparelho repetido; ver `DeviceDeduplicator`); grava snapshot e ponto de histórico.
 - Widget (US-05): o host grava o snapshot a cada leitura (`generatedAt` é o sinal de que está vivo) e só chama `WidgetCenter.shared.reloadAllTimelines()` quando muda o que o widget mostra (`Snapshot.meaningfullyDiffers`: aparelho, %, estado, caminho ou leitura velha) ou quando o snapshot anterior já estava desatualizado; recarregar a cada leitura esgota o orçamento do WidgetKit. O widget lê o JSON e devolve uma entrada por minuto durante 15 min, então o "há X min" e o cinza andam sem reload. Histórico e snapshot são gravados em separado: erro em um não impede o outro, e vai para o `Logger` (`com.lucasstop.LogiBattery`, categoria `storage`) sem nome nem série. O host lê no intervalo dos ajustes (padrão 1 min) mesmo sem o popover aberto, e relê em até ~2 s quando um aparelho conecta ou desconecta ou manda um frame HID++ espontâneo (`HIDDiscovery.changes`). Depois dessa releitura, repete a leitura 5, 10 e 15 s depois: aparelho recém-conectado (ex.: mouse trocando para Bluetooth) ainda está acordando e falha a primeira leitura, e esperar o próximo ciclo de 1 min deixaria o widget sem ele.
 - Aviso (US-07, US-08): a regra de aviso compara a leitura nova com o último estado notificado por aparelho; dispara uma vez e rearma quando a bateria sobe acima do limite ou um novo ciclo de carga começa.
 - Permissão (US-12): sem Input Monitoring a enumeração retorna vazio; o app mostra o guia em vez de lista vazia.
@@ -70,17 +70,17 @@ Só o app host acessa o hardware. O widget lê o snapshot e nunca fala com HID.
 - Requisitos não funcionais com meta: leitura completa em menos de 2 s por aparelho; app ocioso abaixo de 1% de CPU; widget e popover acessíveis (VoiceOver, contraste, Dynamic Type).
 
 ## 9. Riscos e dívida conhecida
-- HID++ não é documentado oficialmente: protocolo vem de engenharia reversa (Solaar, libratbag). Mitigação: parser isolado, testado com frames gravados, fallback de feature.
+- HID++ não é documentado oficialmente: protocolo vem de engenharia reversa (Solaar, libratbag). Mitigação: parser isolado, testado com frames gravados.
 - Aparelho dormindo não responde (o PRO X TKL por Lightspeed dorme ~12 s depois da última tecla e a leitura dá erro): o `DeviceListViewModel` mantém a última leitura de quem não veio no scan por até 24 h (`keepFor`), com a hora; passados 30 min ela fica cinza. O histórico grava o ponto no instante da leitura (`readAt`) e não regrava leitura mantida. Só frame do próprio aparelho dispara releitura (`IOHIDTransport.isDeviceEvent`: notificação HID++ 1.0 ou evento com software id 0); resposta a pedido do Logi Options+ não conta.
 - Input Monitoring e sandbox diferem entre assinatura local e distribuída: validar na issue de distribuição.
-- Voltagem para porcentagem varia por modelo (feature `0x1001`): tabela por aparelho, com curva genérica de fallback.
+- Aparelho só com `0x1000` ou `0x1001` não aparece. Se surgir um, implementar a feature com fixture do aparelho; a `0x1001` (voltagem) pede tabela por modelo.
 - Receptor e Bluetooth do mesmo aparelho podem divergir um instante: regra de dedupe prioriza a leitura mais recente.
 
 ## 10. Decisões (ADR)
 
 | ADR | Decisão | Status |
 |---|---|---|
-| [0001](adr/0001-host-le-hardware-widget-le-snapshot.md) | App host lê o hardware e publica snapshot por App Group; o widget só lê | proposta |
+| [0001](adr/0001-host-le-hardware-widget-le-snapshot.md) | App host lê o hardware e publica snapshot por App Group; o widget só lê | aceita |
 
 ## 11. Spike HID++ (issue #10, 2026-10-29)
 
@@ -96,5 +96,5 @@ Achados que viram regra do parser:
 - Long report `0x11`, 20 bytes: `11 índice feature função|sw params`. Pedido de feature: `11 idx 00 01 <id hi> <id lo>`; bateria `0x1004` função 1: `11 idx <feature> 11`. Resposta: `[4]` = porcentagem, `[5]` = nível (1 crítico, 2 baixo, 4 bom, 8 cheio), `[6]` = status de carga.
 - Índice sem aparelho responde HID++ 1.0 `10 idx 8f ...` (erro): o parser descarta `0x8f` e `0xff` em `[2]`.
 - Respostas chegam fora de ordem e misturadas com eventos: casar resposta por índice, feature e função+sw, nunca pegar "o próximo frame".
-- Feature de bateria nos dois aparelhos é `0x1004`; `0x1000` e `0x1001` ficam como fallback (não observados).
+- Feature de bateria nos dois aparelhos é `0x1004`; `0x1000` e `0x1001` não foram observadas e não foram implementadas.
 - Bluetooth (US-02, 2026-10-29): os aparelhos aparecem no `IOHIDManager` com transporte `Bluetooth Low Energy` (MX Master 3S `0xB034`, PRO X TKL `0xB382`), só com as interfaces genéricas de mouse e teclado, sem página `0xFF43`. Mesmo assim respondem ao long report `0x11` com índice `0xFF`, com os mesmos frames e a mesma feature `0x1004` do receptor (fixtures `bluetooth-*.txt`). Receptor ou Bluetooth do mesmo aparelho aparecem hoje como dois itens; a deduplicação é a US-03 (#14).
