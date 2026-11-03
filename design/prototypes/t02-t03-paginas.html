@@ -1,0 +1,38 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T02 e T03 · Widgets com 5 ou mais aparelhos</title><link rel="stylesheet" href="proto.css">
+<style>
+.opt{display:flex;gap:var(--s5);flex-wrap:wrap;align-items:flex-start}
+.opt h3{font-size:13px;margin:0 0 var(--s1)}
+.pgbtn{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:var(--raised);color:var(--fg);display:grid;place-items:center;padding:0;font:inherit}
+.pgbtn svg{width:12px;height:12px}
+.dots{display:flex;gap:5px;justify-content:center;align-items:center}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--border)}.dots i.on{background:var(--fg)}
+.w-m .dots{position:absolute;left:0;right:0;bottom:9px}
+.more{position:absolute;top:8px;right:8px;min-width:24px;height:20px;padding:0 6px;border-radius:10px;background:var(--raised);color:var(--muted);font-size:11px;font-weight:600;line-height:20px;text-align:center;font-variant-numeric:tabular-nums}
+.widget.paged{position:relative}
+.w-l .ft2{display:flex;justify-content:space-between;align-items:center;margin-top:auto}
+.w-l .ft2 .pgbtn,.w-l .ft2 .more{position:static}
+.verdict{max-width:70ch;margin:0 0 var(--s4)}
+.verdict li{margin:0 0 var(--s1)}
+</style></head><body>
+<h1>T02 e T03 · Widgets com 5 ou mais aparelhos (#79)</h1>
+<p class="lead">Hoje o widget corta em 4 e do 5º aparelho em diante nada aparece. Decisão do Lucas: opção A, botão de próxima página com indicador (<code>AppIntent</code>, macOS 14+, página no App Group), nos dois tamanhos. No grande, a página comporta até 6 aparelhos, então só pagina a partir do 7º. O médio pagina de 4 em 4. Exemplo com 7 aparelhos fictícios: Mac e seis Logitech. Ordem de hoje: Mac primeiro, depois do menor para o maior nível. O T01 (pequeno, 4 anéis) fica como está.</p>
+<section class="state"><h2>Widget médio (T02)</h2><p class="muted sm">4 anéis por página; o botão e o indicador só aparecem com 5 ou mais aparelhos.</p><div id="medio"></div></section>
+<section class="state"><h2>Widget grande (T03)</h2><p class="muted sm">Lista de até 6 linhas numa página só, sem botão. Com 7 ou mais, o botão e o indicador entram e cada página tem 6 linhas. O gráfico das 24 h sai nesta variante (não cabe com 6 linhas); com até 3 aparelhos o grande segue como no T03.</p><div id="grande"></div></section>
+<script src="symbols.js"></script><script src="custom-symbols.js"></script>
+<script>
+// Aparelhos fictícios, já na ordem do widget (Mac, depois do menor para o maior nível).
+const D=[['MacBook','laptop',90,'ok','Carga ok'],['MX Master 3S','lb.mouse.bluetooth',18,'low','Baixa'],['PRO X TKL','lb.keyboard.receiver',41,'ok','Carga ok'],['MX Anywhere 3','lb.mouse.receiver',55,'ok','Carga ok'],['MX Ergo','lb.mouse.bluetooth',63,'ok','Carga ok'],['MX Keys','lb.keyboard.bluetooth',78,'chg','Carregando'],['PRO X 2','lb.headphones.bluetooth',100,'ok','Carga ok']];
+const ring=d=>`<div class="slot ${d[3]}" role="img" aria-label="${d[0]} ${d[2]}%"><div class="ring" style="--p:${d[2]}"><span class="ico" data-i="${d[1]}"></span></div><span class="pct">${d[2]}%</span></div>`;
+const empty='<div class="slot" aria-hidden="true"><div class="ring"></div><span class="pct" style="visibility:hidden">0%</span></div>';
+const row=d=>`<div class="dev ${d[3]}" style="padding:8px 12px" role="group" aria-label="${d[0]}, ${d[2]}%"><span class="ico" data-i="${d[1]}"></span><div class="name"><b class="h3">${d[0]}</b></div><div class="lv"><span class="badge">${d[4]}</span><span class="pct">${d[2]}%</span><span class="cell" style="--p:${d[2]}"><i></i></span></div></div>`;
+const chev='<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 2 4 4-4 4"/></svg>';
+const dots=(n,on)=>`<div class="dots" role="img" aria-label="Página ${on+1} de ${n}">${Array.from({length:n},(_,i)=>`<i class="${i===on?'on':''}"></i>`).join('')}</div>`;
+const btn=`<button class="pgbtn" aria-label="Próxima página">${chev}</button>`;
+const pages=[D.slice(0,4),D.slice(4)];
+const lp=[D.slice(0,6),D.slice(6)];
+const medA=p=>`<div><h3>A · página ${p+1} de 2</h3><div class="widget w-m paged"><div class="rings">${pages[p].map(ring).join('')}${pages[p].length<4?empty:''}</div>${btn}${dots(2,p)}</div></div>`;
+const lgA=p=>`<div><h3>7 aparelhos · página ${p+1} de 2</h3><div class="widget w-l"><div class="tag">Baterias</div><div style="display:grid;gap:6px">${lp[p].map(row).join('')}</div><div class="ft2"><span class="sm muted">${p*6+1} a ${p*6+lp[p].length} de ${D.length}</span>${dots(2,p)}${btn}</div></div></div>`;
+const lg6=`<div><h3>6 aparelhos · sem página</h3><div class="widget w-l"><div class="tag">Baterias</div><div style="display:grid;gap:6px">${D.slice(0,6).map(row).join('')}</div></div></div>`;
+document.getElementById('medio').innerHTML=`<div class="pair"><div class="opt">${medA(0)}${medA(1)}</div></div>`;
+document.getElementById('grande').innerHTML=`<div class="pair"><div class="opt">${lg6}${lgA(0)}${lgA(1)}</div></div>`;
+</script><script src="proto.js"></script></body></html>
