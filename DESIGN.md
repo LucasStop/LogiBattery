@@ -95,9 +95,9 @@ Base: cores semânticas do sistema (`NSColor`/`Color`) para acompanhar o tema e 
 - Biblioteca de ícones: SF Symbols (`computermouse`, `keyboard`, `laptopcomputer`, `headphones`, `battery.*`, `bolt.fill`, `cable.connector`) · Tamanhos: 12, 16, 20 pt, e 24 pt no anel do widget (`icon.ring`) · Traço: regular.
 - Imagens/ilustração: sem ilustração; texto alternativo obrigatório em qualquer imagem.
 
-Ícones próprios (SF Symbols personalizados, #65), no widget (pequeno, médio e grande) e no popover. `Device.symbol` escolhe o símbolo; aparelho sem símbolo próprio (`other`) segue com o `TransportBadge` ao lado ou embaixo do ícone.
+Ícones próprios (SF Symbols personalizados, #65 e #75), no widget (pequeno, médio e grande) e no popover. `Device.symbol` escolhe o símbolo; todo aparelho com conexão tem símbolo próprio, e o `TransportBadge` separado sai (em revisão, protótipos T01 a T03, #75).
 - Formato: template estático do SF Symbols só com o Regular-M (o `actool` exige esse; o app usa só o peso regular), como Symbol Image Set em `LogiBattery/Symbols.xcassets` (alvos do app e do widget). Gerado por `design/symbols/make.py`, que exporta o template da Apple pelo CLI do app SF Symbols e compõe o selo com skia-pathops; não editar o `.svg` à mão.
-- Nome: `lb.<aparelho>.<conexão>`. Conjunto: `lb.mouse.bluetooth`, `lb.mouse.receiver`, `lb.keyboard.bluetooth`, `lb.keyboard.receiver`, `lb.headphones.bluetooth`. O Mac segue `laptopcomputer`, sem selo.
+- Nome: `lb.<aparelho>.<conexão>`. Conjunto: `lb.mouse.bluetooth`, `lb.mouse.receiver`, `lb.keyboard.bluetooth`, `lb.keyboard.receiver`, `lb.headphones.bluetooth`; novos em #75: `lb.headphones.receiver`, `lb.other.bluetooth`, `lb.other.receiver` (base `dot.radiowaves.left.and.right`). O Mac segue `laptopcomputer`, sem selo.
 - Desenho: o SF Symbol do aparelho é a base; o selo (raio do Bluetooth com os pontos do `BluetoothRune`, 44 unidades de altura e traço de 5,5, ou `cable.connector` com 46 de altura para o receptor) fica sobre o desenho, com recorte de folga de 5 unidades em volta, no peso regular.
 - Posição do selo: canto de baixo à direita em todos os aparelhos, avançando para fora do desenho base, como os `.badge` da Apple (escolha do Lucas em 2026-11-03, protótipo T01).
 - O selo não vira texto: o rótulo do VoiceOver continua "nome, percentual" no anel; na lista do widget grande a conexão entra pelo rótulo do símbolo, e no popover o símbolo fica oculto (a conexão já está no texto).
@@ -137,6 +137,7 @@ Todo componente documenta: anatomia, variantes, tamanhos, estados e comportament
 |---|---|---|---|---|---|
 | Botão | primary, secondary, ghost | sm, md | todos | `LogiBattery/UI/Components/` | componente + visual |
 | Switch e stepper (ajustes) | padrão | md | padrão, foco, desabilitado | `LogiBattery/UI/Components/` | componente + a11y |
+| Linha de ajuste com ícone (#67) | quadrado colorido de 24 pt, raio 6 (`r-sm`), SF Symbol branco de 14 pt; cores `blue`, `orange`, `red`, `green`, `purple`, `gray` | md | padrão, foco | `LogiBattery/UI/Settings/` (`Form(.grouped)` + `Section`) | componente + a11y |
 | Cartão de aparelho | mouse, teclado, Mac, fone, genérico | popover, widget | ok, baixo, crítico, carregando, cheio, sem leitura | `LogiBattery/UI/Components/` | componente + visual |
 | Indicador de bateria | célula + número | sm, md, lg | ok, baixo, crítico, carregando, cheio, sem leitura | `LogiBattery/UI/Components/` | componente + visual |
 | Gráfico de histórico | linha por aparelho | popover, widget grande | vazio, carregando, dados | `LogiBattery/UI/Components/` | visual |

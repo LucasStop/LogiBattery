@@ -40,9 +40,9 @@ final class SystemBatteriesTests: XCTestCase {
         XCTAssertNil(SystemBatteries.mac(description: ["Type": "InternalBattery"], name: "M", now: now))
     }
 
-    func testHeadsetUsesSingleLevel() throws {
-        let headset = try XCTUnwrap(SystemBatteries.headset(name: "QCY MeloBuds Pro", single: 100, combined: 0,
-                                                            buds: [0, 0], now: now))
+    func testHeadsetUsesSingleLevel() {
+        let headset = SystemBatteries.headset(name: "QCY MeloBuds Pro", single: 100, combined: 0, buds: [0, 0],
+                                              now: now)
         XCTAssertEqual(headset.kind, .headphones)
         XCTAssertEqual(headset.path, .bluetooth)
         XCTAssertEqual(headset.percent, 100)
@@ -51,14 +51,18 @@ final class SystemBatteriesTests: XCTestCase {
 
     func testEarbudsWithoutSingleUseLowestBud() {
         XCTAssertEqual(SystemBatteries.headset(name: "AirPods", single: 0, combined: 0, buds: [80, 60],
-                                               now: now)?.percent, 60)
+                                               now: now).percent, 60)
         XCTAssertEqual(SystemBatteries.headset(name: "AirPods", single: 0, combined: 0, buds: [0, 70],
-                                               now: now)?.percent, 70)
+                                               now: now).percent, 70)
         XCTAssertEqual(SystemBatteries.headset(name: "AirPods", single: 0, combined: 55, buds: [80, 60],
-                                               now: now)?.percent, 55)
+                                               now: now).percent, 55)
     }
 
-    func testHeadsetWithoutAnyLevelIsSkipped() {
-        XCTAssertNil(SystemBatteries.headset(name: "X", single: 0, combined: 0, buds: [0, 0], now: now))
+    /// Fone conectado que o IOBluetooth devolve sem nível (issue #70) continua na lista, sem percentual.
+    func testConnectedHeadsetWithoutAnyLevelStaysWithUnknownPercent() {
+        let headset = SystemBatteries.headset(name: "X", single: 0, combined: 0, buds: [0, 0], now: now)
+        XCTAssertEqual(headset.kind, .headphones)
+        XCTAssertNil(headset.percent)
+        XCTAssertEqual(headset.id, "bt-audio-X")
     }
 }
