@@ -41,6 +41,7 @@ targets:
       - LogiBattery/Core/Storage/HistoryStore.swift
       - LogiBattery/UI/Components/HistoryChart.swift
       - LogiBattery/UI/Components/BatteryCell.swift
+      - LogiBattery/Symbols.xcassets
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.lucasstop.LogiBattery.widget

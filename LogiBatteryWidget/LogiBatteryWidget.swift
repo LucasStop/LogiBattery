@@ -118,9 +118,10 @@ private struct RingWidget: View {
     }
 }
 
-/// Anel com o ícone do aparelho em cor primária. No pequeno, o selo de conexão fica dentro do anel, embaixo do
-/// ícone, e não há percentual (lotava a grade; o anel mostra o nível e o VoiceOver lê o número). No médio, como
-/// no da Apple: percentual embaixo do anel, com o selo ao lado.
+/// Anel com o ícone do aparelho em cor primária. Mouse, teclado e fone trazem o selo de conexão no próprio símbolo
+/// (#65); o resto leva o selo embaixo do ícone no pequeno e ao lado do percentual no médio. Sem percentual no
+/// pequeno (lotava a grade; o anel mostra o nível e o VoiceOver lê o número). No médio, como no da Apple:
+/// percentual embaixo do anel.
 private struct RingSlot: View {
     let device: Device?
     let gray: Bool
@@ -134,7 +135,7 @@ private struct RingSlot: View {
             ring
             if medium {
                 HStack(spacing: 3) {
-                    if let device { TransportBadge(path: device.path) }
+                    if let device { TransportBadge(device: device) }
                     Text(percentText)
                         .font(.system(size: RingMetrics.percent, weight: .semibold)).monospacedDigit()
                         .foregroundStyle(gray ? Color.secondary : Color.primary)
@@ -154,10 +155,10 @@ private struct RingSlot: View {
             Circle().stroke(.quaternary, lineWidth: RingMetrics.stroke)
             if let device {
                 progress(device)
-                Image(systemName: device.symbolName).font(.system(size: RingMetrics.icon))
+                device.symbol.font(.system(size: RingMetrics.icon))
                 // Topo do selo a 12 pt do centro: o ícone fica no centro mesmo sem selo (Mac) e o selo não encosta
                 // no traço.
-                if !medium { TransportBadge(path: device.path).offset(y: 18) }
+                if !medium { TransportBadge(device: device).offset(y: 18) }
             }
         }
         .padding(RingMetrics.stroke / 2)
@@ -209,11 +210,11 @@ private struct ListWidget: View {
                 let gray = isStale || device.isOld(at: date)
                 let level = BatteryLevel(percent: device.percent, thresholds: thresholds)
                 HStack(spacing: 8) {
-                    Image(systemName: device.symbolName).foregroundStyle(.secondary).frame(width: 18)
+                    device.symbol.foregroundStyle(.secondary).frame(width: 18)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(device.name).font(.headline).lineLimit(1)
                         HStack(spacing: 4) {
-                            TransportBadge(path: device.path)
+                            TransportBadge(device: device)
                             Text(device.readAt, format: .relative(presentation: .named))
                                 .font(.caption2).foregroundStyle(.secondary)
                         }

@@ -54,14 +54,26 @@ extension Device {
             : BatteryLevel(percent: percent, thresholds: thresholds).color
     }
 
+    /// Mouse, teclado e fone usam o símbolo próprio com o selo de conexão dentro (Symbols.xcassets, gerado por
+    /// design/symbols/make.py); o resto, o SF Symbol do sistema com o `TransportBadge` ao lado.
     var symbolName: String {
-        switch kind {
-        case .mouse: "computermouse"
-        case .keyboard: "keyboard"
-        case .laptop: "laptopcomputer"
-        case .headphones: "headphones"
-        case .other: "dot.radiowaves.left.and.right"
+        switch (kind, path) {
+        case (.mouse, .bluetooth), (.mouse, .receiver), (.keyboard, .bluetooth), (.keyboard, .receiver),
+             (.headphones, .bluetooth):
+            "lb.\(kind.rawValue).\(path.rawValue)"
+        case (.mouse, _): "computermouse"
+        case (.keyboard, _): "keyboard"
+        case (.laptop, _): "laptopcomputer"
+        case (.headphones, _): "headphones"
+        case (.other, _): "dot.radiowaves.left.and.right"
         }
+    }
+
+    var symbolHasBadge: Bool { symbolName.hasPrefix("lb.") }
+
+    /// O selo vira parte do desenho, então a conexão vai no rótulo do VoiceOver.
+    var symbol: Image {
+        symbolHasBadge ? Image(symbolName, label: Text(path.labelKey)) : Image(systemName: symbolName)
     }
 }
 
@@ -76,12 +88,14 @@ private struct BluetoothRune: Shape {
     }
 }
 
-/// Como o aparelho está conectado agora: Bluetooth ou receptor USB. A bateria do próprio Mac não leva selo.
+/// Como o aparelho está conectado agora: Bluetooth ou receptor USB. A bateria do próprio Mac não leva selo, nem o
+/// aparelho cujo símbolo já traz o selo (`symbolHasBadge`).
 struct TransportBadge: View {
-    let path: DevicePath
+    let device: Device
+    private var path: DevicePath { device.path }
 
     var body: some View {
-        if path != .internal {
+        if path != .internal, !device.symbolHasBadge {
             Group {
                 if path == .bluetooth {
                     BluetoothRune().stroke(style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round))
