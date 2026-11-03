@@ -60,9 +60,11 @@ struct LogiBatteryApp: App {
 private let discovery = HIDDiscovery()
 
 /// Descobre as interfaces a cada leitura: receptor ou aparelho conectado agora aparece sem reiniciar o app.
+/// Soma a bateria do Mac e do fone Bluetooth, que o macOS já conhece.
 private struct LiveScanner: DeviceScanning {
     func scan() async -> [Device] {
-        await DeviceScanner(endpoints: discovery.endpoints()).scan()
+        let peripherals = await DeviceScanner(endpoints: discovery.endpoints()).scan()
+        return await peripherals + SystemBatteries.read(now: .now)
     }
 }
 

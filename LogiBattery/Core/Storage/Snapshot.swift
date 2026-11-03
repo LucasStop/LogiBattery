@@ -18,9 +18,10 @@ struct Snapshot: Codable, Equatable, Sendable {
         date.timeIntervalSince(generatedAt) > Self.staleAfter
     }
 
-    /// Menor nível primeiro, sem leitura por último (DESIGN.md §listas).
+    /// Mac primeiro (como no widget da Apple), depois o menor nível, sem leitura por último (DESIGN.md §listas).
     static func widgetOrder(_ devices: [Device]) -> [Device] {
-        devices.sorted { ($0.percent ?? .max) < ($1.percent ?? .max) }
+        func rank(_ device: Device) -> (Int, Int) { (device.kind == .laptop ? 0 : 1, device.percent ?? .max) }
+        return devices.sorted { rank($0) < rank($1) }
     }
 
     /// Muda o que o widget mostra? `readAt` avança a cada leitura e não conta (o "há X min" anda pela timeline);

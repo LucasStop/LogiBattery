@@ -58,6 +58,8 @@ extension Device {
         switch kind {
         case .mouse: "computermouse"
         case .keyboard: "keyboard"
+        case .laptop: "laptopcomputer"
+        case .headphones: "headphones"
         case .other: "dot.radiowaves.left.and.right"
         }
     }
@@ -74,22 +76,23 @@ private struct BluetoothRune: Shape {
     }
 }
 
-/// Como o aparelho está conectado agora: Bluetooth ou receptor USB.
+/// Como o aparelho está conectado agora: Bluetooth ou receptor USB. A bateria do próprio Mac não leva selo.
 struct TransportBadge: View {
     let path: DevicePath
 
     var body: some View {
-        Group {
-            switch path {
-            case .bluetooth:
-                BluetoothRune().stroke(style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round))
-                    .frame(width: 8, height: 11)
-            case .receiver:
-                Image(systemName: "cable.connector").font(.system(size: 10))
+        if path != .internal {
+            Group {
+                if path == .bluetooth {
+                    BluetoothRune().stroke(style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round))
+                        .frame(width: 8, height: 11)
+                } else {
+                    Image(systemName: "cable.connector").font(.system(size: 10))
+                }
             }
+            .foregroundStyle(.secondary)
+            .frame(width: 12, height: 12)
+            .accessibilityLabel(Text(path.labelKey))
         }
-        .foregroundStyle(.secondary)
-        .frame(width: 12, height: 12)
-        .accessibilityLabel(Text(path.labelKey))
     }
 }

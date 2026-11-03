@@ -26,8 +26,9 @@ extension ChargeState {
     }
 }
 
+/// Por onde o app leu a bateria; `internal` é a bateria do próprio Mac.
 enum DevicePath: String, Codable, Equatable, Sendable {
-    case receiver, bluetooth
+    case receiver, bluetooth, `internal`
 }
 
 extension DevicePath {
@@ -35,12 +36,13 @@ extension DevicePath {
         switch self {
         case .receiver: "path.receiver"
         case .bluetooth: "path.bluetooth"
+        case .internal: "path.internal"
         }
     }
 }
 
 enum DeviceKind: String, Codable, Equatable, Sendable {
-    case mouse, keyboard, other
+    case mouse, keyboard, laptop, headphones, other
 
     // ponytail: o tipo vem do nome; a feature DeviceName (função 2) dá o tipo exato quando o nome enganar.
     private static let keyboardHints = ["key", "tkl", "k380", "k780"]

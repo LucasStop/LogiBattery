@@ -101,6 +101,24 @@ final class SnapshotContractTests: XCTestCase {
         let ordered = Snapshot.widgetOrder(devices)
         XCTAssertEqual(ordered.map(\.id), ["c", "a", "b"])
     }
+
+    /// Como no widget da Apple, o Mac ocupa a primeira posição; o resto segue do menor nível para o maior.
+    func testWidgetOrderPutsMacFirst() {
+        let mac = Device(id: "mac", name: "MacBook", kind: .laptop, percent: 90, chargeState: .discharging,
+                         path: .internal, readAt: now)
+        let ordered = Snapshot.widgetOrder([device("a", percent: 80), mac, device("c", percent: 7)])
+        XCTAssertEqual(ordered.map(\.id), ["mac", "c", "a"])
+    }
+
+    func testMacAndHeadphonesRoundTrip() throws {
+        let store = SnapshotStore(directory: directory)
+        let mac = Device(id: "mac", name: "MacBook", kind: .laptop, percent: 90, chargeState: .charging,
+                         path: .internal, readAt: now)
+        let headset = Device(id: "bt", name: "QCY", kind: .headphones, percent: 100, chargeState: .unknown,
+                             path: .bluetooth, readAt: now)
+        try store.write([mac, headset], at: now)
+        XCTAssertEqual(store.read()?.devices, [mac, headset])
+    }
 }
 
 /// O widget só recarrega quando muda o que ele mostra: recarregar a cada leitura esgota o orçamento do WidgetKit.

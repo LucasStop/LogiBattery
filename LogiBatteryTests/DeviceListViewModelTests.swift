@@ -132,6 +132,16 @@ final class KeepLastReadingTests: XCTestCase {
         XCTAssertEqual(viewModel.devices, [])
     }
 
+    /// Fone fora do scan foi desligado ou guardado (o sistema sabe na hora): some, como no widget da Apple.
+    func testDisconnectedHeadsetIsNotKept() async {
+        let headset = Device(id: "bt-headset", name: "QCY MeloBuds Pro", kind: .headphones, percent: 100,
+                             chargeState: .unknown, path: .bluetooth, readAt: .now)
+        let viewModel = DeviceListViewModel(scanner: ScriptedScanner([[mouse(.now), headset], [mouse(.now)]]))
+        await viewModel.refresh()
+        await viewModel.refresh()
+        XCTAssertEqual(viewModel.devices.map(\.name), ["MX Master 3S"])
+    }
+
     func testDeviceBackWithNewIdReplacesKeptReading() async {
         let back = keyboard(.now, id: "ble-b382-3:255")
         let viewModel = DeviceListViewModel(scanner: ScriptedScanner([[keyboard(.now)], [], [back]]))
