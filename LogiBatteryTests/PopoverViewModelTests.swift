@@ -64,13 +64,14 @@ final class RestoreOnLaunchTests: XCTestCase {
     }
 
     func testFreshSnapshotShowsBeforeFirstReading() {
-        let viewModel = DeviceListViewModel(scanner: StaticScanner(), restoring: snapshot(age: 60), now: now)
+        let viewModel = DeviceListViewModel(scanner: StaticScanner(), restoring: snapshot(age: 60),
+                                            now: { [now] in now })
         XCTAssertEqual(viewModel.menuBarPercent, 78)
         XCTAssertEqual(viewModel.menuBarSymbol, "battery.75")
     }
 
     func testStaleOrMissingSnapshotShowsNeutralReadingSymbol() {
-        let stale = DeviceListViewModel(scanner: StaticScanner(), restoring: snapshot(age: 3600), now: now)
+        let stale = DeviceListViewModel(scanner: StaticScanner(), restoring: snapshot(age: 3600), now: { [now] in now })
         XCTAssertNil(stale.menuBarPercent)
         XCTAssertEqual(stale.menuBarSymbol, "ellipsis.circle")
         XCTAssertEqual(DeviceListViewModel(scanner: StaticScanner()).menuBarSymbol, "ellipsis.circle")

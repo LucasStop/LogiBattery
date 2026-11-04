@@ -125,7 +125,7 @@ final class KeepLastReadingTests: XCTestCase {
     }
 
     func testReadingOlderThanADayIsDropped() async {
-        let old = Date.now.addingTimeInterval(-DeviceListViewModel.keepFor - 60)
+        let old = Date.now.addingTimeInterval(-ReadingPolicy().keepFor - 60)
         let viewModel = DeviceListViewModel(scanner: ScriptedScanner([[keyboard(old)], []]))
         await viewModel.refresh()
         await viewModel.refresh()

@@ -133,12 +133,35 @@ enum DeviceIdentity {
     }
 }
 
+/// Regra única de leitura mantida (ARCHITECTURE.md §9): quanto tempo ela segue na lista e quando fica cinza.
+/// Vale para popover, widget e snapshot; antes cada um tinha a sua constante e um fix corrigia só um deles (#116).
+struct ReadingPolicy: Codable, Equatable, Sendable {
+    var grayAfter: TimeInterval = 30 * 60
+    var keepFor: TimeInterval = 24 * 3600
+
+    /// Aparelho que não veio no scan e continua na lista. Fone e Bluetooth fora do scan foram desligados (o sistema
+    /// sabe na hora) e somem, como no widget da Apple (#100); pelo receptor, dormindo e desligado não se distinguem.
+    func keeps(_ device: Device, at date: Date) -> Bool {
+        device.kind != .headphones && device.path != .bluetooth && isWithinKeep(device, at: date)
+    }
+
+    func isWithinKeep(_ device: Device, at date: Date) -> Bool {
+        DeviceIdentity.isPrintable(device.name) && date.timeIntervalSince(device.readAt) < keepFor
+    }
+}
+
 extension Device {
     var identity: String { DeviceIdentity.key(name) }
 
-    /// Leitura mantida de aparelho que dorme ou saiu de alcance; widget e popover mostram em cinza (DESIGN.md).
-    func isOld(at date: Date) -> Bool {
-        date.timeIntervalSince(readAt) > Snapshot.staleAfter
+    /// Não respondeu ao scan de `scanAt`: leitura mantida de quem dorme ou saiu de alcance.
+    func isKept(scanAt: Date) -> Bool {
+        scanAt.timeIntervalSince(readAt) > Snapshot.sameScanTolerance
+    }
+
+    /// Leitura mantida há mais de `grayAfter`; widget e popover mostram em cinza (DESIGN.md). Quem respondeu ao
+    /// último scan nunca fica cinza, mesmo com intervalo de leitura maior que `grayAfter` (#116).
+    func isGray(at date: Date, scanAt: Date, policy: ReadingPolicy = ReadingPolicy()) -> Bool {
+        isKept(scanAt: scanAt) && date.timeIntervalSince(readAt) > policy.grayAfter
     }
 }
 

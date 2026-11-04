@@ -45,24 +45,27 @@ struct BatteryWidgetView: View {
     @Environment(\.widgetContentMargins) private var margins
     let entry: BatteryEntry
 
-    private var devices: [Device] { Snapshot.widgetOrder(entry.snapshot?.devices ?? []) }
+    private var devices: [Device] {
+        entry.snapshot.map { Snapshot.widgetOrder($0.devices, scanAt: $0.generatedAt) } ?? []
+    }
     private var isStale: Bool { entry.snapshot?.isStale(at: entry.date) ?? false }
     private var thresholds: BatteryThresholds { entry.snapshot?.levelThresholds ?? BatteryThresholds() }
+    private func isGray(_ device: Device) -> Bool { entry.snapshot?.showsGray(device, at: entry.date) ?? false }
 
     var body: some View {
         Group {
             if devices.isEmpty {
                 EmptyWidget().padding(margins)
             } else if family == .systemLarge {
-                ListWidget(devices: devices, page: entry.largePage, isStale: isStale, date: entry.date,
+                ListWidget(devices: devices, page: entry.largePage, isStale: isStale, isGray: isGray,
                            thresholds: thresholds, series: entry.series)
                     .padding(margins)
             } else if family == .systemMedium {
                 let slice = WidgetPage.slice(devices, page: entry.mediumPage, perPage: WidgetPage.mediumPerPage)
-                RingWidget(devices: slice.items, columns: 4, isStale: isStale, date: entry.date,
+                RingWidget(devices: slice.items, columns: 4, isStale: isStale, isGray: isGray,
                            thresholds: thresholds, slice: slice)
             } else {
-                RingWidget(devices: devices, columns: 2, isStale: isStale, date: entry.date,
+                RingWidget(devices: devices, columns: 2, isStale: isStale, isGray: isGray,
                            thresholds: thresholds, slice: nil)
             }
         }
@@ -104,7 +107,7 @@ private struct RingWidget: View {
     let devices: [Device]
     let columns: Int
     let isStale: Bool
-    let date: Date
+    let isGray: (Device) -> Bool
     let thresholds: BatteryThresholds
     let slice: WidgetPageSlice<Device>?
 
@@ -117,7 +120,7 @@ private struct RingWidget: View {
                 HStack(spacing: medium ? 0 : RingMetrics.smallGap) {
                     ForEach(row * columns..<(row + 1) * columns, id: \.self) { index in
                         let device = slots[index]
-                        RingSlot(device: device, gray: isStale || device?.isOld(at: date) == true,
+                        RingSlot(device: device, gray: device.map(isGray) == true,
                                  thresholds: thresholds, medium: medium)
                             .frame(maxWidth: medium ? .infinity : nil)
                     }
@@ -215,7 +218,7 @@ private struct ListWidget: View {
     let devices: [Device]
     let page: Int
     let isStale: Bool
-    let date: Date
+    let isGray: (Device) -> Bool
     let thresholds: BatteryThresholds
     let series: [HistorySeries]
 
@@ -226,7 +229,7 @@ private struct ListWidget: View {
             Text(isStale ? "widget.title.stale" : "widget.title")
                 .font(.caption).foregroundStyle(.secondary)
             ForEach(slice.items) { device in
-                let gray = isStale || device.isOld(at: date)
+                let gray = isGray(device)
                 let level = BatteryLevel(percent: device.percent, thresholds: thresholds)
                 HStack(spacing: 8) {
                     device.symbol.font(.system(size: 16)).foregroundStyle(.secondary).frame(width: 20)

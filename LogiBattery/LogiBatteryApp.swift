@@ -100,6 +100,7 @@ private func publishSnapshot(_ devices: [Device]) {
     guard let store = SnapshotStore.appGroup else { return }
     let now = Date.now
     let thresholds = SettingsModel.shared.values.thresholds
+    let interval = SettingsModel.shared.values.intervalMinutes
     let previous = store.read()
     do {
         try HistoryStore.appGroup?.record(devices, at: now)
@@ -108,13 +109,13 @@ private func publishSnapshot(_ devices: [Device]) {
         storageLog.error("history write failed: \(error.localizedDescription, privacy: .public)")
     }
     do {
-        try store.write(devices, at: now, thresholds: thresholds)
+        try store.write(devices, at: now, thresholds: thresholds, intervalMinutes: interval)
     } catch {
         storageLog.error("snapshot write failed: \(error.localizedDescription, privacy: .public)")
         return
     }
     let changed = previous.map {
-        $0.isStale(at: now) || $0.levelThresholds != thresholds
+        $0.isStale(at: now) || $0.levelThresholds != thresholds || $0.intervalMinutes != interval
             || Snapshot.meaningfullyDiffers($0.devices, devices, at: now)
     } ?? true
     if changed { WidgetCenter.shared.reloadAllTimelines() }

@@ -113,4 +113,34 @@ final class SystemBatteriesTests: XCTestCase {
             name: "Magic Mouse", major: 0x05, minor: 0x20,
             levels: [], now: now))
     }
+
+    /// #116 (B7): o processo filho que lê o nível do fone levava até 5 s dentro do `@MainActor`. Agora a espera é
+    /// assíncrona: a main segue girando enquanto o processo roda.
+    @MainActor
+    func testChildProcessDoesNotBlockTheMainActor() async {
+        let start = ContinuousClock.now
+        let running = Task {
+            await SystemBatteries.runLevels(executable: URL(fileURLWithPath: "/bin/sh"),
+                                            arguments: ["-c", "sleep 1; printf 'Fone\\t42\\n'"], timeout: 5)
+        }
+        for _ in 0..<5 { try? await Task.sleep(for: .milliseconds(20)) }
+        let mainWasFree = ContinuousClock.now - start
+        let output = await running.value
+        XCTAssertLessThan(mainWasFree, .milliseconds(600))
+        XCTAssertEqual(SystemBatteries.parseLevels(output), ["Fone": 42])
+    }
+
+    func testChildProcessIsTerminatedAfterTheTimeout() async {
+        let start = ContinuousClock.now
+        let output = await SystemBatteries.runLevels(executable: URL(fileURLWithPath: "/bin/sleep"),
+                                                     arguments: ["30"], timeout: 0.3)
+        XCTAssertEqual(output, "")
+        XCTAssertLessThan(ContinuousClock.now - start, .seconds(5))
+    }
+
+    func testChildProcessThatCannotStartReturnsEmpty() async {
+        let output = await SystemBatteries.runLevels(executable: URL(fileURLWithPath: "/nonexistent/levels"),
+                                                     arguments: [], timeout: 1)
+        XCTAssertEqual(output, "")
+    }
 }

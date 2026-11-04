@@ -35,6 +35,60 @@ final class HIDPPBatteryTests: XCTestCase {
         XCTAssertNil(HIDPPFrame(response: [0x11, 0x01]))
     }
 
+    /// #116 (B8): report `0x11` com menos de 20 bytes passava e a sessão lia `params[2]` fora do limite.
+    func testFrameRejectsReportShorterThanTwentyBytes() {
+        XCTAssertNil(HIDPPFrame(response: [0x11, 0x01, 0x04, 0x11, 0x5A]))
+        XCTAssertNil(HIDPPFrame(response: [0x11, 0x01, 0x04, 0x11] + [UInt8](repeating: 0, count: 15)))
+        XCTAssertNotNil(HIDPPFrame(response: [0x11, 0x01, 0x04, 0x11] + [UInt8](repeating: 0, count: 16)))
+    }
+
+    private let request = HIDPPFrame(deviceIndex: 2, featureIndex: 0x06, function: 1)
+
+    /// #116 (B5): feature recusada responde `11 índice FF feature função|sw erro`; esperar o timeout custava 1 s.
+    func testHIDPP2ErrorForThisRequestEndsItAtOnce() {
+        let error = [0x11, 0x02, 0xFF, 0x06, 0x11, 0x02] + [UInt8](repeating: 0, count: 14)
+        XCTAssertEqual(HIDPPFrame.match(error, for: request), .error)
+    }
+
+    func testHIDPP1ErrorForThisIndexEndsTheRequest() {
+        XCTAssertEqual(HIDPPFrame.match([0x10, 0x02, 0x8F, 0x00, 0x01, 0x09, 0x00], for: request), .error)
+    }
+
+    func testErrorsForOtherRequestsOrIndexesAreIgnored() {
+        let otherFeature = [0x11, 0x02, 0xFF, 0x07, 0x11, 0x02] + [UInt8](repeating: 0, count: 14)
+        let otherFunction = [0x11, 0x02, 0xFF, 0x06, 0x21, 0x02] + [UInt8](repeating: 0, count: 14)
+        let otherIndex = [0x11, 0x03, 0xFF, 0x06, 0x11, 0x02] + [UInt8](repeating: 0, count: 14)
+        for report in [otherFeature, otherFunction, otherIndex, [0x10, 0x03, 0x8F, 0x00, 0x01, 0x09, 0x00]] {
+            XCTAssertEqual(HIDPPFrame.match(report, for: request), .unrelated)
+        }
+    }
+
+    func testMatchingResponseIsReturnedAndShortReportIsUnrelated() throws {
+        let answer = [0x11, 0x02, 0x06, 0x11, 0x5A] + [UInt8](repeating: 0, count: 15)
+        XCTAssertEqual(HIDPPFrame.match(answer, for: request), .response(try XCTUnwrap(HIDPPFrame(response: answer))))
+        XCTAssertEqual(HIDPPFrame.match([0x11, 0x02, 0x06, 0x11, 0x5A], for: request), .unrelated)
+    }
+
+    /// #116 (B6): a busca da `0x1004` e a da `0x1000` no Root têm o mesmo cabeçalho. Com o mesmo software id, a
+    /// resposta atrasada da primeira virava a resposta da segunda; com id rotativo ela não casa.
+    func testLateAnswerDoesNotMatchTheNextRequestWithAnotherSoftwareID() throws {
+        let first = request.withSoftwareID(3)
+        let second = request.withSoftwareID(4)
+        let lateAnswerToFirst = [0x11, 0x02, 0x06, 0x13, 0x5A] + [UInt8](repeating: 0, count: 15)
+        XCTAssertEqual(HIDPPFrame.match(lateAnswerToFirst, for: first),
+                       .response(try XCTUnwrap(HIDPPFrame(response: lateAnswerToFirst))))
+        XCTAssertEqual(HIDPPFrame.match(lateAnswerToFirst, for: second), .unrelated)
+    }
+
+    func testWithSoftwareIDKeepsFunctionAndParams() {
+        let frame = HIDPPFrame(deviceIndex: 2, featureIndex: 0x06, function: 2, params: [0x10, 0x04])
+        let rotated = frame.withSoftwareID(9)
+        XCTAssertEqual(rotated.bytes[3], 0x29)
+        XCTAssertEqual(Array(rotated.bytes.prefix(6)), [0x11, 0x02, 0x06, 0x29, 0x10, 0x04])
+        XCTAssertEqual(rotated.bytes.count, HIDPPFrame.length)
+        XCTAssertEqual(HIDPPFrame.softwareIDs, 1...15)
+    }
+
     func testRequestFrameLayout() {
         let frame = HIDPPFrame(deviceIndex: 2, featureIndex: 0, function: 0, params: [0x10, 0x04])
         XCTAssertEqual(Array(frame.bytes.prefix(6)), [0x11, 0x02, 0x00, 0x01, 0x10, 0x04])
