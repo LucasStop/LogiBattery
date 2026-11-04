@@ -36,8 +36,8 @@ esac
 
 if [ "${1:-}" = "--changelog" ]; then
   echo "## $next - $(date +%Y-%m-%d)"
-  [ -n "$feats" ] && printf '\n### Novidades\n\n%s' "$feats"
-  [ -n "$fixes" ] && printf '\n### Correções\n\n%s' "$fixes"
+  if [ -n "$feats" ]; then printf '\n### Novidades\n\n%s' "$feats"; fi
+  if [ -n "$fixes" ]; then printf '\n### Correções\n\n%s' "$fixes"; fi
 else
   echo "$next"
 fi
