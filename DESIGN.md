@@ -191,6 +191,109 @@ Não faça:
 - Cor própria fora dos tokens de nível.
 - Selo de conexão solto onde o símbolo próprio já existe.
 
+## 9. Site (web)
+
+Landing pública em `site/` (T10, #92), HTML/CSS/JS estático no GitHub Pages. Vale só para o site; app, widget e popover seguem as seções 1 a 8. Tokens documentados aqui são os do `:root` de `site/index.html`; o código é a implementação. Status: rascunho (#106).
+
+### 9.1 Visão geral
+- Público: quem usa mouse e teclado Logitech no Mac e quer a bateria de relance; chega por busca ou link, decide em segundos.
+- Personalidade: a do app (discreta, nativa, calma). A página parece uma página da Apple, não um painel de marketing.
+- Um único primário por tela: o botão de download. Apoio (Pix) é secundário.
+- Cor de nível (`ok`) só aparece quando o assunto é bateria; nunca como enfeite.
+
+### 9.2 Cor
+Tokens CSS no `:root`; o modo escuro redefine os mesmos nomes em `@media (prefers-color-scheme: dark)`. `color-scheme: light dark` declarado. Contraste medido com a fórmula WCAG 2.2.
+
+| Token | Claro | Escuro | Uso |
+|---|---|---|---|
+| `--bg` | #f5f5f7 | #1c1c1e | Fundo da página, fundo do `code` |
+| `--surface` | #ffffff | #2a2a2d | Cartão, seletor, bloco de apoio, botão secundário |
+| `--fg` | #1d1d1f | #f5f5f7 | Texto principal |
+| `--muted` | #6e6e73 | #a1a1a6 | Texto de apoio, notas, rodapé |
+| `--border` | #d2d2d7 | #4d4d52 | Divisórias e bordas |
+| `--primary` | #0a64f0 | #3b8bff | Botão principal e links |
+| `--primary-fg` | #ffffff | #ffffff | Texto sobre `--primary` |
+| `--shot` | #c9d4e6 | #2c3a52 | Fundo da moldura de print |
+| `--ok` | #1f9d55 | #34c77b | Reservado a nível de bateria (hoje sem uso visível) |
+
+Contraste medido:
+
+| Par | Claro | Escuro | Exigência | Resultado |
+|---|---|---|---|---|
+| `--fg` / `--bg` | 15,46 | 15,63 | 4,5 | ok |
+| `--muted` / `--bg` | 4,66 | 6,61 | 4,5 | ok |
+| `--muted` / `--surface` | 5,07 | 5,56 | 4,5 | ok |
+| `--primary` / `--bg` (link) | 4,71 | 5,12 | 4,5 | ok |
+| `--primary-fg` / `--primary` (botão) | 5,13 | 3,32 | 4,5 | **falha no escuro** |
+| `--border` / `--bg` (borda de controle) | 1,38 | 2,02 | 3 | **falha nos dois** (seletor e botão secundário) |
+
+Ajustes a aplicar na etapa de código (#106): botão no escuro com `--primary-fg` escuro ou `--primary` mais fechado até chegar a 4,5; borda de controle (`select`, `.btn.alt`) com token próprio `--border-control` >= 3:1. Borda decorativa de cartão pode ficar em `--border`.
+
+### 9.3 Tipografia
+- Pilha do sistema, sem arquivo de fonte: `-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif`. Mono: `ui-monospace, SFMono-Regular, Menlo, monospace`, só para a chave Pix.
+
+| Estilo | Tamanho / linha | Peso | Uso |
+|---|---|---|---|
+| `hero` | `clamp(32px, 6vw, 52px)` / 1,1 | bold, tracking -0,02em | `h1` |
+| `h2` | 28 / 1,2 | bold, tracking -0,01em | Seção |
+| `h3` | 17 | bold | Título de cartão |
+| `lead` | 19 | regular | Subtítulo do hero |
+| `body` | 17 / 1,5 | regular | Texto corrido |
+| `body-sm` | 15 | regular | Texto de cartão |
+| `note` | 14 | regular | Nota, rodapé, seletor |
+| `code` | 13 | regular, mono | Chave Pix |
+
+- Medida de linha 45 a 75 caracteres (`max-width: 56ch` no lead).
+
+### 9.4 Espaço, layout e forma
+- Escala: 4, 8, 12, 16, 24, 32, 48. Valores fora da escala (20, 6, 10) saem na refatoração, exceto onde o espaço é interno ao componente e documentado.
+- Container `.wrap`: 960 px, gutter lateral 16 px. Grade de recursos `repeat(auto-fit, minmax(240px, 1fr))`, de prints `minmax(280px, 1fr)`.
+- Breakpoints: mobile a partir de 360 px, tablet 768, desktop 960. Sem rolagem horizontal em nenhum.
+- Raios: `sm` 8 (seletor, QR), `md` 12 (print), `lg` 14 (cartão, bloco de apoio), `xl` 20 (moldura), `pill` 999 (botão). Sem sombra própria.
+- Movimento: 120 ms (hover) e 200 ms (troca de texto), `ease-out`. `prefers-reduced-motion: reduce` desliga qualquer transição.
+
+### 9.5 Componentes
+
+| Componente | Classe | Variantes | Estados |
+|---|---|---|---|
+| Botão | `.btn` | primário (`--primary`), secundário (`.btn.alt`, `--surface` com borda) | padrão, hover (85% de opacidade), foco visível, ativo, copiado (rótulo "Copiado") |
+| Seletor de idioma | `select#lang` | padrão | padrão, foco visível; troca atualiza `lang` do `html` e guarda a escolha |
+| Cartão de recurso | `.card` | título + frase | padrão |
+| Grade de recursos | `.grid` | 4 cartões | colapsa para 1 coluna no mobile |
+| Moldura de print | `.shot` | uma ou duas por linha (`.shots`) | padrão; imagem com `alt` descritivo |
+| Bloco de apoio | `.support` | texto + botão + chave + QR Code | padrão, copiado |
+| Nota | `.note` | legenda | padrão |
+| Cabeçalho | `header` | marca + seletor | padrão |
+| Rodapé | `footer` | link do código + licença | padrão |
+
+Regra: componente sem linha aqui não existe; novo componente entra nesta tabela antes do HTML.
+
+### 9.6 Acessibilidade (WCAG 2.2 AA)
+- Foco visível em todo interativo (hoje não há estilo `:focus-visible` próprio; entra na etapa de código).
+- Alvo de toque >= 44 px (botão secundário hoje tem altura ~38 px; corrigir).
+- `alt` descritivo em todo print (hoje `alt=""` nos três prints; corrigir), `alt` do QR Code já presente.
+- `lang` do `html` acompanha o idioma escolhido; `aria-label` do seletor bilíngue.
+- Teclado completo: seletor, download e "Copiar chave" sem mouse; ordem de foco = ordem visual.
+- Verificação: Lighthouse (acessibilidade >= 95) e axe nos 3 idiomas, claro e escuro.
+
+### 9.7 Conteúdo e i18n
+- Idiomas: pt-BR, en, es; detecção por `navigator.language`, escolha manual guardada em `localStorage`.
+- Todo texto vem do objeto `T` por `data-i`; nenhum texto fixo no HTML além da marca e do nome do projeto.
+- Tom: direto e calmo, sem exclamação e sem superlativo. Capitalização: só a primeira palavra em botões e títulos.
+- Rótulo de botão cabe em uma linha nos 3 idiomas em 360 px.
+- A chave Pix e o QR Code são gerados por `design/pix/make.py` e conferidos antes de publicar.
+
+### 9.8 Faça e não faça
+Faça:
+- Usar só tokens do `:root`; trocar de tema pelo `prefers-color-scheme`.
+- Prints reais do app, com `alt` descritivo.
+- Conferir contraste ao mudar qualquer cor.
+
+Não faça:
+- Valor literal de cor, raio ou espaço fora do `:root` e da escala.
+- Biblioteca, fonte externa ou rastreador (a página não faz rede além do download e dos links).
+- Segundo botão primário na mesma tela, gradiente, emoji decorativo.
+
 ## Fluxo de protótipo e aprovação
 
 Nenhuma tela é desenvolvida sem protótipo aprovado. O inventário e o status de cada tela ficam em [design/telas.md](design/telas.md); o passo a passo em [design/README.md](design/README.md).
@@ -218,6 +321,7 @@ Nenhuma tela é desenvolvida sem protótipo aprovado. O inventário e o status d
 - 2026-11-03: símbolos próprios com o selo de conexão no canto de baixo (`lb.*`), no widget e no popover (#65).
 - 2026-11-03: fundo do widget transparente (base do sistema, vidro nos estilos translúcido e tonalizado), anel na cor do nível também no translúcido e no tonalizado (imagem em cor cheia) e matriz de estilos com prints; vidro do Baterias no estilo padrão é exclusivo da Apple (#64).
 - 2026-11-03: todos os ícones com conexão usam símbolo próprio `lb.*` (`lb.other.*` e `lb.headphones.receiver`), sem `TransportBadge` separado (#75); popover na direção B com faixa de anéis no topo e seções em vidro (#66); paginação nos widgets médio e grande com `AppIntent` (#79); Ajustes no visual dos Ajustes do Sistema com ícones coloridos por linha (#67).
+- 2026-11-03: seção 9 (site): tokens, tipografia, componentes e acessibilidade da landing, com contraste medido e lacunas a corrigir na etapa de código (#106).
 
 ## Ícone do app
 Opção A aprovada por Lucas em 2026-10-29: anel de carga verde (gradiente `#5EE59A` a `#1F9D55`) sobre fundo escuro `#1C2333`/`#0B0F19`, com raio branco no centro. Fonte em `design/icon/appicon.svg` (1024 pt, margem de 100 pt); os PNGs de `LogiBattery/Assets.xcassets/AppIcon.appiconset` saem dela com `rsvg-convert`.
