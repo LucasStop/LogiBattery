@@ -143,4 +143,27 @@ final class SystemBatteriesTests: XCTestCase {
                                                      arguments: [], timeout: 1)
         XCTAssertEqual(output, "")
     }
+
+    // Regressão do #121: KF8700 KEYBOARD (Hailuck) só tem nível no Battery Service BLE.
+    func testBLEBatteryServiceReadingBecomesAKeyboardOfAnyBrand() throws {
+        let device = try XCTUnwrap(SystemBatteries.bleDevice(name: "KF8700 KEYBOARD", level: 90, now: now))
+        XCTAssertEqual(device.id, "bt-ble-KF8700 KEYBOARD")
+        XCTAssertEqual(device.kind, .keyboard)
+        XCTAssertEqual(device.path, .bluetooth)
+        XCTAssertEqual(device.percent, 90)
+    }
+
+    func testBLEBatteryServiceOutOfRangeLevelIsNoData() {
+        XCTAssertNil(SystemBatteries.bleDevice(name: "KF8700 KEYBOARD", level: 0, now: now))
+        XCTAssertNil(SystemBatteries.bleDevice(name: "KF8700 KEYBOARD", level: 101, now: now))
+    }
+
+    func testHIDPPReadingWinsOverTheGenericBLEReadingOfTheSameDevice() throws {
+        let hidpp = Device(id: "receiver-0", name: "MX Master 3S", kind: .mouse, percent: 84,
+                           chargeState: .discharging, path: .bluetooth, readAt: now.addingTimeInterval(-5))
+        let ble = try XCTUnwrap(SystemBatteries.bleDevice(name: "MX Master 3S", level: 85, now: now))
+        let merged = DeviceDeduplicator.merge([hidpp, ble])
+        XCTAssertEqual(merged.map(\.id), ["receiver-0"])
+        XCTAssertEqual(merged.first?.percent, 84)
+    }
 }

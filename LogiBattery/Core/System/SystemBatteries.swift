@@ -6,11 +6,14 @@ import IOKit.ps
 /// Bateria que o próprio macOS já conhece: a do Mac (`IOPowerSources`) e a de qualquer periférico Bluetooth
 /// conectado que informe nível por `IORegistry` (`BatteryPercent`, GATT `0x180F` / Apple HID) ou `IOBluetooth` (#88).
 enum SystemBatteries {
+    private static let bleReader = BLEBatteryReader()
+
     /// IOBluetooth sem garantia de thread: lê na main, junto da UI. Só a espera do processo filho sai da main (#116).
     @MainActor
     static func read(now: Date) async -> [Device] {
         let paired = await pairedBluetooth(now: now)
-        return macs(now: now) + DeviceDeduplicator.merge(ioRegistryBluetooth(now: now) + paired)
+        let ble = await bleReader.read().compactMap { bleDevice(name: $0.key, level: $0.value, now: now) }
+        return macs(now: now) + DeviceDeduplicator.merge(ioRegistryBluetooth(now: now) + paired + ble)
     }
 
     /// Dicionário de `IOPSGetPowerSourceDescription`; só a bateria interna (no-break e afins ficam de fora).

@@ -82,6 +82,7 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 | US-11 | Ajustes persistem e valem na próxima leitura; cores seguem os limites no app e no widget | `SettingsTests` (inclui `grayAfterMinutes`, `keepForMinutes`, `forgetScope` e `onChange`), `SnapshotContractTests` (limites e `policy` no snapshot, snapshot antigo sem `policy`) | integração |
 | US-12 | Guia de permissão e atalho ao painel | `PermissionModelTests`; manual | unitário, manual |
 | US-13 | Mac e fone Bluetooth aparecem; fone desligado some | `SystemBatteriesTests` (inclui o processo filho fora da main, #116), `KeepLastReadingTests` (fone não é mantido), `DeviceLifecycleScenarioTests` (Bluetooth e fone somem na hora, fone sem nível mantém a última), `SnapshotContractTests` (Mac primeiro, tipos novos); smoke: `snapshot.json` com Mac e fone | unitário, cenário, manual |
+| US-15 | Teclado e mouse BLE de qualquer marca aparecem pelo Battery Service; HID++ não duplica | `SystemBatteriesTests` (`testBLEBatteryServiceReadingBecomesAKeyboardOfAnyBrand`, nível fora de 1...100, `testHIDPPReadingWinsOverTheGenericBLEReadingOfTheSameDevice`); smoke: `snapshot.json` com o KF8700 | unitário, manual |
 | US-14 | Ícone escondido some, leitura segue e o ícone volta ao reabrir o app | manual: desligar o toggle (o `generatedAt` do `snapshot.json` continua avançando), `open ~/Applications/LogiBattery.app` traz o ícone de volta, clique no widget idem, logout e login com o ícone escondido | manual |
 
 ## 6. Comandos
