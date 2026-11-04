@@ -1519,6 +1519,358 @@
         }
       }
     },
+    "settings.section.unresponsive": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aparelhos sem resposta"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unresponsive devices"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dispositivos sin respuesta"
+          }
+        }
+      }
+    },
+    "settings.grayAfter": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ficar cinza depois de"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn gray after"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ponerse gris después de"
+          }
+        }
+      }
+    },
+    "settings.grayAfter.hint": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem resposta por esse tempo, a última leitura fica cinza"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "With no answer for this long, the last reading turns gray"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin respuesta durante este tiempo, la última lectura se pone gris"
+          }
+        }
+      }
+    },
+    "settings.grayAfter.hint.now": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Na hora: a última leitura já aparece cinza"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Immediately: the last reading already shows gray"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al instante: la última lectura ya aparece en gris"
+          }
+        }
+      }
+    },
+    "settings.forgetScope": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esquecer vale para"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forget applies to"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Olvidar se aplica a"
+          }
+        }
+      }
+    },
+    "settings.forgetScope.gray": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Só leitura cinza"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gray readings only"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo lectura gris"
+          }
+        }
+      }
+    },
+    "settings.forgetScope.all": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cinza e verde"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gray and green"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gris y verde"
+          }
+        }
+      }
+    },
+    "settings.forgetScope.hint.gray": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Só leitura que já ficou cinza. O Mac e aparelho que respondeu agora nunca podem ser esquecidos"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only readings that already turned gray. The Mac and any device that answered just now can never be forgotten"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo lecturas que ya se pusieron grises. El Mac y el dispositivo que respondió ahora nunca se pueden olvidar"
+          }
+        }
+      }
+    },
+    "settings.forgetScope.hint.all": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Também leitura mantida que ainda está verde. O Mac e aparelho que respondeu agora nunca podem ser esquecidos"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Also kept readings that are still green. The Mac and any device that answered just now can never be forgotten"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "También lecturas mantenidas que aún están en verde. El Mac y el dispositivo que respondió ahora nunca se pueden olvidar"
+          }
+        }
+      }
+    },
+    "settings.forgetScope.hint.off": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem leitura mantida, não há o que esquecer"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "With no kept reading there is nothing to forget"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin lectura mantenida, no hay nada que olvidar"
+          }
+        }
+      }
+    },
+    "settings.keepFor": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sumir sozinho depois de"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove automatically after"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desaparecer solo después de"
+          }
+        }
+      }
+    },
+    "settings.keepFor.hint": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passado esse tempo, o aparelho sai da lista"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After this time the device leaves the list"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pasado este tiempo, el dispositivo sale de la lista"
+          }
+        }
+      }
+    },
+    "settings.keepFor.hint.now": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Na hora: o aparelho some assim que para de responder, sem manter leitura"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Immediately: the device disappears as soon as it stops answering, no reading is kept"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al instante: el dispositivo desaparece en cuanto deja de responder, sin mantener lectura"
+          }
+        }
+      }
+    },
+    "settings.adjusted.grayAfter %@ %@": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustado de %@ para %@: não pode ser maior que Sumir sozinho depois de"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adjusted from %@ to %@: cannot be greater than Remove automatically after"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustado de %@ a %@: no puede ser mayor que Desaparecer solo después de"
+          }
+        }
+      }
+    },
+    "settings.adjusted.keepFor %@ %@": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustado de %@ para %@: não pode ser menor que Ficar cinza depois de"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adjusted from %@ to %@: cannot be less than Turn gray after"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustado de %@ a %@: no puede ser menor que Ponerse gris después de"
+          }
+        }
+      }
+    },
+    "settings.window.now": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Na hora"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Immediately"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al instante"
+          }
+        }
+      }
+    },
     "settings.section.general": {
       "localizations": {
         "pt-BR": {

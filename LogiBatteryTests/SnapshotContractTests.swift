@@ -117,6 +117,33 @@ final class SnapshotContractTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(store.read()).levelThresholds, BatteryThresholds())
     }
 
+    /// #115: o widget não lê os Ajustes, então a regra de leitura mantida viaja no snapshot.
+    func testReadingPolicyRoundTripsAndOldSnapshotFallsBackToDefaults() throws {
+        let store = SnapshotStore(directory: directory)
+        let policy = ReadingPolicy(grayAfter: 5 * 60, keepFor: 7 * 24 * 3600, forgetScope: .anyKept)
+        try store.write([device("a", percent: 25)], at: now, policy: policy)
+        XCTAssertEqual(store.read()?.policy, policy)
+        let old = #"{"schemaVersion":1,"generatedAt":"2027-01-15T08:00:00Z","devices":[]}"#
+        try Data(old.utf8).write(to: directory.appendingPathComponent("snapshot.json"))
+        XCTAssertEqual(try XCTUnwrap(store.read()).readingPolicy, ReadingPolicy())
+    }
+
+    func testWidgetGrayFollowsThePolicyInTheSnapshot() {
+        let kept = Device(id: "k", name: "PRO X TKL", kind: .keyboard, percent: 77, chargeState: .discharging,
+                          path: .receiver, readAt: now.addingTimeInterval(-10 * 60))
+        let answered = Device(id: "m", name: "MX Master 3S", kind: .mouse, percent: 90, chargeState: .discharging,
+                              path: .receiver, readAt: now)
+        func snapshot(_ policy: ReadingPolicy?) -> Snapshot {
+            Snapshot(schemaVersion: Snapshot.schemaVersion, generatedAt: now, devices: [kept, answered],
+                     policy: policy)
+        }
+        XCTAssertFalse(snapshot(nil).showsGray(kept, at: now))
+        XCTAssertTrue(snapshot(ReadingPolicy(grayAfter: 5 * 60)).showsGray(kept, at: now))
+        XCTAssertTrue(snapshot(ReadingPolicy(grayAfter: 0)).showsGray(kept, at: now))
+        XCTAssertFalse(snapshot(ReadingPolicy(grayAfter: 0)).showsGray(answered, at: now))
+        XCTAssertFalse(snapshot(ReadingPolicy(grayAfter: 3600)).showsGray(kept, at: now))
+    }
+
     func testWidgetOrderPutsLowestFirstAndUnknownLast() throws {
         let devices = [device("a", percent: 80), device("b", percent: nil), device("c", percent: 7)]
         let ordered = Snapshot.widgetOrder(devices, scanAt: now)
@@ -173,6 +200,32 @@ final class WidgetReloadTests: XCTestCase {
         XCTAssertTrue(Snapshot.meaningfullyDiffers(old, [device("MX Master 3S", 90, .bluetooth)], at: now))
         XCTAssertTrue(Snapshot.meaningfullyDiffers(old, old + [device("PRO X TKL", 77)], at: now))
         XCTAssertTrue(Snapshot.meaningfullyDiffers(old, [], at: now))
+    }
+
+    /// O cinza segue a regra dos Ajustes: a mesma leitura que mantém a cor com 30 min vira cinza com "na hora".
+    func testReadingTurningGrayUnderTheNewPolicyReloads() {
+        let before = [device("PRO X TKL", 77)]
+        let after = [device("PRO X TKL", 77, minutesAgo: 10)]
+        XCTAssertFalse(Snapshot.meaningfullyDiffers(before, after, at: now))
+        XCTAssertTrue(Snapshot.meaningfullyDiffers(before, after, at: now, policy: ReadingPolicy(grayAfter: 0)))
+    }
+
+    /// B3 da revisão #116: ajuste que o widget usa recarrega na hora, mesmo sem nenhuma leitura ter mudado.
+    func testChangingAnySettingTheWidgetUsesReloadsItEvenIfNoReadingChanged() {
+        let devices = [device("MX Master 3S", 90)]
+        let snapshot = Snapshot(schemaVersion: Snapshot.schemaVersion, generatedAt: now, devices: devices,
+                                thresholds: BatteryThresholds(), intervalMinutes: 1, policy: ReadingPolicy())
+        func reload(thresholds: BatteryThresholds = BatteryThresholds(), interval: Int = 1,
+                    policy: ReadingPolicy = ReadingPolicy()) -> Bool {
+            snapshot.needsWidgetReload(for: devices, at: now, thresholds: thresholds, intervalMinutes: interval,
+                                       policy: policy)
+        }
+        XCTAssertFalse(reload())
+        XCTAssertTrue(reload(thresholds: BatteryThresholds(low: 30, critical: 15)))
+        XCTAssertTrue(reload(interval: 5))
+        XCTAssertTrue(reload(policy: ReadingPolicy(grayAfter: 5 * 60)))
+        XCTAssertTrue(reload(policy: ReadingPolicy(keepFor: 3600)))
+        XCTAssertTrue(reload(policy: ReadingPolicy(forgetScope: .anyKept)))
     }
 
     func testOldReadingTurningFreshReloads() {

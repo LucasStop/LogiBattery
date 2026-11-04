@@ -133,11 +133,18 @@ enum DeviceIdentity {
     }
 }
 
+/// Quais leituras mantidas o Esquecer alcança (#115). O Mac e quem respondeu ao último scan ficam de fora nas duas.
+enum ForgetScope: String, Codable, Equatable, Sendable {
+    case grayOnly, anyKept
+}
+
 /// Regra única de leitura mantida (ARCHITECTURE.md §9): quanto tempo ela segue na lista e quando fica cinza.
 /// Vale para popover, widget e snapshot; antes cada um tinha a sua constante e um fix corrigia só um deles (#116).
+/// Os valores vêm dos Ajustes (#115); zero em `grayAfter` é cinza na hora e em `keepFor` é não manter leitura.
 struct ReadingPolicy: Codable, Equatable, Sendable {
     var grayAfter: TimeInterval = 30 * 60
     var keepFor: TimeInterval = 24 * 3600
+    var forgetScope = ForgetScope.grayOnly
 
     /// Aparelho que não veio no scan e continua na lista. Fone e Bluetooth fora do scan foram desligados (o sistema
     /// sabe na hora) e somem, como no widget da Apple (#100); pelo receptor, dormindo e desligado não se distinguem.
@@ -147,6 +154,15 @@ struct ReadingPolicy: Codable, Equatable, Sendable {
 
     func isWithinKeep(_ device: Device, at date: Date) -> Bool {
         DeviceIdentity.isPrintable(device.name) && date.timeIntervalSince(device.readAt) < keepFor
+    }
+
+    /// O Mac e quem respondeu ao último scan voltariam na próxima leitura e nunca são esquecidos.
+    func canForget(_ device: Device, at date: Date, scanAt: Date) -> Bool {
+        guard device.kind != .laptop else { return false }
+        switch forgetScope {
+        case .grayOnly: return device.isGray(at: date, scanAt: scanAt, policy: self)
+        case .anyKept: return device.isKept(scanAt: scanAt)
+        }
     }
 }
 

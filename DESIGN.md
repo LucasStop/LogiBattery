@@ -137,7 +137,8 @@ Todo componente documenta: anatomia, variantes, tamanhos, estados e comportament
 |---|---|---|---|---|---|
 | Botão | primary, secondary, ghost | sm, md | todos | `LogiBattery/UI/Components/` | componente + visual |
 | Switch e stepper (ajustes) | padrão | md | padrão, foco, desabilitado | `LogiBattery/UI/Components/` | componente + a11y |
-| Linha de ajuste com ícone (#67) | quadrado colorido de 24 pt, raio 6 (`r-sm`), SF Symbol branco de 14 pt; cores `blue`, `orange`, `red`, `green`, `purple`, `gray` | md | padrão, foco | `LogiBattery/UI/Settings/` (`Form(.grouped)` + `Section`) | componente + a11y |
+| Linha de ajuste com ícone (#67) | quadrado colorido de 24 pt, raio 6 (`r-sm`), SF Symbol branco de 14 pt; cores `blue`, `orange`, `red`, `green`, `purple`, `gray` | md | padrão, foco | `LogiBattery/UI/SettingsView.swift` (`Form(.grouped)` + `Section`) | componente + a11y |
+| Seletor em menu nos ajustes (#115, aprovado em 2026-11-04) | `Picker` em menu à direita da linha com ícone; duração (Na hora, 5, 15, 30 min, 1, 2, 6, 12, 24, 48 h, 7 dias, rótulos de `Duration` localizados, 0 = "Na hora") e escopo do Esquecer (Só leitura cinza, Cinza e verde). Alternativa B, stepper com unidade sobre a mesma lista, descartada pelo Lucas | md, valor com largura mínima de 104 pt | padrão, foco, aberto, desabilitado (linha sem efeito, a dica diz por quê), ajustado (aviso na dica) | `LogiBattery/UI/SettingsView.swift` | unitário (regra cinza <= sumir) + componente + a11y |
 | Cartão de aparelho | mouse, teclado, Mac, fone, genérico | popover, widget | ok, baixo, crítico, carregando, cheio, sem leitura | `LogiBattery/UI/Components/` | componente + visual |
 | Indicador de bateria | célula + número | sm, md, lg | ok, baixo, crítico, carregando, cheio, sem leitura | `LogiBattery/UI/Components/` | componente + visual |
 | Gráfico de histórico | linha por aparelho | popover, widget grande | vazio, carregando, dados | `LogiBattery/UI/Components/` | visual |
@@ -153,6 +154,7 @@ Por componente, registrar em `design/components.md` a anatomia e a regra de uso;
 
 ## 5. Padrões de interface
 - Formulários (ajustes): rótulo sempre visível, mudança vale na próxima leitura, sem botão "salvar".
+- Ajustes que dependem um do outro (#115, aprovado em 2026-11-04): o que o usuário mexeu por último vale e o outro valor é puxado junto (ficar cinza nunca passa de sumir), sem bloquear o menu. A linha puxada troca a dica por "Ajustado de X para Y: <motivo>" em `foreground` (a dica normal é `muted`), role de status para o VoiceOver, até a próxima mudança na seção. Linha sem efeito (sem leitura mantida) fica desabilitada e a dica explica o motivo.
 - Feedback: banner no popover para permissão e erro; notificação do sistema para bateria baixa e carga cheia; sem toast.
 - Carregamento: placeholder no lugar do número depois de 300 ms; nunca mostrar zero enquanto lê.
 - Estado vazio: explica que nenhum aparelho Logitech foi achado e como parear ou ligar o receptor.

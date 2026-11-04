@@ -83,6 +83,111 @@ final class SettingsTests: XCTestCase {
         XCTAssertEqual(model.values.interval, .seconds(600))
     }
 
+    /// #115: os padrões da seção "Aparelhos sem resposta" são as regras que valiam antes (30 min, só cinza, 24 h).
+    func testUnresponsiveDefaultsKeepTheOldRules() {
+        let settings = AppSettings()
+        XCTAssertEqual(settings.grayAfterMinutes, 30)
+        XCTAssertEqual(settings.keepForMinutes, 24 * 60)
+        XCTAssertEqual(settings.forgetScope, .grayOnly)
+        XCTAssertEqual(settings.readingPolicy, ReadingPolicy())
+    }
+
+    /// Ajuste salvo antes da #115 não tem as chaves novas: o decode tem de manter o que já estava e usar os padrões.
+    func testSettingsSavedBeforeTheUnresponsiveSectionKeepTheirValues() throws {
+        let defaults = defaults()
+        let old = #"{"lowThreshold":30,"criticalThreshold":12,"fullChargeAlert":false,"intervalMinutes":5}"#
+        defaults.set(Data(old.utf8), forKey: "settings")
+        let values = SettingsModel(defaults: defaults).values
+        XCTAssertEqual(values.lowThreshold, 30)
+        XCTAssertEqual(values.criticalThreshold, 12)
+        XCTAssertFalse(values.fullChargeAlert)
+        XCTAssertEqual(values.intervalMinutes, 5)
+        XCTAssertEqual(values.readingPolicy, ReadingPolicy())
+    }
+
+    func testUnresponsiveSettingsPersistAcrossRestartAndBecomeSeconds() {
+        let defaults = defaults()
+        let model = SettingsModel(defaults: defaults)
+        model.setKeepFor(7 * 24 * 60)
+        model.setGrayAfter(5)
+        model.setForgetScope(.anyKept)
+        let reopened = SettingsModel(defaults: defaults).values
+        XCTAssertEqual(reopened.readingPolicy,
+                       ReadingPolicy(grayAfter: 5 * 60, keepFor: 7 * 24 * 3600, forgetScope: .anyKept))
+    }
+
+    /// Cinza nunca passa de sumir: o último valor mexido vale e o outro é puxado junto, com o aviso "de X para Y".
+    func testRaisingGrayAfterPastKeepForPullsKeepForUp() {
+        let model = SettingsModel(defaults: defaults())
+        model.setKeepFor(60)
+        model.setGrayAfter(120)
+        XCTAssertEqual(model.values.grayAfterMinutes, 120)
+        XCTAssertEqual(model.values.keepForMinutes, 120)
+        XCTAssertEqual(model.adjustment, SettingsAdjustment(field: .keepFor, before: 60, after: 120))
+    }
+
+    func testLoweringKeepForBelowGrayAfterPullsGrayAfterDown() {
+        let model = SettingsModel(defaults: defaults())
+        model.setKeepFor(15)
+        XCTAssertEqual(model.values.grayAfterMinutes, 15)
+        XCTAssertEqual(model.values.keepForMinutes, 15)
+        XCTAssertEqual(model.adjustment, SettingsAdjustment(field: .grayAfter, before: 30, after: 15))
+    }
+
+    /// Sumir "na hora" não mantém leitura nenhuma, então o cinza vai junto para "na hora".
+    func testKeepForZeroPullsGrayAfterToZero() {
+        let model = SettingsModel(defaults: defaults())
+        model.setKeepFor(0)
+        XCTAssertEqual(model.values.grayAfterMinutes, 0)
+        XCTAssertEqual(model.adjustment, SettingsAdjustment(field: .grayAfter, before: 30, after: 0))
+    }
+
+    func testAdjustmentNoticeGoesAwayOnTheNextChangeOfTheSection() {
+        let model = SettingsModel(defaults: defaults())
+        model.setKeepFor(15)
+        XCTAssertNotNil(model.adjustment)
+        model.setForgetScope(.anyKept)
+        XCTAssertNil(model.adjustment)
+        model.setKeepFor(5)
+        XCTAssertNotNil(model.adjustment)
+        model.setGrayAfter(0)
+        XCTAssertNil(model.adjustment)
+    }
+
+    func testChangeInsideTheRuleDoesNotAdjustAnything() {
+        let model = SettingsModel(defaults: defaults())
+        model.setGrayAfter(5)
+        model.setKeepFor(60)
+        XCTAssertNil(model.adjustment)
+        XCTAssertEqual(model.values.grayAfterMinutes, 5)
+        XCTAssertEqual(model.values.keepForMinutes, 60)
+    }
+
+    /// Valor salvo à mão fora da lista do menu vai para o mais próximo, e o cinza continua dentro do sumir.
+    func testSavedValueOutsideTheMenuSnapsToTheNearestOption() {
+        let defaults = defaults()
+        let odd = #"{"grayAfterMinutes":100,"keepForMinutes":99999}"#
+        defaults.set(Data(odd.utf8), forKey: "settings")
+        let values = SettingsModel(defaults: defaults).values
+        XCTAssertEqual(values.grayAfterMinutes, 120)
+        XCTAssertEqual(values.keepForMinutes, 10_080)
+        let inverted = #"{"grayAfterMinutes":720,"keepForMinutes":60}"#
+        defaults.set(Data(inverted.utf8), forKey: "settings")
+        XCTAssertEqual(SettingsModel(defaults: defaults).values.grayAfterMinutes, 60)
+    }
+
+    /// B3 da revisão #116: mudar um ajuste tem de avisar quem não observa o modelo (lista e snapshot do widget).
+    func testEveryChangeNotifiesTheAppWithTheCleanValues() {
+        let model = SettingsModel(defaults: defaults())
+        var received: [AppSettings] = []
+        model.onChange = { received.append($0) }
+        model.setKeepFor(15)
+        model.values.lowThreshold = 30
+        XCTAssertEqual(received.count, 2)
+        XCTAssertEqual(received.first?.readingPolicy.keepFor, 15 * 60)
+        XCTAssertEqual(received.last?.lowThreshold, 30)
+    }
+
     func testPopoverWidthNormalization() {
         XCTAssertEqual(SettingsModel.defaultPopoverWidth, 320)
         XCTAssertEqual(SettingsModel.normalizedPopoverWidth(280), 320)

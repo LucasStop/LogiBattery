@@ -46,7 +46,7 @@ Formato único (RFC 9457, `application/problem+json`): `type`, `title`, `status`
 
 | Método e rota | Papel | Descrição | Teste |
 |---|---|---|---|
-| `snapshot.json` (leitura) | widget | Lista de aparelhos com `id`, `name`, `kind` (`mouse`, `keyboard`, `laptop`, `headphones`, `other`), `percent`, `chargeState`, `path` (`receiver`, `bluetooth`, `internal` para a bateria do Mac), `updatedAt` (momento da leitura), mais `schemaVersion`, `generatedAt` e `thresholds` (`{low, critical}`, limites de nível dos Ajustes; opcional, ausente vale 20/10) e `intervalMinutes` (intervalo de leitura dos Ajustes; opcional, ausente vale 1); widget marca desatualizado (app parado) após `max(30 min, 2 × intervalMinutes)` do `generatedAt`, e mostra em cinza só a leitura que não respondeu ao último scan (`updatedAt` mais de 30 s antes do `generatedAt`) há mais de 30 min | `SnapshotContractTests` |
+| `snapshot.json` (leitura) | widget | Lista de aparelhos com `id`, `name`, `kind` (`mouse`, `keyboard`, `laptop`, `headphones`, `other`), `percent`, `chargeState`, `path` (`receiver`, `bluetooth`, `internal` para a bateria do Mac), `updatedAt` (momento da leitura), mais `schemaVersion`, `generatedAt` e `thresholds` (`{low, critical}`, limites de nível dos Ajustes; opcional, ausente vale 20/10) e `intervalMinutes` (intervalo de leitura dos Ajustes; opcional, ausente vale 1) e `policy` (`{grayAfter, keepFor, forgetScope}`, `grayAfter` e `keepFor` em segundos, dos Ajustes; opcional, ausente vale 30 min, 24 h e só cinza); widget marca desatualizado (app parado) após `max(30 min, 2 × intervalMinutes)` do `generatedAt`, e mostra em cinza só a leitura que não respondeu ao último scan (`updatedAt` mais de 30 s antes do `generatedAt`) há mais de `policy.grayAfter` (padrão 30 min) | `SnapshotContractTests` |
 | `snapshot.json` (escrita) | host | Substitui o arquivo de forma atômica após cada leitura | `SnapshotContractTests` |
 
 ## 8. Histórico de mudanças do contrato
@@ -54,3 +54,4 @@ Formato único (RFC 9457, `application/problem+json`): `type`, `title`, `status`
 - 2026-11-03: campo opcional `thresholds`, compatível com o `schemaVersion` 1 (snapshot antigo sem ele lê com os limites padrão).
 - 2026-11-03: `kind` ganha `laptop` e `headphones`, `path` ganha `internal` (US-13). Sem bump de `schemaVersion`: snapshot antigo continua legível, e app e widget saem no mesmo pacote.
 - 2026-11-04: campo opcional `intervalMinutes`, compatível com o `schemaVersion` 1 (snapshot antigo sem ele lê como 1 min). O widget deixa de usar 30 min fixos para "app parado" e para o cinza da linha (#116).
+- 2026-11-04: campo opcional `policy`, compatível com o `schemaVersion` 1 (snapshot antigo sem ele lê com os padrões). Cinza e "app parado" seguem as regras anteriores (#115).
