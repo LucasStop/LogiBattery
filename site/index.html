@@ -29,7 +29,7 @@ select{font:inherit;font-size:14px;color:var(--fg);background:var(--surface);bor
 .shot img{max-width:100%;height:auto;max-height:420px;border-radius:var(--r-md)}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--s4);margin:var(--s6) 0}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--s5)}
-.card h3{margin:0 0 6px;font-size:17px}.card p{margin:0;color:var(--muted);font-size:15px}
+.card .h3{margin:0 0 6px;font-size:17px;line-height:1.5;letter-spacing:0}.card p{margin:0;color:var(--muted);font-size:15px}
 h2{font-size:28px;line-height:1.2;margin:var(--s7) 0 var(--s2);letter-spacing:-.01em}
 .sub{color:var(--muted);margin:0 0 var(--s4)}
 .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--s4)}
@@ -43,23 +43,25 @@ footer{color:var(--muted);font-size:14px;padding:var(--s7) 0 var(--s6);text-alig
 </style></head><body><div class="wrap">
 <header><div class="brand"><img src="icon.svg" alt=""><span>LogiBattery</span></div>
 <select id="lang" aria-label="Idioma / Language"><option value="pt-BR">Português</option><option value="en">English</option><option value="es">Español</option></select></header>
+<main>
 <section class="hero"><h1 data-i="title"></h1><p data-i="lead"></p>
 <a class="btn" href="https://github.com/LucasStop/LogiBattery/releases/latest" data-i="download"></a>
 <div class="note" data-i="req"></div>
 <div class="note" data-i="gate"></div></section>
-<div class="shot"><img src="shots/t02-widget-medio.png" data-alt="alt1" alt=""></div>
+<div class="shot"><picture><source media="(prefers-color-scheme:dark)" srcset="shots/widget-medio-dark.png"><img src="shots/widget-medio-light.png" data-alt="alt1" alt=""></picture></div>
 <section class="grid">
-<div class="card"><h3 data-i="f1t"></h3><p data-i="f1p"></p></div>
-<div class="card"><h3 data-i="f2t"></h3><p data-i="f2p"></p></div>
-<div class="card"><h3 data-i="f3t"></h3><p data-i="f3p"></p></div>
-<div class="card"><h3 data-i="f4t"></h3><p data-i="f4p"></p></div>
+<div class="card"><h2 class="h3" data-i="f1t"></h2><p data-i="f1p"></p></div>
+<div class="card"><h2 class="h3" data-i="f2t"></h2><p data-i="f2p"></p></div>
+<div class="card"><h2 class="h3" data-i="f3t"></h2><p data-i="f3p"></p></div>
+<div class="card"><h2 class="h3" data-i="f4t"></h2><p data-i="f4p"></p></div>
 </section>
 <h2 data-i="shotsT"></h2><p class="sub" data-i="shotsP"></p>
-<section class="shots"><div class="shot"><img src="shots/t04-popover.png" data-alt="alt2" alt=""></div><div class="shot"><img src="shots/t03-widget-grande.png" data-alt="alt3" alt=""></div></section>
+<section class="shots"><div class="shot"><picture><source media="(prefers-color-scheme:dark)" srcset="shots/popover-dark.png"><img src="shots/popover-light.png" data-alt="alt2" alt=""></picture></div><div class="shot"><picture><source media="(prefers-color-scheme:dark)" srcset="shots/widget-grande-dark.png"><img src="shots/widget-grande-light.png" data-alt="alt3" alt=""></picture></div></section>
 <h2 data-i="supT"></h2>
 <section class="support"><div><p class="sub" data-i="supP"></p>
 <button class="btn alt" id="pix" data-i="pix"></button> <div class="note"><span data-i="pixKey"></span> <code>dd226f83-02f0-4c80-bd23-322c9f5fa7ee</code></div></div> <!-- gitleaks:allow -->
 <img class="qr" src="pix-qr.svg" width="140" height="140" alt="QR Code Pix"></section>
+</main>
 <footer><a href="https://github.com/LucasStop/LogiBattery" data-i="src"></a> · MIT</footer>
 </div>
 <script>
