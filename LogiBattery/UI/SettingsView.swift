@@ -26,6 +26,28 @@ struct SettingsView: View {
                 stepper("settings.interval", hint: "settings.interval.hint", icon: "clock.fill", tint: .gray,
                         value: $model.values.intervalMinutes, range: 1...60, step: 1) { "\($0) min" }
             }
+            Section("settings.section.unresponsive") {
+                durationPicker("settings.grayAfter", icon: "moon.fill", tint: .gray,
+                               selection: Binding(get: { model.values.grayAfterMinutes },
+                                                  set: { model.setGrayAfter($0) }),
+                               hint: model.values.grayAfterMinutes == 0
+                                   ? "settings.grayAfter.hint.now" : "settings.grayAfter.hint",
+                               note: note(for: .grayAfter))
+                Picker(selection: Binding(get: { model.values.forgetScope }, set: { model.setForgetScope($0) })) {
+                    Text("settings.forgetScope.gray").tag(ForgetScope.grayOnly)
+                    Text("settings.forgetScope.all").tag(ForgetScope.anyKept)
+                } label: {
+                    label("settings.forgetScope", hint: forgetHint, icon: "eraser.fill", tint: .orange)
+                }
+                .pickerStyle(.menu)
+                .disabled(model.values.keepForMinutes == 0)
+                durationPicker("settings.keepFor", icon: "eye.slash.fill", tint: .red,
+                               selection: Binding(get: { model.values.keepForMinutes },
+                                                  set: { model.setKeepFor($0) }),
+                               hint: model.values.keepForMinutes == 0
+                                   ? "settings.keepFor.hint.now" : "settings.keepFor.hint",
+                               note: note(for: .keepFor))
+            }
             Section("settings.section.general") {
                 Toggle(isOn: Binding(get: { login.isEnabled }, set: { login.setEnabled($0) })) {
                     label("settings.login", hint: login.failed ? "settings.login.error" : nil,
@@ -80,14 +102,56 @@ struct SettingsView: View {
         }
     }
 
-    private func label(_ title: LocalizedStringKey, hint: LocalizedStringKey?, icon: String,
+    private func label(_ title: LocalizedStringKey, hint: LocalizedStringKey?, note: String? = nil, icon: String,
                        tint: SettingsIconTint) -> some View {
         HStack(spacing: 10) {
             SettingsRowIcon(systemName: icon, tint: tint)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                if let hint { Text(hint).font(.caption).foregroundStyle(.secondary) }
+                // Aviso de ajuste automático em cor principal; a dica normal fica em secundária (DESIGN.md §5).
+                if let note {
+                    Text(verbatim: note).font(.caption)
+                } else if let hint {
+                    Text(hint).font(.caption).foregroundStyle(.secondary)
+                }
             }
+        }
+    }
+
+    private var forgetHint: LocalizedStringKey {
+        if model.values.keepForMinutes == 0 { return "settings.forgetScope.hint.off" }
+        return model.values.forgetScope == .anyKept ? "settings.forgetScope.hint.all" : "settings.forgetScope.hint.gray"
+    }
+
+    /// Texto "Ajustado de X para Y" da linha que a tela puxou junto, ou nil.
+    private func note(for field: SettingsAdjustment.Field) -> String? {
+        guard let adjustment = model.adjustment, adjustment.field == field else { return nil }
+        let before = Self.windowText(adjustment.before), after = Self.windowText(adjustment.after)
+        switch field {
+        case .grayAfter: return String(localized: "settings.adjusted.grayAfter \(before) \(after)")
+        case .keepFor: return String(localized: "settings.adjusted.keepFor \(before) \(after)")
+        }
+    }
+
+    /// "Na hora" para zero, senão a duração no idioma do sistema ("30 min", "24 h", "7 dias").
+    static func windowText(_ minutes: Int, width: Duration.UnitsFormatStyle.UnitWidth = .abbreviated) -> String {
+        guard minutes > 0 else { return String(localized: "settings.window.now") }
+        let units: Set<Duration.UnitsFormatStyle.Unit> = minutes >= 10_080 ? [.days] : [.hours, .minutes]
+        return Duration.seconds(minutes * 60).formatted(.units(allowed: units, width: width, maximumUnitCount: 1))
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    private func durationPicker(_ title: LocalizedStringKey, icon: String, tint: SettingsIconTint,
+                                selection: Binding<Int>, hint: LocalizedStringKey, note: String?) -> some View {
+        Picker(selection: selection) {
+            ForEach(AppSettings.windowOptions, id: \.self) { Text(Self.windowText($0)).tag($0) }
+        } label: {
+            label(title, hint: hint, note: note, icon: icon, tint: tint)
+        }
+        .pickerStyle(.menu)
+        .accessibilityValue(Self.windowText(selection.wrappedValue, width: .wide))
+        .onChange(of: note) { _, new in
+            if let new { AccessibilityNotification.Announcement(new).post() }
         }
     }
 

@@ -13,8 +13,9 @@ final class DeviceLifecycleScenarioTests: XCTestCase {
     private lazy var scanner = StoryScanner(clock: clock)
     private var published: [[Device]] = []
 
-    private func launch(restoring snapshot: Snapshot? = nil) -> DeviceListViewModel {
-        DeviceListViewModel(scanner: scanner, restoring: snapshot,
+    private func launch(restoring snapshot: Snapshot? = nil, policy: ReadingPolicy = ReadingPolicy())
+        -> DeviceListViewModel {
+        DeviceListViewModel(scanner: scanner, restoring: snapshot, policy: policy,
                             publish: { [weak self] in self?.published.append($0) }, now: { [clock] in clock.now })
     }
 
@@ -187,6 +188,100 @@ final class DeviceLifecycleScenarioTests: XCTestCase {
         await scan(viewModel, after: 0, [.mouse, .keyboard])
         clock.advance(40 * minute)
         XCTAssertFalse(viewModel.devices.contains { viewModel.isGray($0) })
+    }
+
+    // MARK: Ajustes de aparelhos sem resposta (#115)
+
+    /// "Ficar cinza depois de" zero: a leitura mantida já aparece cinza no primeiro scan sem resposta.
+    func testGrayAfterZeroShowsAKeptReadingGrayAtOnce() async throws {
+        let viewModel = launch(policy: ReadingPolicy(grayAfter: 0))
+        await scan(viewModel, after: 0, [.mouse, .keyboard])
+        await scan(viewModel, after: minute, [.mouse])
+        XCTAssertTrue(viewModel.isGray(try row(.keyboard, in: viewModel)))
+        XCTAssertFalse(viewModel.isGray(try row(.mouse, in: viewModel)))
+    }
+
+    func testShorterGrayAfterTurnsGrayOnItsOwnEdge() async throws {
+        let viewModel = launch(policy: ReadingPolicy(grayAfter: 5 * minute))
+        await scan(viewModel, after: 0, [.mouse, .keyboard])
+        await scan(viewModel, after: 5 * minute, [.mouse])
+        let sleeping = try row(.keyboard, in: viewModel)
+        XCTAssertFalse(viewModel.isGray(sleeping))
+        clock.advance(1)
+        XCTAssertTrue(viewModel.isGray(sleeping))
+    }
+
+    /// "Sumir sozinho depois de" zero: nenhuma leitura é mantida, nem no scan nem ao reabrir o app.
+    func testKeepForZeroDropsASleepingDeviceAtTheNextScanAndRestoresNothing() async {
+        let policy = ReadingPolicy(grayAfter: 0, keepFor: 0)
+        let viewModel = launch(policy: policy)
+        await scan(viewModel, after: 0, [.mouse, .keyboard])
+        XCTAssertEqual(viewModel.devices.count, 2)
+        await scan(viewModel, after: minute, [.mouse])
+        XCTAssertEqual(names(viewModel), ["MX Master 3S"])
+
+        let saved = snapshot(age: minute, [(.mouse, minute), (.keyboard, minute)])
+        XCTAssertEqual(launch(restoring: saved, policy: policy).devices, [])
+    }
+
+    func testLongerKeepForKeepsAThreeDayOldReadingUntilTheLimit() async {
+        let viewModel = launch(policy: ReadingPolicy(keepFor: 7 * 24 * hour))
+        await scan(viewModel, after: 0, [.mouse, .keyboard])
+        await scan(viewModel, after: 3 * 24 * hour, [.mouse])
+        XCTAssertEqual(names(viewModel), ["MX Master 3S", "PRO X TKL"])
+        await scan(viewModel, after: 4 * 24 * hour - 1, [.mouse])
+        XCTAssertEqual(names(viewModel), ["MX Master 3S", "PRO X TKL"])
+        await scan(viewModel, after: 1, [.mouse])
+        XCTAssertEqual(names(viewModel), ["MX Master 3S"])
+    }
+
+    /// B3 da revisão #116: ajuste novo vale na hora, sem esperar a próxima leitura, e chega ao snapshot do widget.
+    func testApplyingANewPolicyReachesTheListAndThePublishedSnapshotAtOnce() async throws {
+        let viewModel = launch()
+        await scan(viewModel, after: 0, [.mouse, .keyboard])
+        await scan(viewModel, after: 10 * minute, [.mouse])
+        let sleeping = try row(.keyboard, in: viewModel)
+        XCTAssertFalse(viewModel.isGray(sleeping))
+        let publishedBefore = published.count
+
+        viewModel.apply(ReadingPolicy(grayAfter: 5 * minute))
+        XCTAssertTrue(viewModel.isGray(sleeping))
+        XCTAssertEqual(published.count, publishedBefore + 1)
+
+        viewModel.apply(ReadingPolicy(grayAfter: 5 * minute))
+        XCTAssertEqual(published.count, publishedBefore + 1, "mesma regra não republica")
+
+        viewModel.apply(ReadingPolicy(grayAfter: 0, keepFor: 5 * minute))
+        XCTAssertEqual(names(viewModel), ["MX Master 3S"])
+        XCTAssertEqual(published.last?.map(\.name), ["MX Master 3S"])
+    }
+
+    /// Quem respondeu ao último scan não é leitura mantida: o ajuste novo não o tira da lista.
+    func testApplyingAZeroKeepForKeepsEveryDeviceThatAnsweredTheLastScan() async {
+        let viewModel = launch()
+        await scan(viewModel, after: 0, [.mac, .mouse, .keyboard])
+        viewModel.apply(ReadingPolicy(grayAfter: 0, keepFor: 0))
+        XCTAssertEqual(names(viewModel), ["MacBook", "PRO X TKL", "MX Master 3S"])
+    }
+
+    func testForgetScopeDecidesWhetherAKeptReadingThatIsStillGreenCanBeForgotten() async throws {
+        let viewModel = launch()
+        await scan(viewModel, after: 0, [.mac, .mouse, .keyboard])
+        await scan(viewModel, after: minute, [.mac, .mouse])
+        let green = try row(.keyboard, in: viewModel)
+        XCTAssertFalse(viewModel.canForget(green), "só cinza é o padrão")
+
+        viewModel.apply(ReadingPolicy(forgetScope: .anyKept))
+        XCTAssertTrue(viewModel.canForget(green))
+        XCTAssertFalse(viewModel.canForget(try row(.mac, in: viewModel)))
+        XCTAssertFalse(viewModel.canForget(try row(.mouse, in: viewModel)))
+
+        viewModel.forget(green)
+        XCTAssertEqual(names(viewModel), ["MacBook", "MX Master 3S"])
+        XCTAssertEqual(viewModel.forgotten?.name, "PRO X TKL")
+
+        viewModel.apply(ReadingPolicy(forgetScope: .grayOnly))
+        XCTAssertEqual(viewModel.forgotten?.name, "PRO X TKL", "o aviso Desfazer continua")
     }
 
     // MARK: Nome ilegível

@@ -69,7 +69,7 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 
 | História (PRD) | Critério de aceite | Teste(s) | Nível |
 |---|---|---|---|
-| US-01 | Aparelho por receptor aparece com nome e %; dormindo fica, vai para o fim, fica cinza aos 30 min e some às 24 h | `HIDPPBatteryTests` (inclui erro `0xFF`, software id e frame curto, #116), `ReceiverEnumerationTests`, `KeepLastReadingTests`, `DeviceLifecycleScenarioTests` (histórias com relógio falso), `DeviceEventFilterTests`; smoke com receptor | unitário, cenário, manual |
+| US-01 | Aparelho por receptor aparece com nome e %; dormindo fica, vai para o fim, fica cinza e some nos tempos dos Ajustes (padrão 30 min e 24 h) | `HIDPPBatteryTests` (inclui erro `0xFF`, software id e frame curto, #116), `ReceiverEnumerationTests`, `KeepLastReadingTests`, `DeviceLifecycleScenarioTests` (histórias com relógio falso), `DeviceEventFilterTests`; política dos Ajustes (#115): `testApplyingANewPolicyReachesTheListAndThePublishedSnapshotAtOnce`, `testForgetScopeDecidesWhetherAKeptReadingThatIsStillGreenCanBeForgotten`, `testReadingTurningGrayUnderTheNewPolicyReloads`; smoke com receptor | unitário, cenário, manual |
 | US-02 | Aparelho Bluetooth aparece com nome e % | `BluetoothDeviceTests`; smoke Bluetooth | unitário, manual |
 | US-03 | Mesmo aparelho em dois caminhos vira um item | `DeviceDedupeTests` | unitário |
 | US-04 | Estado carregando e cheio | `ChargeStateTests` | unitário |
@@ -79,7 +79,7 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 | US-08 | Carga completa avisa uma vez por ciclo | `FullChargeRuleTests` | unitário |
 | US-09 | Histórico em gráfico por período | `HistoryStoreTests`, `HistoryRetentionTests`, `HistorySeriesTests`; print do gráfico | integração, manual |
 | US-10 | Abrir no login | `LoginItemTests` (fake); manual | integração, manual |
-| US-11 | Ajustes persistem e valem na próxima leitura; cores seguem os limites no app e no widget | `SettingsTests`, `SnapshotContractTests` (limites no snapshot) | integração |
+| US-11 | Ajustes persistem e valem na próxima leitura; cores seguem os limites no app e no widget | `SettingsTests` (inclui `grayAfterMinutes`, `keepForMinutes`, `forgetScope` e `onChange`), `SnapshotContractTests` (limites e `policy` no snapshot, snapshot antigo sem `policy`) | integração |
 | US-12 | Guia de permissão e atalho ao painel | `PermissionModelTests`; manual | unitário, manual |
 | US-13 | Mac e fone Bluetooth aparecem; fone desligado some | `SystemBatteriesTests` (inclui o processo filho fora da main, #116), `KeepLastReadingTests` (fone não é mantido), `DeviceLifecycleScenarioTests` (Bluetooth e fone somem na hora, fone sem nível mantém a última), `SnapshotContractTests` (Mac primeiro, tipos novos); smoke: `snapshot.json` com Mac e fone | unitário, cenário, manual |
 | US-14 | Ícone escondido some, leitura segue e o ícone volta ao reabrir o app | manual: desligar o toggle (o `generatedAt` do `snapshot.json` continua avançando), `open ~/Applications/LogiBattery.app` traz o ícone de volta, clique no widget idem, logout e login com o ícone escondido | manual |

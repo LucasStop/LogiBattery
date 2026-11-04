@@ -14,8 +14,11 @@ struct Snapshot: Codable, Equatable, Sendable {
     var thresholds: BatteryThresholds?
     /// Intervalo de leitura dos Ajustes, para o widget saber quando o app parou. Opcional como `thresholds`.
     var intervalMinutes: Int?
+    /// Regra de leitura mantida dos Ajustes (#115); o widget não lê os Ajustes. Opcional: ausente vale os padrões.
+    var policy: ReadingPolicy?
 
     var levelThresholds: BatteryThresholds { thresholds ?? BatteryThresholds() }
+    var readingPolicy: ReadingPolicy { policy ?? ReadingPolicy() }
 
     /// App parado: nenhum snapshot novo em duas leituras (no mínimo 30 min). Não é o cinza da linha (`isGray`).
     func isStale(at date: Date) -> Bool {
@@ -24,7 +27,7 @@ struct Snapshot: Codable, Equatable, Sendable {
 
     /// Cinza no widget: app parado ou leitura mantida há mais de `grayAfter`.
     func showsGray(_ device: Device, at date: Date) -> Bool {
-        isStale(at: date) || device.isGray(at: date, scanAt: generatedAt)
+        isStale(at: date) || device.isGray(at: date, scanAt: generatedAt, policy: readingPolicy)
     }
 
     /// Folga entre as leituras de um mesmo scan; quem ficou para trás disso não respondeu ao último scan.
@@ -39,13 +42,22 @@ struct Snapshot: Codable, Equatable, Sendable {
         return devices.sorted { rank($0).lexicographicallyPrecedes(rank($1)) }
     }
 
+    /// O host recarrega o widget quando o app estava parado, quando algum ajuste que o widget usa mudou ou quando o
+    /// que ele mostra mudou (#115: antes só o último valia, e ajuste novo esperava a leitura mudar).
+    func needsWidgetReload(for newDevices: [Device], at date: Date, thresholds: BatteryThresholds,
+                           intervalMinutes: Int, policy: ReadingPolicy) -> Bool {
+        isStale(at: date) || levelThresholds != thresholds || self.intervalMinutes != intervalMinutes
+            || readingPolicy != policy || Self.meaningfullyDiffers(devices, newDevices, at: date, policy: policy)
+    }
+
     /// Muda o que o widget mostra? `readAt` avança a cada leitura e não conta (o "há X min" anda pela timeline);
     /// recarregar o widget a cada leitura esgota o orçamento do WidgetKit.
-    static func meaningfullyDiffers(_ old: [Device], _ new: [Device], at date: Date) -> Bool {
+    static func meaningfullyDiffers(_ old: [Device], _ new: [Device], at date: Date,
+                                    policy: ReadingPolicy = ReadingPolicy()) -> Bool {
         func shown(_ devices: [Device]) -> Set<[String]> {
             Set(devices.map {
                 [$0.identity, $0.percent.map(String.init) ?? "", $0.chargeState.rawValue, $0.path.rawValue,
-                 $0.kind.rawValue, String($0.isGray(at: date, scanAt: date))]
+                 $0.kind.rawValue, String($0.isGray(at: date, scanAt: date, policy: policy))]
             })
         }
         return shown(old) != shown(new)
@@ -76,9 +88,9 @@ struct SnapshotStore: Sendable {
     }
 
     func write(_ devices: [Device], at date: Date, thresholds: BatteryThresholds = BatteryThresholds(),
-               intervalMinutes: Int = 1) throws {
+               intervalMinutes: Int = 1, policy: ReadingPolicy = ReadingPolicy()) throws {
         let snapshot = Snapshot(schemaVersion: Snapshot.schemaVersion, generatedAt: date, devices: devices,
-                                thresholds: thresholds, intervalMinutes: intervalMinutes)
+                                thresholds: thresholds, intervalMinutes: intervalMinutes, policy: policy)
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.sortedKeys]

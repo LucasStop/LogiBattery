@@ -17,6 +17,8 @@ struct LogiBatteryApp: App {
         }
         // O host dos testes é o app: sem isso ele lê o hardware e grava no App Group durante o `xcodebuild test`.
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
+        // Ajuste novo vale na hora para a lista, o ícone e o widget, sem esperar a próxima leitura (#115).
+        SettingsModel.shared.onChange = { viewModel.apply($0.readingPolicy) }
         Task {
             await viewModel.run(interval: { SettingsModel.shared.values.interval }, changes: discovery.changes)
         }
@@ -76,7 +78,8 @@ private let discovery = HIDDiscovery()
 /// Instância única: o loop de leitura (`init`) e a cena (menu e ícone) precisam enxergar o mesmo objeto. Como
 /// `@State` lido no `init`, o loop atualizava uma cópia e o menu ficava no snapshot restaurado (#102).
 @MainActor private let viewModel = DeviceListViewModel(
-    scanner: LiveScanner(), restoring: SnapshotStore.appGroup?.read(), publish: publishSnapshot)
+    scanner: LiveScanner(), restoring: SnapshotStore.appGroup?.read(),
+    policy: SettingsModel.shared.values.readingPolicy, publish: publishSnapshot)
 
 /// Descobre as interfaces a cada leitura: receptor ou aparelho conectado agora aparece sem reiniciar o app.
 /// Soma a bateria do Mac e de qualquer periférico Bluetooth conectado no macOS, deduplicando com HID++ (#88).
@@ -101,6 +104,7 @@ private func publishSnapshot(_ devices: [Device]) {
     let now = Date.now
     let thresholds = SettingsModel.shared.values.thresholds
     let interval = SettingsModel.shared.values.intervalMinutes
+    let policy = SettingsModel.shared.values.readingPolicy
     let previous = store.read()
     do {
         try HistoryStore.appGroup?.record(devices, at: now)
@@ -109,14 +113,12 @@ private func publishSnapshot(_ devices: [Device]) {
         storageLog.error("history write failed: \(error.localizedDescription, privacy: .public)")
     }
     do {
-        try store.write(devices, at: now, thresholds: thresholds, intervalMinutes: interval)
+        try store.write(devices, at: now, thresholds: thresholds, intervalMinutes: interval, policy: policy)
     } catch {
         storageLog.error("snapshot write failed: \(error.localizedDescription, privacy: .public)")
         return
     }
-    let changed = previous.map {
-        $0.isStale(at: now) || $0.levelThresholds != thresholds || $0.intervalMinutes != interval
-            || Snapshot.meaningfullyDiffers($0.devices, devices, at: now)
-    } ?? true
+    let changed = previous?.needsWidgetReload(for: devices, at: now, thresholds: thresholds,
+                                              intervalMinutes: interval, policy: policy) ?? true
     if changed { WidgetCenter.shared.reloadAllTimelines() }
 }

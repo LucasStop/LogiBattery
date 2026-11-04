@@ -14,17 +14,18 @@ final class DeviceListViewModel {
     private var isRefreshing = false
     private let publish: @MainActor ([Device]) -> Void
     private let now: @MainActor () -> Date
-    /// Regra de leitura mantida (#116); vira ajuste do usuário na #115.
-    var policy = ReadingPolicy()
+    /// Regra de leitura mantida (#116), dos Ajustes (#115); troca em `apply(_:)`.
+    private(set) var policy: ReadingPolicy
 
     /// `publish` recebe cada leitura (snapshot do widget); o padrão não faz nada.
     /// `restoring` mostra a última leitura salva enquanto a primeira leitura nova não termina. Snapshot de app que
     /// estava parado só devolve quem a lista manteria (receptor dentro de `keepFor`): o estado do Bluetooth e do fone
     /// mudou enquanto o app não lia.
-    init(scanner: any DeviceScanning, restoring: Snapshot? = nil,
+    init(scanner: any DeviceScanning, restoring: Snapshot? = nil, policy: ReadingPolicy = ReadingPolicy(),
          publish: @escaping @MainActor ([Device]) -> Void = { _ in },
          now: @escaping @MainActor () -> Date = { .now }) {
         self.scanner = scanner
+        self.policy = policy
         self.publish = publish
         self.now = now
         guard let restoring else { return }
@@ -68,8 +69,23 @@ final class DeviceListViewModel {
         return device.isGray(at: date, scanAt: (hasLoaded ? lastRefresh : nil) ?? date, policy: policy)
     }
 
-    /// Só leitura mantida (cinza) pode ser esquecida; quem respondeu agora voltaria na próxima leitura.
-    func canForget(_ device: Device) -> Bool { isGray(device) }
+    /// O Mac e quem respondeu agora voltariam na próxima leitura; do resto, `policy.forgetScope` decide (#115).
+    func canForget(_ device: Device) -> Bool {
+        let date = now()
+        return policy.canForget(device, at: date, scanAt: (hasLoaded ? lastRefresh : nil) ?? date)
+    }
+
+    /// Ajuste novo vale na hora, sem esperar a próxima leitura: refiltra o que já está na lista e republica o
+    /// snapshot, senão o widget segue com a regra antiga (B3 da revisão #116).
+    func apply(_ policy: ReadingPolicy) {
+        guard policy != self.policy else { return }
+        self.policy = policy
+        let date = now()
+        let scanAt = (hasLoaded ? lastRefresh : nil) ?? date
+        let remaining = devices.filter { !$0.isKept(scanAt: scanAt) || policy.keeps($0, at: date) }
+        devices = Snapshot.widgetOrder(remaining, scanAt: scanAt)
+        publish(devices)
+    }
 
     /// Tira da lista e do widget uma leitura mantida; o histórico fica e o aparelho volta se responder a um scan.
     func forget(_ device: Device) {
