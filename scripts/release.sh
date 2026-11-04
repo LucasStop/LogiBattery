@@ -29,7 +29,8 @@ publish)
   xcodebuild -scheme LogiBattery -configuration Release -derivedDataPath "$derived" \
     DEVELOPMENT_TEAM=$team "CODE_SIGN_IDENTITY=Apple Development" -allowProvisioningUpdates build >/dev/null
   app="$derived/Build/Products/Release/LogiBattery.app"
-  codesign -dv "$app" 2>&1 | grep -q "TeamIdentifier=$team" || { echo "App sem o time $team."; exit 1; }
+  signature=$(codesign -dv "$app" 2>&1) # sem pipe para o grep: `grep -q` fecha o pipe e o pipefail vê SIGPIPE
+  grep -q "TeamIdentifier=$team" <<<"$signature" || { echo "App sem o time $team."; exit 1; }
   built=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$app/Contents/Info.plist")
   [ "$built" = "$version" ] || { echo "App $built diverge do project.yml $version."; exit 1; }
   zip="LogiBattery-$version.zip"
