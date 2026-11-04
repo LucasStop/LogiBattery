@@ -28,12 +28,14 @@ Se a história envolve tela, ela aparece em [../design/telas.md](../design/telas
 | US-12 | Como usuário, quero ser guiado quando falta permissão, para destravar a leitura sem adivinhar | Dado que o macOS negou Input Monitoring, quando abro o app, então vejo a explicação e um botão que leva ao painel de Privacidade correto |
 | US-13 | Como usuário, quero ver a bateria do Mac e do fone Bluetooth junto com mouse e teclado, para usar só este widget e dispensar o de Baterias da Apple | Dado um Mac com bateria e um fone Bluetooth conectado que informa a bateria ao macOS, quando o app lê, então Mac e fone aparecem no widget, no popover e no histórico com a porcentagem, o Mac em primeiro; fone desligado some na leitura seguinte; fone conectado que veio sem nível nesta leitura mantém a última leitura, em cinza após o tempo definido nos Ajustes (padrão 30 min) |
 | US-14 | Como usuário que só usa o widget, quero esconder o ícone da barra de menus, para o app rodar em segundo plano sem ocupar a barra | Dado a opção desligada nos ajustes, então o ícone some e o widget segue atualizando; quando abro o app de novo (Spotlight, Finder ou clique no widget), então o ícone volta |
+| US-15 | Como usuário, quero ver a bateria de teclado e mouse Bluetooth de qualquer marca, para ter tudo num widget só | Dado um teclado ou mouse BLE conectado que expõe o Battery Service padrão (GATT 0x180F), quando o app lê, então aparecem nome e porcentagem no popover, no ícone e no widget; aparelho Logitech já lido por HID++ não duplica (#121) |
 
 ## Implementation Decisions
 - Plataforma e stack: macOS 14+, Swift, SwiftUI, WidgetKit, Swift Charts, `UserNotifications`, `SMAppService`; projeto gerado por XcodeGen.
 - Partes do sistema: ver [ARCHITECTURE.md](ARCHITECTURE.md).
 - Leitura direta por HID++ (`IOHIDManager`, vendor `0x046D`), sem depender do Logi Options+ nem de driver.
 - Bateria do Mac por `IOPowerSources` e do fone Bluetooth por `IOBluetooth` (US-13, [ADR 0002](adr/0002-bateria-do-sistema-via-iopowersources-e-iobluetooth.md)).
+- Bateria de teclado e mouse BLE de qualquer marca pelo Battery Service padrão, por `CoreBluetooth` (US-15, [ADR 0003](adr/0003-bateria-de-ble-pelo-battery-service-padrao.md)).
 - Duas partes obrigatórias: app host (único que acessa o hardware) e extensão de widget (só lê o snapshot). WidgetKit não acessa IOKit.
 - Compartilhamento por App Group: snapshot JSON e histórico.
 - Aparelho identificado por nome e número de série HID++; mesmo aparelho em dois caminhos vira um item.
@@ -53,7 +55,7 @@ Se a história envolve tela, ela aparece em [../design/telas.md](../design/telas
 
 ## Out of Scope
 - Controlar o aparelho (DPI, botões, teclas, iluminação, perfis). É um monitor, não um substituto do Logi Options+.
-- Ler periféricos de outras marcas pelo protocolo proprietário deles. Fone Bluetooth e o próprio Mac entram porque o macOS já conhece a bateria (US-13).
+- Ler periféricos de outras marcas pelo protocolo proprietário deles. Fone Bluetooth e o próprio Mac entram porque o macOS já conhece a bateria (US-13); teclado e mouse de qualquer marca entram pelo Battery Service BLE padrão (US-15).
 - Windows, Linux, iOS.
 - Conta, nuvem, sincronização ou telemetria.
 - Atualização de firmware.
