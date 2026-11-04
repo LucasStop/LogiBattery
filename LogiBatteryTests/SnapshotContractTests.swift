@@ -70,6 +70,27 @@ final class SnapshotContractTests: XCTestCase {
         XCTAssertTrue(snapshot.isStale(at: now.addingTimeInterval(31 * 60)))
     }
 
+    /// #116 (B1): com intervalo de 45 min o próximo snapshot só chega em 45 min; "app parado" espera duas leituras.
+    func testStaleAfterTwoReadingsWhenTheIntervalIsLong() throws {
+        let store = SnapshotStore(directory: directory)
+        try store.write([device("a", percent: 50)], at: now, intervalMinutes: 45)
+        let snapshot = try XCTUnwrap(store.read())
+        XCTAssertEqual(snapshot.intervalMinutes, 45)
+        XCTAssertFalse(snapshot.isStale(at: now.addingTimeInterval(80 * 60)))
+        XCTAssertTrue(snapshot.isStale(at: now.addingTimeInterval(91 * 60)))
+        XCTAssertFalse(snapshot.showsGray(device("a", percent: 50), at: now.addingTimeInterval(80 * 60)))
+    }
+
+    func testShortIntervalKeepsTheThirtyMinuteFloorAndOldSnapshotHasNoInterval() throws {
+        let store = SnapshotStore(directory: directory)
+        try store.write([device("a", percent: 50)], at: now, intervalMinutes: 5)
+        XCTAssertFalse(try XCTUnwrap(store.read()).isStale(at: now.addingTimeInterval(29 * 60)))
+        XCTAssertTrue(try XCTUnwrap(store.read()).isStale(at: now.addingTimeInterval(31 * 60)))
+        let old = #"{"schemaVersion":1,"generatedAt":"2027-01-15T08:00:00Z","devices":[]}"#
+        try Data(old.utf8).write(to: directory.appendingPathComponent("snapshot.json"))
+        XCTAssertNil(try XCTUnwrap(store.read()).intervalMinutes)
+    }
+
     func testBatteryLevelThresholds() {
         XCTAssertEqual(BatteryLevel(percent: 50), .normal)
         XCTAssertEqual(BatteryLevel(percent: 20), .normal)
@@ -98,7 +119,7 @@ final class SnapshotContractTests: XCTestCase {
 
     func testWidgetOrderPutsLowestFirstAndUnknownLast() throws {
         let devices = [device("a", percent: 80), device("b", percent: nil), device("c", percent: 7)]
-        let ordered = Snapshot.widgetOrder(devices)
+        let ordered = Snapshot.widgetOrder(devices, scanAt: now)
         XCTAssertEqual(ordered.map(\.id), ["c", "a", "b"])
     }
 
@@ -106,7 +127,7 @@ final class SnapshotContractTests: XCTestCase {
     func testWidgetOrderPutsMacFirst() {
         let mac = Device(id: "mac", name: "MacBook", kind: .laptop, percent: 90, chargeState: .discharging,
                          path: .internal, readAt: now)
-        let ordered = Snapshot.widgetOrder([device("a", percent: 80), mac, device("c", percent: 7)])
+        let ordered = Snapshot.widgetOrder([device("a", percent: 80), mac, device("c", percent: 7)], scanAt: now)
         XCTAssertEqual(ordered.map(\.id), ["mac", "c", "a"])
     }
 
@@ -115,7 +136,7 @@ final class SnapshotContractTests: XCTestCase {
     func testWidgetOrderPutsUnseenDevicesLast() {
         let stale = Device(id: "g305", name: "G305", kind: .mouse, percent: 10, chargeState: .discharging,
                            path: .receiver, readAt: now.addingTimeInterval(-27 * 60))
-        let ordered = Snapshot.widgetOrder([stale, device("a", percent: 80), device("b", percent: 50)])
+        let ordered = Snapshot.widgetOrder([stale, device("a", percent: 80), device("b", percent: 50)], scanAt: now)
         XCTAssertEqual(ordered.map(\.id), ["b", "a", "g305"])
     }
 
@@ -159,8 +180,9 @@ final class WidgetReloadTests: XCTestCase {
         XCTAssertTrue(Snapshot.meaningfullyDiffers(old, [device("PRO X TKL", 77)], at: now))
     }
 
-    func testReadingTurnsOldAfterThirtyMinutes() {
-        XCTAssertFalse(device("PRO X TKL", 77, minutesAgo: 29).isOld(at: now))
-        XCTAssertTrue(device("PRO X TKL", 77, minutesAgo: 31).isOld(at: now))
+    /// #116: o cinza vale para leitura mantida (não veio no último scan) e só depois de `grayAfter`.
+    func testKeptReadingTurnsGrayAfterThirtyMinutes() {
+        XCTAssertFalse(device("PRO X TKL", 77, minutesAgo: 29).isGray(at: now, scanAt: now))
+        XCTAssertTrue(device("PRO X TKL", 77, minutesAgo: 31).isGray(at: now, scanAt: now))
     }
 }

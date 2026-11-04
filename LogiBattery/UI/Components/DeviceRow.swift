@@ -3,12 +3,12 @@ import SwiftUI
 /// Cartão de aparelho do popover (T04): ícone, nome e hora da leitura, selo de estado, % e célula.
 struct DeviceRow: View {
     let device: Device
+    /// Leitura mantida (dormindo ou fora de alcance) fica cinza, como no widget (`DeviceListViewModel.isGray`).
+    var gray = false
 
     var body: some View {
         let thresholds = SettingsModel.shared.values.thresholds
         let level = BatteryLevel(percent: device.percent, thresholds: thresholds)
-        // Leitura velha (aparelho dormindo ou fora de alcance) fica cinza, como no widget.
-        let gray = device.isOld(at: .now)
         HStack(spacing: 8) {
             device.symbol.font(.system(size: 16)).foregroundStyle(.secondary).frame(width: 20)
                 .accessibilityHidden(true) // a conexão já vai no texto embaixo do nome

@@ -23,7 +23,7 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 | Componentes de UI (popover, ajustes, widget) | Estado ou variante quebrada | componente, visual, acessibilidade | XCTest das ViewModels e do contrato do snapshot; SwiftUI previews; Accessibility Inspector manual | local, PR | Snapshot visual (swift-snapshot-testing) fora por ora: dependência nova para poucas telas; visual conferido por print contra o protótipo |
 | Telas e fluxos | Jornada quebrada, divergência do protótipo aprovado | E2E, visual, acessibilidade | XCUITest só de lançamento (`LaunchUITests`); jornadas manuais | local | Popover de `MenuBarExtra` não abre por XCUITest de forma confiável; popover, ajustes e widget na galeria são conferidos à mão |
 | Integrações do sistema (notificações, login item) | Aviso não chega, login item não registra | integração com fake | XCTest com fake de `UNUserNotificationCenter` e `SMAppService` | PR | Entrega real de notificação e login real só manual |
-| Jobs (polling e eventos HID++) | Leitura duplicada, polling parado, aparelho dormindo travando o ciclo | unitário, integração | XCTest com relógio e transporte falsos | PR | |
+| Jobs (polling e eventos HID++) | Leitura duplicada, polling parado, aparelho dormindo travando o ciclo, regra de ciclo de vida (aparece, cinza, some) divergindo entre popover e widget | unitário, integração, cenário | XCTest com relógio injetado (`DeviceListViewModel(now:)`) e scanner roteirizado: `DeviceLifecycleScenarioTests` conta cada história com o tempo andando (30 min, 24 h, relaunch, intervalo de 45 min) | PR | |
 | Site público (`site/`, landing estática, #92 e #106) | Contraste, foco, alvo de toque ou `alt` quebrados; texto fixo fora do dicionário; scroll horizontal no mobile; token literal fora do `:root` | estático, acessibilidade, visual | Lighthouse (acessibilidade >= 95, boas práticas e SEO) em mobile e desktop, via `chrome-devtools`; Playwright para claro/escuro, pt-BR/en/es e 360 px; contraste calculado (WCAG) conforme DESIGN.md §9.2 | local, a cada PR que mexe em `site/` | Teste unitário de JS (só troca de idioma e copiar chave, sem regra de negócio); CI do site não existe ainda (deploy por GitHub Pages) |
 | Infra / build / distribuição | Build ou assinatura quebrada, app sem entitlement | estático, smoke | `xcodebuild build` no CI; `codesign --verify` e `spctl` na distribuição | PR, release | Notarização só quando houver distribuição |
 
@@ -69,7 +69,7 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 
 | História (PRD) | Critério de aceite | Teste(s) | Nível |
 |---|---|---|---|
-| US-01 | Aparelho por receptor aparece com nome e % | `HIDPPBatteryTests`, `ReceiverEnumerationTests`, `KeepLastReadingTests` (aparelho dormindo não some), `DeviceEventFilterTests`; smoke com receptor | unitário, manual |
+| US-01 | Aparelho por receptor aparece com nome e %; dormindo fica, vai para o fim, fica cinza aos 30 min e some às 24 h | `HIDPPBatteryTests` (inclui erro `0xFF`, software id e frame curto, #116), `ReceiverEnumerationTests`, `KeepLastReadingTests`, `DeviceLifecycleScenarioTests` (histórias com relógio falso), `DeviceEventFilterTests`; smoke com receptor | unitário, cenário, manual |
 | US-02 | Aparelho Bluetooth aparece com nome e % | `BluetoothDeviceTests`; smoke Bluetooth | unitário, manual |
 | US-03 | Mesmo aparelho em dois caminhos vira um item | `DeviceDedupeTests` | unitário |
 | US-04 | Estado carregando e cheio | `ChargeStateTests` | unitário |
@@ -81,7 +81,7 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 | US-10 | Abrir no login | `LoginItemTests` (fake); manual | integração, manual |
 | US-11 | Ajustes persistem e valem na próxima leitura; cores seguem os limites no app e no widget | `SettingsTests`, `SnapshotContractTests` (limites no snapshot) | integração |
 | US-12 | Guia de permissão e atalho ao painel | `PermissionModelTests`; manual | unitário, manual |
-| US-13 | Mac e fone Bluetooth aparecem; fone desligado some | `SystemBatteriesTests`, `KeepLastReadingTests` (fone não é mantido), `SnapshotContractTests` (Mac primeiro, tipos novos); smoke: `snapshot.json` com Mac e fone | unitário, manual |
+| US-13 | Mac e fone Bluetooth aparecem; fone desligado some | `SystemBatteriesTests` (inclui o processo filho fora da main, #116), `KeepLastReadingTests` (fone não é mantido), `DeviceLifecycleScenarioTests` (Bluetooth e fone somem na hora, fone sem nível mantém a última), `SnapshotContractTests` (Mac primeiro, tipos novos); smoke: `snapshot.json` com Mac e fone | unitário, cenário, manual |
 | US-14 | Ícone escondido some, leitura segue e o ícone volta ao reabrir o app | manual: desligar o toggle (o `generatedAt` do `snapshot.json` continua avançando), `open ~/Applications/LogiBattery.app` traz o ícone de volta, clique no widget idem, logout e login com o ícone escondido | manual |
 
 ## 6. Comandos

@@ -33,13 +33,14 @@ struct DeviceList: View {
                 }
             } else {
                 PopoverSection {
-                    PopoverRingStrip(devices: viewModel.devices, thresholds: thresholds, isLoading: false)
+                    PopoverRingStrip(devices: viewModel.devices, thresholds: thresholds, isLoading: false,
+                                     isGray: viewModel.isGray)
                 }
                 PopoverSection {
                     VStack(spacing: 0) {
                         ForEach(Array(viewModel.devices.enumerated()), id: \.element.id) { index, device in
                             if index > 0 { Divider() }
-                            DeviceRow(device: device)
+                            DeviceRow(device: device, gray: viewModel.isGray(device))
                                 .contextMenu {
                                     if viewModel.canForget(device) {
                                         Button("popover.forget \(device.name)") { viewModel.forget(device) }
@@ -165,6 +166,7 @@ private struct PopoverRingStrip: View {
     let devices: [Device]
     let thresholds: BatteryThresholds
     let isLoading: Bool
+    var isGray: (Device) -> Bool = { _ in false }
 
     var body: some View {
         let filled = devices.prefix(Self.slots).map { Optional($0) }
@@ -182,7 +184,7 @@ private struct PopoverRingStrip: View {
     }
 
     private func slotView(_ device: Device?) -> some View {
-        let gray = device?.isOld(at: .now) == true
+        let gray = device.map(isGray) == true
         let fraction = CGFloat(min(max(device?.percent ?? 0, 0), 100)) / 100
         return VStack(spacing: 8) {
             ZStack {

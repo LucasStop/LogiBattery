@@ -13,31 +13,39 @@ final class DeviceListViewModel {
     private let scanner: any DeviceScanning
     private var isRefreshing = false
     private let publish: @MainActor ([Device]) -> Void
+    private let now: @MainActor () -> Date
+    /// Regra de leitura mantida (#116); vira ajuste do usuário na #115.
+    var policy = ReadingPolicy()
 
     /// `publish` recebe cada leitura (snapshot do widget); o padrão não faz nada.
-    /// `restoring` mostra a última leitura salva enquanto a primeira leitura nova não termina; snapshot velho não vale.
-    init(scanner: any DeviceScanning, restoring: Snapshot? = nil, now: Date = .now,
-         publish: @escaping @MainActor ([Device]) -> Void = { _ in }) {
+    /// `restoring` mostra a última leitura salva enquanto a primeira leitura nova não termina. Snapshot de app que
+    /// estava parado só devolve quem a lista manteria (receptor dentro de `keepFor`): o estado do Bluetooth e do fone
+    /// mudou enquanto o app não lia.
+    init(scanner: any DeviceScanning, restoring: Snapshot? = nil,
+         publish: @escaping @MainActor ([Device]) -> Void = { _ in },
+         now: @escaping @MainActor () -> Date = { .now }) {
         self.scanner = scanner
         self.publish = publish
-        if let restoring, !restoring.isStale(at: now) {
-            devices = Snapshot.widgetOrder(restoring.devices.filter { DeviceIdentity.isPrintable($0.name) })
-            lastRefresh = restoring.generatedAt
+        self.now = now
+        guard let restoring else { return }
+        let date = now()
+        let alive = !restoring.isStale(at: date)
+        let restored = restoring.devices.filter {
+            alive ? policy.isWithinKeep($0, at: date) : policy.keeps($0, at: date)
         }
+        guard !restored.isEmpty else { return }
+        devices = Snapshot.widgetOrder(restored, scanAt: restoring.generatedAt)
+        lastRefresh = restoring.generatedAt
     }
 
-    /// Quanto tempo a última leitura de um aparelho que não respondeu continua na lista.
-    static let keepFor: TimeInterval = 24 * 3600
-
     /// Aparelho dormindo (o teclado Lightspeed dorme ~12 s parado) não responde e sumiria entre leituras;
-    /// fica a última leitura dele, que passa a cinza depois de `Snapshot.staleAfter` e vai para o fim da lista.
-    /// Fone e aparelho Bluetooth fora do scan foram desligados (o sistema sabe na hora) e somem, como no widget da
-    /// Apple (#100).
+    /// fica a última leitura dele (`ReadingPolicy.keeps`), que vai para o fim da lista e fica cinza depois de
+    /// `policy.grayAfter`.
     func refresh() async {
         guard !isRefreshing else { return }
         isRefreshing = true
         defer { isRefreshing = false }
-        let now = Date.now
+        let date = now()
         // Fone conectado que o sistema devolveu sem nível agora mantém a última leitura (issue #70).
         let fresh = await scanner.scan().map { device in
             guard device.kind == .headphones, device.percent == nil,
@@ -46,19 +54,22 @@ final class DeviceListViewModel {
             return last
         }
         let seen = Set(fresh.map(\.identity))
-        let kept = devices.filter {
-            $0.kind != .headphones && $0.path != .bluetooth && DeviceIdentity.isPrintable($0.name)
-                && !seen.contains($0.identity) && now.timeIntervalSince($0.readAt) < Self.keepFor
-        }
-        devices = Snapshot.widgetOrder(fresh + kept)
+        let kept = devices.filter { !seen.contains($0.identity) && policy.keeps($0, at: date) }
+        devices = Snapshot.widgetOrder(fresh + kept, scanAt: date)
         if let forgotten, seen.contains(forgotten.identity) { self.forgotten = nil }
         hasLoaded = true
-        lastRefresh = now
+        lastRefresh = date
         publish(devices)
     }
 
+    /// Cinza no popover. Antes da primeira leitura nova tudo é memória do snapshot: conta como mantido.
+    func isGray(_ device: Device) -> Bool {
+        let date = now()
+        return device.isGray(at: date, scanAt: (hasLoaded ? lastRefresh : nil) ?? date, policy: policy)
+    }
+
     /// Só leitura mantida (cinza) pode ser esquecida; quem respondeu agora voltaria na próxima leitura.
-    func canForget(_ device: Device) -> Bool { device.isOld(at: .now) }
+    func canForget(_ device: Device) -> Bool { isGray(device) }
 
     /// Tira da lista e do widget uma leitura mantida; o histórico fica e o aparelho volta se responder a um scan.
     func forget(_ device: Device) {
@@ -71,7 +82,7 @@ final class DeviceListViewModel {
     func undoForget() {
         guard let device = forgotten else { return }
         forgotten = nil
-        devices = Snapshot.widgetOrder(devices + [device])
+        devices = Snapshot.widgetOrder(devices + [device], scanAt: lastRefresh ?? now())
         publish(devices)
     }
 

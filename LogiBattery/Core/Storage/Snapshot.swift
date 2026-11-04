@@ -4,6 +4,7 @@ import Security
 /// Última leitura de cada aparelho. O host escreve, o widget lê (docs/API.md, ADR 0001).
 struct Snapshot: Codable, Equatable, Sendable {
     static let schemaVersion = 1
+    /// Mínimo sem snapshot novo para o app contar como parado; com intervalo longo vale `2 × intervalo` (#116).
     static let staleAfter: TimeInterval = 30 * 60
 
     let schemaVersion: Int
@@ -11,23 +12,29 @@ struct Snapshot: Codable, Equatable, Sendable {
     let devices: [Device]
     /// Opcional: snapshot gravado antes do campo existir cai no padrão (docs/API.md).
     var thresholds: BatteryThresholds?
+    /// Intervalo de leitura dos Ajustes, para o widget saber quando o app parou. Opcional como `thresholds`.
+    var intervalMinutes: Int?
 
     var levelThresholds: BatteryThresholds { thresholds ?? BatteryThresholds() }
 
+    /// App parado: nenhum snapshot novo em duas leituras (no mínimo 30 min). Não é o cinza da linha (`isGray`).
     func isStale(at date: Date) -> Bool {
-        date.timeIntervalSince(generatedAt) > Self.staleAfter
+        date.timeIntervalSince(generatedAt) > max(Self.staleAfter, 2 * Double(intervalMinutes ?? 1) * 60)
+    }
+
+    /// Cinza no widget: app parado ou leitura mantida há mais de `grayAfter`.
+    func showsGray(_ device: Device, at date: Date) -> Bool {
+        isStale(at: date) || device.isGray(at: date, scanAt: generatedAt)
     }
 
     /// Folga entre as leituras de um mesmo scan; quem ficou para trás disso não respondeu ao último scan.
     static let sameScanTolerance: TimeInterval = 30
 
-    /// Mac primeiro (como no widget da Apple), depois quem respondeu ao último scan, do menor nível ao maior,
+    /// Mac primeiro (como no widget da Apple), depois quem respondeu ao scan de `scanAt`, do menor nível ao maior,
     /// sem leitura por último; dormindo ou desconectado (leitura mantida) vai para o fim (DESIGN.md §listas).
-    static func widgetOrder(_ devices: [Device]) -> [Device] {
-        let latest = devices.map(\.readAt).max() ?? .distantPast
+    static func widgetOrder(_ devices: [Device], scanAt: Date) -> [Device] {
         func rank(_ device: Device) -> [Int] {
-            let kept = latest.timeIntervalSince(device.readAt) > sameScanTolerance
-            return [device.kind == .laptop ? 0 : 1, kept ? 1 : 0, device.percent ?? .max]
+            [device.kind == .laptop ? 0 : 1, device.isKept(scanAt: scanAt) ? 1 : 0, device.percent ?? .max]
         }
         return devices.sorted { rank($0).lexicographicallyPrecedes(rank($1)) }
     }
@@ -38,7 +45,7 @@ struct Snapshot: Codable, Equatable, Sendable {
         func shown(_ devices: [Device]) -> Set<[String]> {
             Set(devices.map {
                 [$0.identity, $0.percent.map(String.init) ?? "", $0.chargeState.rawValue, $0.path.rawValue,
-                 $0.kind.rawValue, String($0.isOld(at: date))]
+                 $0.kind.rawValue, String($0.isGray(at: date, scanAt: date))]
             })
         }
         return shown(old) != shown(new)
@@ -68,9 +75,10 @@ struct SnapshotStore: Sendable {
             .map(SnapshotStore.init)
     }
 
-    func write(_ devices: [Device], at date: Date, thresholds: BatteryThresholds = BatteryThresholds()) throws {
+    func write(_ devices: [Device], at date: Date, thresholds: BatteryThresholds = BatteryThresholds(),
+               intervalMinutes: Int = 1) throws {
         let snapshot = Snapshot(schemaVersion: Snapshot.schemaVersion, generatedAt: date, devices: devices,
-                                thresholds: thresholds)
+                                thresholds: thresholds, intervalMinutes: intervalMinutes)
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.sortedKeys]
