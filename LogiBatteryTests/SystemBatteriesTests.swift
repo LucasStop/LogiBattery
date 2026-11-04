@@ -66,6 +66,11 @@ final class SystemBatteriesTests: XCTestCase {
         XCTAssertEqual(headset.id, "bt-audio-X")
     }
 
+    func testParseLevelsFromChildOutput() {
+        let levels = SystemBatteries.parseLevels("QCY MeloBuds Pro - Lucas\t100\nMX Master 3S\t85\nruído\n")
+        XCTAssertEqual(levels, ["QCY MeloBuds Pro - Lucas": 100, "MX Master 3S": 85])
+    }
+
     func testHIDBluetoothKeyboardAndMouseFromIORegistry() throws {
         let keyboard = try XCTUnwrap(SystemBatteries.hidBluetoothDevice(properties: [
             "Transport": "Bluetooth Low Energy",
