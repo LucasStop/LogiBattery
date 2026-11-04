@@ -15,7 +15,7 @@ Status: aprovada em 2026-10-27
 | `Device` | Aparelho conhecido (nome, tipo, caminho, série em hash); inclui o Mac (`laptop`, caminho `internal`) e o fone Bluetooth (`headphones`) | id estável derivado de série ou nome | 1 para N `Reading` | Não |
 | `Reading` | Um ponto do histórico (`HistoryPoint`): porcentagem, estado de carga, momento da leitura (`readAt`); gravado quando o valor ou o estado muda, ou após 30 min sem mudança | (nome normalizado do aparelho, timestamp); `deviceId` muda a cada reconexão e não identifica a série | N para 1 `Device` | Não |
 | `Settings` | Limites, intervalo de leitura, opções de aviso, login | única | - | Não |
-| `Snapshot` | Última leitura de cada aparelho para o widget, mais os limites de nível dos Ajustes (`thresholds`), que o widget não lê de outro lugar (JSON, não é tabela) | arquivo único | agrega `Device` e `Reading` | Não |
+| `Snapshot` | Última leitura de cada aparelho para o widget, mais os limites de nível (`thresholds`) e o intervalo de leitura (`intervalMinutes`) dos Ajustes, que o widget não lê de outro lugar (JSON, não é tabela) | arquivo único | agrega `Device` e `Reading` | Não |
 
 Diagrama (opcional):
 
@@ -30,7 +30,7 @@ erDiagram
 - Concorrência: só o app host escreve; o widget só lê. Escrita do snapshot é atômica (arquivo temporário e rename).
 
 ## 4. Migrações
-- Ferramenta: migração versionada do SwiftData (`VersionedSchema`). Toda migração é reversível (`down`) e testada subindo e descendo (ver TESTING.md).
+- Hoje não há banco: `history.json` e `snapshot.json` são JSON. Campo novo entra como opcional com valor padrão (`Snapshot.thresholds`, `Snapshot.intervalMinutes`), então arquivo antigo continua legível sem migração e `schemaVersion` fica 1; versão desconhecida lê como vazio. Quando o histórico migrar para SwiftData: migração versionada (`VersionedSchema`), reversível (`down`) e testada subindo e descendo (ver TESTING.md).
 - Mudança destrutiva em duas etapas: acrescentar e migrar dados, só depois remover.
 - Migração em produção: roda na abertura do app; se falhar, o app preserva o arquivo antigo e abre com histórico vazio, avisando.
 
