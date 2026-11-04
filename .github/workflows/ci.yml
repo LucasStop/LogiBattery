@@ -16,11 +16,19 @@ jobs:
   check:
     name: SwiftLint · Testes
     runs-on: macos-latest
+    permissions:
+      contents: read
+      actions: read # gh run list e gh run download do relatório da main
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # o gitleaks varre o histórico inteiro
 
       - name: Ferramentas
-        run: brew install xcodegen swiftlint
+        run: brew install xcodegen swiftlint gitleaks
+
+      - name: Gitleaks
+        run: gitleaks git --redact --no-banner
 
       - name: Gerar projeto
         if: hashFiles('project.yml') != ''
@@ -34,6 +42,33 @@ jobs:
         if: hashFiles('project.yml') != ''
         # Passos de build só rodam depois que o project.yml existir (issue de fundação).
         # Sem certificado no CI: o App Group exige assinatura, então só os testes rodam sem assinar.
-        run: xcodebuild test -scheme "$SCHEME" -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
+        run: >
+          xcodebuild test -scheme "$SCHEME" -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
+          -resultBundlePath build/tests.xcresult
         env:
           SCHEME: LogiBattery
+
+      # Roda também com teste vermelho, que é quando o relatório mais importa. No PR compara com o artifact da
+      # última run verde da main; sem ele (primeira run, artifact expirado), mostra só o relatório atual.
+      - name: Relatório de testes
+        if: always() && hashFiles('project.yml') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          main_report=""
+          if [ "$EVENT" = "pull_request" ]; then
+            run_id=$(gh run list --branch main --workflow ci.yml --status success -L 1 --json databaseId --jq '.[0].databaseId // empty' || true)
+            if [ -n "$run_id" ] && gh run download "$run_id" -n test-report -D build/main; then
+              main_report=build/main/test-report.json
+            fi
+          fi
+          scripts/test-report.sh build/tests.xcresult $main_report >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publicar relatório da main
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && hashFiles('build/test-report.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: build/test-report.json
+          retention-days: 90
