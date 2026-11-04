@@ -52,6 +52,7 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
   | Atenuar widgets: sempre | `.vibrant` | ícone e texto dessaturados, anel na cor do nível mais apagada, legível | `atenuado` |
 
   Limite conhecido: no padrão e no tom escuro o Baterias da Apple mostra o papel de parede atrás e o nosso não. A base translúcida é do sistema, só para widget da Apple; widget de terceiro (o nosso e o Stats) recebe a base opaca (spike da #64 em DESIGN.md §3.7).
+- Release ([ADR 0004](adr/0004-versionamento-semver-e-release-por-script.md)): `scripts/next-version.sh` testado com repo git de fixture (feat sobe MINOR, fix sobe PATCH, sem commit relevante não sobe); o CI falha se a tag divergir do `MARKETING_VERSION`.
 - Exploratório: antes de cada release, 30 min: dormir e acordar o Mac, desligar o aparelho, trocar de receptor, negar a permissão.
 - Não funcionais: desempenho (`ScanPerformanceTests`: orçamento em contagem de trocas HID++ e timeouts por scan, com aparelho dormindo, e paralelismo entre endpoints; `measure` do dedupe só para tendência local; Instruments sob demanda; meta: leitura completa abaixo de 2 s por aparelho), segurança (gitleaks + revisão de entitlements e Keychain), acessibilidade (Accessibility Inspector manual; `performAccessibilityAudit` fora junto com o E2E do popover), compatibilidade (macOS 14 e o mais recente; Apple Silicon e Intel se houver máquina).
 
