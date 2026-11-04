@@ -10,6 +10,11 @@ struct LogiBatteryApp: App {
     @Environment(\.openWindow) private var openWindow
 
     init() {
+        // Processo filho da leitura de Bluetooth: não abre interface (#107).
+        if CommandLine.arguments.contains(SystemBatteries.levelsArgument) {
+            SystemBatteries.printLevels()
+            exit(0)
+        }
         // O host dos testes é o app: sem isso ele lê o hardware e grava no App Group durante o `xcodebuild test`.
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
         Task {

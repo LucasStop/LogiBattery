@@ -140,18 +140,66 @@ enum SystemBatteries {
     // some da lista. Trocar por API pública quando a Apple abrir uma.
     @MainActor
     private static func pairedBluetooth(now: Date) -> [Device] {
-        (IOBluetoothDevice.pairedDevices() ?? []).compactMap { item in
+        var fresh: [String: Int]?
+        return (IOBluetoothDevice.pairedDevices() ?? []).compactMap { item in
             guard let device = item as? IOBluetoothDevice, device.isConnected() else { return nil }
-            func level(_ key: String) -> Int {
-                guard device.responds(to: NSSelectorFromString(key)) else { return 0 }
-                return device.value(forKey: key) as? Int ?? 0
+            let name = device.name ?? "Bluetooth"
+            var levels = kvcLevels(of: device)
+            if levels.isEmpty, device.deviceClassMajor == kBluetoothDeviceClassMajorAudio {
+                // Depois de reconectar, o processo em execução fica com nível 0 para sempre (#107).
+                if fresh == nil { fresh = levelsFromNewProcess() }
+                levels = fresh?[name].map { [$0] } ?? []
             }
-            let levels = [level("batteryPercentSingle"), level("batteryPercentCombined"),
-                          level("batteryPercentLeft"), level("batteryPercentRight")].filter { $0 > 0 }
-            return bluetoothDevice(name: device.name ?? "Bluetooth",
-                                   major: UInt32(device.deviceClassMajor),
-                                   minor: UInt32(device.deviceClassMinor),
-                                   levels: levels, now: now)
+            return bluetoothDevice(name: name, major: UInt32(device.deviceClassMajor),
+                                   minor: UInt32(device.deviceClassMinor), levels: levels, now: now)
         }
+    }
+
+    @MainActor
+    private static func kvcLevels(of device: IOBluetoothDevice) -> [Int] {
+        func level(_ key: String) -> Int {
+            guard device.responds(to: NSSelectorFromString(key)) else { return 0 }
+            return device.value(forKey: key) as? Int ?? 0
+        }
+        return [level("batteryPercentSingle"), level("batteryPercentCombined"),
+                level("batteryPercentLeft"), level("batteryPercentRight")].filter { $0 > 0 }
+    }
+
+    /// Argumento do processo filho que só imprime os níveis e sai.
+    static let levelsArgument = "--bluetooth-levels"
+
+    /// Modo filho: uma linha `nome<TAB>nível` por aparelho conectado com nível.
+    @MainActor
+    static func printLevels() {
+        for case let device as IOBluetoothDevice in IOBluetoothDevice.pairedDevices() ?? [] where device.isConnected() {
+            guard let level = kvcLevels(of: device).first else { continue }
+            print("\(device.name ?? "Bluetooth")\t\(level)")
+        }
+    }
+
+    static func parseLevels(_ output: String) -> [String: Int] {
+        var result: [String: Int] = [:]
+        for line in output.split(separator: "\n") {
+            let parts = line.split(separator: "\t", maxSplits: 1)
+            if parts.count == 2, let level = Int(parts[1]) { result[String(parts[0])] = level }
+        }
+        return result
+    }
+
+    /// Um processo novo abre uma sessão nova com o Bluetooth e lê o nível atual (ver `printLevels`).
+    @MainActor
+    private static func levelsFromNewProcess() -> [String: Int] {
+        guard let executable = Bundle.main.executableURL else { return [:] }
+        let process = Process()
+        process.executableURL = executable
+        process.arguments = [levelsArgument]
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = FileHandle.nullDevice
+        guard (try? process.run()) != nil else { return [:] }
+        DispatchQueue.global().asyncAfter(deadline: .now() + 5) { if process.isRunning { process.terminate() } }
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+        return parseLevels(String(bytes: data, encoding: .utf8) ?? "")
     }
 }
