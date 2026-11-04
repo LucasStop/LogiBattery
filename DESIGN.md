@@ -144,6 +144,7 @@ Todo componente documenta: anatomia, variantes, tamanhos, estados e comportament
 | Popover | lista | 320 pt | vazio, erro de permissão | `LogiBattery/UI/` | componente + E2E |
 | Seção de vidro do popover (#66) | `glassEffect` (macOS 26+), `.regularMaterial` (antes) | 320 pt, raio 14 | padrão, vazio, carregando, erro | `LogiBattery/UI/Components/` | componente + visual |
 | Faixa de anéis do popover (#66, direção B) | anéis do widget médio no topo (ícone próprio com selo e percentual), lista de aparelhos embaixo | 320 pt, 4 posições fixas | com aparelho, posição vazia, leitura velha | `LogiBattery/UI/Components/` | componente + visual |
+| Menu de contexto da linha e aviso Desfazer (#113) | menu nativo com um item "Esquecer <nome>" só em leitura mantida e cinza; aviso de 8 s no popover com "<nome> esquecido" e Desfazer, sem janela de confirmação | linha do popover, seção de vidro | padrão, foco, linha sem ação (sem menu) | `LogiBattery/UI/DeviceList.swift` | unitário (`DeviceListViewModelTests`) + a11y |
 | Banner de permissão | aviso | md | padrão | `LogiBattery/UI/Components/` | componente + a11y |
 | Widget | small, medium, large | 3 famílias | com dados, sem dados, desatualizado | `LogiBatteryWidget/` | visual |
 | Grade de anéis (widget) | 2x2 (pequeno), 4x1 (médio) | 4 posições fixas | com aparelho, posição vazia, leitura velha | `LogiBatteryWidget/` (`RingWidget`, `RingSlot`) | visual |
@@ -338,6 +339,7 @@ Nenhuma tela é desenvolvida sem protótipo aprovado. O inventário e o status d
 - 2026-11-03: seção 9 (site): tokens, tipografia, componentes e acessibilidade da landing, com contraste medido (#106).
 - 2026-11-03: seção 9 explicita que o site imita a Apple (paleta do apple.com) em vez de herdar do sistema, e o desvio do `systemBlue` (#106).
 - 2026-11-03: prints do site recortados dos protótipos aprovados, @2x, claro e escuro, com `<picture>` (#106).
+- 2026-11-04: menu de contexto da linha e aviso Desfazer no popover, direção A aprovada (T11, #113).
 
 ## Ícone do app
 Opção A aprovada por Lucas em 2026-10-29: anel de carga verde (gradiente `#5EE59A` a `#1F9D55`) sobre fundo escuro `#1C2333`/`#0B0F19`, com raio branco no centro. Fonte em `design/icon/appicon.svg` (1024 pt, margem de 100 pt); os PNGs de `LogiBattery/Assets.xcassets/AppIcon.appiconset` saem dela com `rsvg-convert`.

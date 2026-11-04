@@ -40,8 +40,28 @@ struct DeviceList: View {
                         ForEach(Array(viewModel.devices.enumerated()), id: \.element.id) { index, device in
                             if index > 0 { Divider() }
                             DeviceRow(device: device)
+                                .contextMenu {
+                                    if viewModel.canForget(device) {
+                                        Button("popover.forget \(device.name)") { viewModel.forget(device) }
+                                    }
+                                }
                         }
                     }
+                }
+            }
+            if let forgotten = viewModel.forgotten {
+                PopoverSection {
+                    HStack {
+                        Text("popover.forgotten \(forgotten.name)").font(.callout).lineLimit(1)
+                        Spacer()
+                        Button("popover.undo") { viewModel.undoForget() }.buttonStyle(.link)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                }
+                .task(id: forgotten.id) {
+                    try? await Task.sleep(for: .seconds(8))
+                    if !Task.isCancelled { viewModel.dismissForgotten() }
                 }
             }
             PopoverSection {
