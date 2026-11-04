@@ -18,6 +18,7 @@ Inventário. `-` quando a parte não existe.
 |---|---|---|---|---|---|
 | Interface: popover e ajustes | Lista de aparelhos, gráfico, ajustes, guia de permissão | SwiftUI, Swift Charts | `LogiBattery/UI` | Domínio, Persistência | Não |
 | Interface: widget | Desenhar o snapshot nos três tamanhos | WidgetKit | `LogiBatteryWidget` | Snapshot (App Group) | Não |
+| Site público | Landing com download, prints e apoio por Pix; pt-BR, en, es; claro e escuro | HTML, CSS e JS estáticos, GitHub Pages (`deploy-site.yml`) | `site/`, design system em DESIGN.md §9 | Release do GitHub (link de download) | Não (a chave Pix é pública, de doação) |
 | API / backend | - | - | - | - | - |
 | Domínio | Modelo de aparelho, deduplicação, regras de aviso, política de leitura | Swift puro | `LogiBattery/Core/Domain` | HIDPP (via protocolo) | Não |
 | HID++ (transporte e protocolo) | Enumerar receptores e Bluetooth, falar HID++ 1.0/2.0, ler bateria e carga | `IOHIDManager`, Swift | `LogiBattery/Core/HIDPP` | Sistema (IOKit) | Número de série do aparelho |

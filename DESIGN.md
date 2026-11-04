@@ -279,7 +279,8 @@ Regra: componente sem linha aqui não existe; novo componente entra nesta tabela
 - `alt` descritivo em todo print, traduzido nos 3 idiomas (chaves `alt1` a `alt3`); `alt` do QR Code já presente.
 - `lang` do `html` acompanha o idioma escolhido; `aria-label` do seletor bilíngue.
 - Teclado completo: seletor, download e "Copiar chave" sem mouse; ordem de foco = ordem visual.
-- Verificação: Lighthouse (acessibilidade >= 95) e axe nos 3 idiomas, claro e escuro.
+- Estrutura: um `main` envolvendo hero, recursos, prints e apoio; cabeçalho e rodapé fora dele; títulos de cartão são `h2` com a classe `.h3` (estilo de §9.3), para não pular nível depois do `h1`.
+- Verificação: Lighthouse (acessibilidade >= 95, medido 100 em mobile e desktop) e conferência em pt-BR, en e es, claro e escuro, a 360 px, sem rolagem horizontal.
 
 ### 9.7 Conteúdo e i18n
 - Idiomas: pt-BR, en, es; detecção por `navigator.language`, escolha manual guardada em `localStorage`.
@@ -288,7 +289,15 @@ Regra: componente sem linha aqui não existe; novo componente entra nesta tabela
 - Rótulo de botão cabe em uma linha nos 3 idiomas em 360 px.
 - A chave Pix e o QR Code são gerados por `design/pix/make.py` e conferidos antes de publicar.
 
-### 9.8 Faça e não faça
+### 9.8 Prints do site
+- Origem: os protótipos aprovados (`design/prototypes/t02-widget-medio.html`, `t03-widget-grande.html`, `t04-popover.html`), com nomes e valores fictícios; o site público não mostra dado real nem o nome do Mac do Lucas. Capturas do app rodando ficam para depois de existir um modo demo no app.
+- Recorte: só o widget (médio e grande) ou o popover (sem a barra de menus), sem título, sem moldura de protótipo e sem sombra; cantos arredondados com fundo transparente.
+- Tamanho: @2x (largura 640 a 676 px), PNG. Um arquivo por tema: `<nome>-light.png` e `<nome>-dark.png`, escolhidos por `<picture>` com `prefers-color-scheme`.
+- Onde: originais em `design/screenshots/site-<nome>-<tema>.png`, cópia publicada em `site/shots/<nome>-<tema>.png`.
+- Como regenerar: Playwright com `deviceScaleFactor: 2`, escondendo `.tag` e `.menubar` e zerando `box-shadow`, e `screenshot` do primeiro `.widget` ou `.popover` de cada `.theme.light` e `.theme.dark` com `omitBackground`.
+- `alt` descritivo traduzido nos 3 idiomas (§9.6).
+
+### 9.9 Faça e não faça
 Faça:
 - Usar só tokens do `:root`; trocar de tema pelo `prefers-color-scheme`.
 - Prints reais do app, com `alt` descritivo.
@@ -328,6 +337,7 @@ Nenhuma tela é desenvolvida sem protótipo aprovado. O inventário e o status d
 - 2026-11-03: todos os ícones com conexão usam símbolo próprio `lb.*` (`lb.other.*` e `lb.headphones.receiver`), sem `TransportBadge` separado (#75); popover na direção B com faixa de anéis no topo e seções em vidro (#66); paginação nos widgets médio e grande com `AppIntent` (#79); Ajustes no visual dos Ajustes do Sistema com ícones coloridos por linha (#67).
 - 2026-11-03: seção 9 (site): tokens, tipografia, componentes e acessibilidade da landing, com contraste medido (#106).
 - 2026-11-03: seção 9 explicita que o site imita a Apple (paleta do apple.com) em vez de herdar do sistema, e o desvio do `systemBlue` (#106).
+- 2026-11-03: prints do site recortados dos protótipos aprovados, @2x, claro e escuro, com `<picture>` (#106).
 
 ## Ícone do app
 Opção A aprovada por Lucas em 2026-10-29: anel de carga verde (gradiente `#5EE59A` a `#1F9D55`) sobre fundo escuro `#1C2333`/`#0B0F19`, com raio branco no centro. Fonte em `design/icon/appicon.svg` (1024 pt, margem de 100 pt); os PNGs de `LogiBattery/Assets.xcassets/AppIcon.appiconset` saem dela com `rsvg-convert`.
