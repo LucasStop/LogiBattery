@@ -30,9 +30,15 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 "Roda em": local (pré-commit ou sob demanda), PR (CI bloqueante), deploy (smoke pós-deploy), nightly (agendado).
 
 ## 3. Testes do projeto inteiro
-- Estático: SwiftLint `--strict` + gitleaks no `lefthook.yml` e no CI. Warnings do compilador não viram erro (fora por ora: o Xcode gera avisos do sistema que não são nossos).
+- Estático: SwiftLint `--strict` + gitleaks no `lefthook.yml` (pre-commit, só o staged) e no CI (#117: `gitleaks git` no histórico inteiro, antes do build e bloqueante; roda o binário do brew, sem action de terceiro nem segredo novo). Warnings do compilador não viram erro (fora por ora: o Xcode gera avisos do sistema que não são nossos).
 - Smoke: `xcodebuild build` dos dois alvos (app e widget) e a suíte de unitários, primeiro job do CI. Smoke com hardware, manual, antes de cada release: receptor, Bluetooth e o mesmo aparelho pelos dois caminhos, incluindo trocar o mouse do receptor para o Bluetooth com o app aberto (ele deve aparecer como Bluetooth em até ~15 s, sem reiniciar o app). Receptor: `LOGIBATTERY_HW=1 TEST_RUNNER_LOGIBATTERY_HW=1 xcodebuild test -scheme LogiBattery -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO` roda `HardwareSmokeTests` (pulado sem a variável).
-- Regressão: a suíte completa roda em todo PR. Bug corrigido entra com teste que falha antes da correção, no mesmo PR.
+- Regressão: a suíte completa roda em todo PR e o job compara com a última run verde da `main` (relatório abaixo). Bug corrigido entra com teste que falha antes da correção, no mesmo PR.
+- Relatório de testes no CI (#117): verde ou vermelho não diz o que mudou, então o job gera um resumo por run.
+  - Como nasce: `xcodebuild test` grava `build/tests.xcresult`; `scripts/test-report.sh` (xcresulttool + jq) gera `build/test-report.json` (total, passou, falhou, pulou, duração, id e status de cada teste, média das métricas do `measure`) e escreve o Markdown no resumo do job. O passo roda com teste vermelho também.
+  - Comparação: push na `main` publica o JSON como artifact `test-report` (90 dias). No PR, o job baixa o da última run verde da `main` (`gh run download`, sem action de terceiro) e compara. Sem artifact (primeira run, expirado), mostra só o relatório atual, sem erro.
+  - Como ler a **Regressão**: o que piorou contra a `main`. Teste da `main` que agora falha, que sumiu ou que passou a ser pulado, e orçamento de desempenho estourado (suíte `*PerformanceTests`). Pede ação antes do merge; teste que sumiu só é aceitável se o PR o removeu de propósito, e a descrição do PR diz por quê.
+  - Como ler a **Evolução**: só informativa. Testes novos por nome, total (±N) e duração (±s). A duração varia com o runner, vale como tendência e nunca como limite.
+  - Local: `xcodebuild test ... -resultBundlePath build/tests.xcresult` e `scripts/test-report.sh build/tests.xcresult [test-report.json da main]` imprime o mesmo Markdown no terminal.
 - Aceitação: cada história do `PRD.md` tem ao menos um teste (ou checagem manual descrita) ligado ao critério de aceite. Mapa em [Rastreabilidade](#5-rastreabilidade).
 - Visual do widget (#64), manual, em todo PR que mexe no widget: pequeno e médio ao lado do Baterias da Apple em cada estilo de Ajustes > Aparência > Estilo dos ícones e widgets, e com Mesa e Dock > Atenuar widgets na mesa. Para ver a mudança: reinstalar, `pkill -x LogiBatteryWidget; killall chronod` e esperar uns 40 s. Prints em `design/screenshots/t01-t02-widget-*.png` (macOS 27, 2026-11-03; na ordem: médio da Apple, nosso médio, nosso pequeno, pequeno da Apple).
 
@@ -47,7 +53,7 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 
   Limite conhecido: no padrão e no tom escuro o Baterias da Apple mostra o papel de parede atrás e o nosso não. A base translúcida é do sistema, só para widget da Apple; widget de terceiro (o nosso e o Stats) recebe a base opaca (spike da #64 em DESIGN.md §3.7).
 - Exploratório: antes de cada release, 30 min: dormir e acordar o Mac, desligar o aparelho, trocar de receptor, negar a permissão.
-- Não funcionais: desempenho (XCTest measure + Instruments; meta: leitura completa abaixo de 2 s por aparelho), segurança (gitleaks + revisão de entitlements e Keychain), acessibilidade (Accessibility Inspector manual; `performAccessibilityAudit` fora junto com o E2E do popover), compatibilidade (macOS 14 e o mais recente; Apple Silicon e Intel se houver máquina).
+- Não funcionais: desempenho (`ScanPerformanceTests`: orçamento em contagem de trocas HID++ e timeouts por scan, com aparelho dormindo, e paralelismo entre endpoints; `measure` do dedupe só para tendência local; Instruments sob demanda; meta: leitura completa abaixo de 2 s por aparelho), segurança (gitleaks + revisão de entitlements e Keychain), acessibilidade (Accessibility Inspector manual; `performAccessibilityAudit` fora junto com o E2E do popover), compatibilidade (macOS 14 e o mais recente; Apple Silicon e Intel se houver máquina).
 
 ## 4. Regras
 - Cada teste no nível mais baixo que pega o defeito; sem repetir caso de borda entre níveis.
@@ -55,7 +61,8 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 - Dependência externa nunca é real nos testes automatizados de PR: usar fake, stub ou servidor de teste. Produção nunca.
 - Dados de teste: frames HID++ gravados em fixtures (`Tests/Fixtures/hidpp/`), sem série real; snapshots JSON de exemplo.
 - Flaky: corrigir ou quarentenar com issue em até 1 semana; nunca reexecutar até passar.
-- Cobertura: sem gate no CI (fora por ora: suíte pequena, revisão pega o buraco). Se entrar, 80% sobre Domínio e HID++, como alarme e não meta.
+- Cobertura: sem gate no CI e sem número no relatório (fora por escolha do Lucas: suíte pequena, revisão pega o buraco). Se entrar, 80% sobre Domínio e HID++, como alarme e não meta.
+- Desempenho: o baseline é contagem determinística (trocas, timeouts, aparelhos em voo), nunca segundos. O `measure` do XCTest guarda o baseline por máquina e o runner do GitHub muda a cada job, então ele serve só para tendência local e não tem baseline commitado. Orçamento estourado é teste vermelho e aparece na Regressão do relatório.
 - Teste visual/E2E de tela referencia o protótipo aprovado em `design/telas.md`.
 
 ## 5. Rastreabilidade
