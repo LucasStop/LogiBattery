@@ -7,6 +7,8 @@ final class DeviceListViewModel {
     private(set) var devices: [Device] = []
     private(set) var hasLoaded = false
     private(set) var lastRefresh: Date?
+    /// Último aparelho esquecido, para o aviso Desfazer do popover (T11, #113).
+    private(set) var forgotten: Device?
 
     private let scanner: any DeviceScanning
     private var isRefreshing = false
@@ -49,10 +51,31 @@ final class DeviceListViewModel {
                 && !seen.contains($0.identity) && now.timeIntervalSince($0.readAt) < Self.keepFor
         }
         devices = Snapshot.widgetOrder(fresh + kept)
+        if let forgotten, seen.contains(forgotten.identity) { self.forgotten = nil }
         hasLoaded = true
         lastRefresh = now
         publish(devices)
     }
+
+    /// Só leitura mantida (cinza) pode ser esquecida; quem respondeu agora voltaria na próxima leitura.
+    func canForget(_ device: Device) -> Bool { device.isOld(at: .now) }
+
+    /// Tira da lista e do widget uma leitura mantida; o histórico fica e o aparelho volta se responder a um scan.
+    func forget(_ device: Device) {
+        guard canForget(device), devices.contains(where: { $0.id == device.id }) else { return }
+        devices.removeAll { $0.id == device.id }
+        forgotten = device
+        publish(devices)
+    }
+
+    func undoForget() {
+        guard let device = forgotten else { return }
+        forgotten = nil
+        devices = Snapshot.widgetOrder(devices + [device])
+        publish(devices)
+    }
+
+    func dismissForgotten() { forgotten = nil }
 
     /// O ícone da barra de menu mostra o menor nível entre os aparelhos com leitura.
     var menuBarPercent: Int? { devices.compactMap(\.percent).min() }

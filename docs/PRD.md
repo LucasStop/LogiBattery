@@ -14,7 +14,7 @@ Se a história envolve tela, ela aparece em [../design/telas.md](../design/telas
 
 | ID | História | Critério de aceite (dado / quando / então) |
 |---|---|---|
-| US-01 | Como usuário, quero ver a bateria dos meus mouse e teclado Logitech ligados por receptor, para saber quando recarregar | Dado um receptor Unifying, Bolt ou Lightspeed com aparelho pareado e ligado, quando o app lê o dispositivo, então aparecem nome do aparelho e porcentagem de bateria |
+| US-01 | Como usuário, quero ver a bateria dos meus mouse e teclado Logitech ligados por receptor, para saber quando recarregar | Dado um receptor Unifying, Bolt ou Lightspeed com aparelho pareado e ligado, quando o app lê o dispositivo, então aparecem nome do aparelho e porcentagem de bateria. Leitura mantida e cinza pode ser esquecida pelo menu de contexto da linha, com Desfazer; o histórico não é apagado e o aparelho volta se responder (#113) |
 | US-02 | Como usuário, quero ver também os aparelhos Bluetooth, para ter tudo na mesma lista | Dado um aparelho Logitech conectado por Bluetooth, quando o app lê o dispositivo, então ele aparece com nome e porcentagem |
 | US-03 | Como usuário, quero que o mesmo aparelho visto por receptor e por Bluetooth apareça uma vez, para não ter duplicata | Dado um aparelho pareado por receptor e por Bluetooth, quando ambos os caminhos respondem, então a lista mostra um único item, com a leitura do caminho ativo |
 | US-04 | Como usuário, quero saber se o aparelho está carregando ou com carga completa, para não deixá-lo na tomada sem necessidade | Dado um aparelho que reporta estado de carga, quando ele está no carregador, então o estado aparece como carregando ou cheio |

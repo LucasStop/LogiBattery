@@ -132,6 +132,54 @@ final class KeepLastReadingTests: XCTestCase {
         XCTAssertEqual(viewModel.devices, [])
     }
 
+    /// #113: leitura mantida pode ser esquecida e some da lista e do snapshot.
+    func testForgetRemovesKeptReading() async throws {
+        let old = Date.now.addingTimeInterval(-3 * 3600)
+        var published: [[Device]] = []
+        let viewModel = DeviceListViewModel(scanner: ScriptedScanner([[mouse(.now), keyboard(old)], [mouse(.now)]]),
+                                            publish: { published.append($0) })
+        await viewModel.refresh()
+        let kept = try XCTUnwrap(viewModel.devices.first { $0.name == "PRO X TKL" })
+        XCTAssertTrue(viewModel.canForget(kept))
+        viewModel.forget(kept)
+        XCTAssertEqual(viewModel.devices.map(\.name), ["MX Master 3S"])
+        XCTAssertEqual(published.last?.map(\.name), ["MX Master 3S"])
+        await viewModel.refresh()
+        XCTAssertEqual(viewModel.devices.map(\.name), ["MX Master 3S"])
+    }
+
+    func testForgetIgnoresDeviceThatAnsweredNow() async {
+        let viewModel = DeviceListViewModel(scanner: ScriptedScanner([[mouse(.now)]]))
+        await viewModel.refresh()
+        let device = viewModel.devices[0]
+        XCTAssertFalse(viewModel.canForget(device))
+        viewModel.forget(device)
+        XCTAssertEqual(viewModel.devices.count, 1)
+        XCTAssertNil(viewModel.forgotten)
+    }
+
+    func testUndoForgetRestoresTheRow() async {
+        let old = Date.now.addingTimeInterval(-3 * 3600)
+        let viewModel = DeviceListViewModel(scanner: ScriptedScanner([[mouse(.now), keyboard(old)]]))
+        await viewModel.refresh()
+        viewModel.forget(viewModel.devices[1])
+        XCTAssertNotNil(viewModel.forgotten)
+        viewModel.undoForget()
+        XCTAssertEqual(viewModel.devices.map(\.name), ["MX Master 3S", "PRO X TKL"])
+        XCTAssertNil(viewModel.forgotten)
+    }
+
+    func testForgottenDeviceComesBackWhenItResponds() async {
+        let old = Date.now.addingTimeInterval(-3 * 3600)
+        let viewModel = DeviceListViewModel(
+            scanner: ScriptedScanner([[mouse(.now), keyboard(old)], [mouse(.now), keyboard(.now)]]))
+        await viewModel.refresh()
+        viewModel.forget(viewModel.devices[1])
+        await viewModel.refresh()
+        XCTAssertEqual(viewModel.devices.map(\.name).sorted(), ["MX Master 3S", "PRO X TKL"])
+        XCTAssertNil(viewModel.forgotten)
+    }
+
     /// #100: receptor que parou de responder fica no fim da lista, atrás de quem respondeu ao último scan.
     func testUnseenReceiverDeviceSortsAfterConnectedOnes() async {
         let headset = Device(id: "bt-headset", name: "QCY MeloBuds Pro", kind: .headphones, percent: 100,
