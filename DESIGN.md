@@ -193,12 +193,14 @@ Não faça:
 
 ## 9. Site (web)
 
-Landing pública em `site/` (T10, #92), HTML/CSS/JS estático no GitHub Pages. Vale só para o site; app, widget e popover seguem as seções 1 a 8. Tokens documentados aqui são os do `:root` de `site/index.html`; o código é a implementação. Status: rascunho (#106).
+Landing pública em `site/` (T10, #92), HTML/CSS/JS estático no GitHub Pages. Vale só para o site; app, widget e popover seguem as seções 1 a 8. Tokens documentados aqui são os do `:root` de `site/index.html`; o código é a implementação. Status: aprovada em 2026-11-03 (#106).
 
 ### 9.1 Visão geral
 - Público: quem usa mouse e teclado Logitech no Mac e quer a bateria de relance; chega por busca ou link, decide em segundos.
 - Personalidade: a do app (discreta, nativa, calma). A página parece uma página da Apple, não um painel de marketing.
 - Um único primário por tela: o botão de download. Apoio (Pix) é secundário.
+- Relação com a Apple: o app herda cores, materiais e ícones do sistema (cores semânticas do `NSColor`, Liquid Glass, SF Symbols); o site não tem acesso a isso na web e **imita** a linguagem da Apple. A paleta vem do apple.com (`#f5f5f7`, `#1d1d1f`, `#6e6e73`), a fonte é a pilha do sistema, o botão é em pílula e a página é plana, sem material nem sombra.
+- Desvio deliberado do `systemBlue` do macOS (`#007AFF` no claro, `#0A84FF` no escuro): `--primary` é `#0a64f0` e `#3b8bff`, ajustados para passar o contraste de texto e de link (§9.2). Não trocar pelo `systemBlue` sem refazer a medição.
 - Cor de nível (`ok`) só aparece quando o assunto é bateria; nunca como enfeite.
 
 ### 9.2 Cor
@@ -212,9 +214,11 @@ Tokens CSS no `:root`; o modo escuro redefine os mesmos nomes em `@media (prefer
 | `--muted` | #6e6e73 | #a1a1a6 | Texto de apoio, notas, rodapé |
 | `--border` | #d2d2d7 | #4d4d52 | Divisórias e bordas |
 | `--primary` | #0a64f0 | #3b8bff | Botão principal e links |
-| `--primary-fg` | #ffffff | #ffffff | Texto sobre `--primary` |
+| `--border-control` | #86868b | #76767b | Borda de controle (seletor, botão secundário), >= 3:1 |
+| `--primary-fg` | #ffffff | #000000 | Texto sobre `--primary` |
 | `--shot` | #c9d4e6 | #2c3a52 | Fundo da moldura de print |
 | `--ok` | #1f9d55 | #34c77b | Reservado a nível de bateria (hoje sem uso visível) |
+| `--qr-bg` | #ffffff | #ffffff | Fundo do QR Code (precisa ser claro nos dois modos) |
 
 Contraste medido:
 
@@ -224,10 +228,11 @@ Contraste medido:
 | `--muted` / `--bg` | 4,66 | 6,61 | 4,5 | ok |
 | `--muted` / `--surface` | 5,07 | 5,56 | 4,5 | ok |
 | `--primary` / `--bg` (link) | 4,71 | 5,12 | 4,5 | ok |
-| `--primary-fg` / `--primary` (botão) | 5,13 | 3,32 | 4,5 | **falha no escuro** |
-| `--border` / `--bg` (borda de controle) | 1,38 | 2,02 | 3 | **falha nos dois** (seletor e botão secundário) |
+| `--primary-fg` / `--primary` (botão) | 5,13 | 6,32 | 4,5 | ok |
+| `--border-control` / `--bg` | 3,33 | 3,77 | 3 | ok |
+| `--border-control` / `--surface` | 3,62 | 3,17 | 3 | ok |
 
-Ajustes a aplicar na etapa de código (#106): botão no escuro com `--primary-fg` escuro ou `--primary` mais fechado até chegar a 4,5; borda de controle (`select`, `.btn.alt`) com token próprio `--border-control` >= 3:1. Borda decorativa de cartão pode ficar em `--border`.
+`--border` (1,38 e 2,02 contra `--bg`) fica só em borda decorativa de cartão e bloco de apoio; controle usa `--border-control`.
 
 ### 9.3 Tipografia
 - Pilha do sistema, sem arquivo de fonte: `-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif`. Mono: `ui-monospace, SFMono-Regular, Menlo, monospace`, só para a chave Pix.
@@ -269,9 +274,9 @@ Ajustes a aplicar na etapa de código (#106): botão no escuro com `--primary-fg
 Regra: componente sem linha aqui não existe; novo componente entra nesta tabela antes do HTML.
 
 ### 9.6 Acessibilidade (WCAG 2.2 AA)
-- Foco visível em todo interativo (hoje não há estilo `:focus-visible` próprio; entra na etapa de código).
-- Alvo de toque >= 44 px (botão secundário hoje tem altura ~38 px; corrigir).
-- `alt` descritivo em todo print (hoje `alt=""` nos três prints; corrigir), `alt` do QR Code já presente.
+- Foco visível em todo interativo: `:focus-visible` com contorno de 2 px em `--primary` e 2 px de afastamento.
+- Alvo de toque >= 44 px (`--target`), botões e seletor com `min-height`.
+- `alt` descritivo em todo print, traduzido nos 3 idiomas (chaves `alt1` a `alt3`); `alt` do QR Code já presente.
 - `lang` do `html` acompanha o idioma escolhido; `aria-label` do seletor bilíngue.
 - Teclado completo: seletor, download e "Copiar chave" sem mouse; ordem de foco = ordem visual.
 - Verificação: Lighthouse (acessibilidade >= 95) e axe nos 3 idiomas, claro e escuro.
@@ -321,7 +326,8 @@ Nenhuma tela é desenvolvida sem protótipo aprovado. O inventário e o status d
 - 2026-11-03: símbolos próprios com o selo de conexão no canto de baixo (`lb.*`), no widget e no popover (#65).
 - 2026-11-03: fundo do widget transparente (base do sistema, vidro nos estilos translúcido e tonalizado), anel na cor do nível também no translúcido e no tonalizado (imagem em cor cheia) e matriz de estilos com prints; vidro do Baterias no estilo padrão é exclusivo da Apple (#64).
 - 2026-11-03: todos os ícones com conexão usam símbolo próprio `lb.*` (`lb.other.*` e `lb.headphones.receiver`), sem `TransportBadge` separado (#75); popover na direção B com faixa de anéis no topo e seções em vidro (#66); paginação nos widgets médio e grande com `AppIntent` (#79); Ajustes no visual dos Ajustes do Sistema com ícones coloridos por linha (#67).
-- 2026-11-03: seção 9 (site): tokens, tipografia, componentes e acessibilidade da landing, com contraste medido e lacunas a corrigir na etapa de código (#106).
+- 2026-11-03: seção 9 (site): tokens, tipografia, componentes e acessibilidade da landing, com contraste medido (#106).
+- 2026-11-03: seção 9 explicita que o site imita a Apple (paleta do apple.com) em vez de herdar do sistema, e o desvio do `systemBlue` (#106).
 
 ## Ícone do app
 Opção A aprovada por Lucas em 2026-10-29: anel de carga verde (gradiente `#5EE59A` a `#1F9D55`) sobre fundo escuro `#1C2333`/`#0B0F19`, com raio branco no centro. Fonte em `design/icon/appicon.svg` (1024 pt, margem de 100 pt); os PNGs de `LogiBattery/Assets.xcassets/AppIcon.appiconset` saem dela com `rsvg-convert`.
