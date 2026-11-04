@@ -4,8 +4,6 @@ import WidgetKit
 
 @main
 struct LogiBatteryApp: App {
-    @State private var viewModel = DeviceListViewModel(
-        scanner: LiveScanner(), restoring: SnapshotStore.appGroup?.read(), publish: publishSnapshot)
     @State private var permission = PermissionModel()
     @AppStorage(SettingsModel.showMenuBarIconKey) private var showMenuBarIcon = true
     @NSApplicationDelegateAdaptor private var appDelegate: AppDelegate
@@ -14,7 +12,6 @@ struct LogiBatteryApp: App {
     init() {
         // O host dos testes é o app: sem isso ele lê o hardware e grava no App Group durante o `xcodebuild test`.
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
-        let viewModel = viewModel
         Task {
             await viewModel.run(interval: { SettingsModel.shared.values.interval }, changes: discovery.changes)
         }
@@ -70,6 +67,11 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 private let discovery = HIDDiscovery()
+
+/// Instância única: o loop de leitura (`init`) e a cena (menu e ícone) precisam enxergar o mesmo objeto. Como
+/// `@State` lido no `init`, o loop atualizava uma cópia e o menu ficava no snapshot restaurado (#102).
+@MainActor private let viewModel = DeviceListViewModel(
+    scanner: LiveScanner(), restoring: SnapshotStore.appGroup?.read(), publish: publishSnapshot)
 
 /// Descobre as interfaces a cada leitura: receptor ou aparelho conectado agora aparece sem reiniciar o app.
 /// Soma a bateria do Mac e de qualquer periférico Bluetooth conectado no macOS, deduplicando com HID++ (#88).
