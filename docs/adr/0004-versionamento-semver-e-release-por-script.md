@@ -9,7 +9,7 @@ Existe o release `v0.1.0`, com o zip anexado à mão. `MARKETING_VERSION` está 
 ## Decisão
 - SemVer `MAJOR.MINOR.PATCH`, em 0.x até a distribuição com Developer ID. `feat` sobe o MINOR, `fix` sobe o PATCH; `feat!`, `fix!` ou `BREAKING CHANGE` sobem o MINOR em 0.x e o MAJOR depois do 1.0. Outros tipos (`docs`, `test`, `chore`, `ci`, `refactor`) não sobem a versão sozinhos.
 - Fonte única da versão: `MARKETING_VERSION` no `project.yml`, lida pelo app e pelo widget. `CURRENT_PROJECT_VERSION` é a contagem de commits da main (`git rev-list --count main`) e só cresce.
-- O bump é um PR `chore(release): vX.Y.Z` que muda só `project.yml` e `CHANGELOG.md`. A próxima versão sai dos Conventional Commits desde a última tag (`scripts/next-version.sh`); o `CHANGELOG.md` agrupa por tipo, com link para os PRs.
+- O bump é um PR `chore(release): vX.Y.Z` que muda só `project.yml` e `CHANGELOG.md`. A próxima versão sai dos Conventional Commits desde a última tag (`scripts/next-version.sh`); o `CHANGELOG.md` agrupa por tipo, com o hash de cada commit.
 - Depois do merge, `scripts/release.sh` builda assinado (time `69D4S5TF8S`), gera `LogiBattery-X.Y.Z.zip`, cria a tag `vX.Y.Z` e o GitHub Release, e confere `TeamIdentifier`. Roda só quando o Lucas pedir; o CI nunca cria release (o runner não tem o certificado).
 - O CI falha se a tag não bater com o `MARKETING_VERSION`.
 

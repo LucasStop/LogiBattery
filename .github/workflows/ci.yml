@@ -30,6 +30,9 @@ jobs:
       - name: Gitleaks
         run: gitleaks git --redact --no-banner
 
+      - name: Scripts de release
+        run: scripts/test-next-version.sh
+
       - name: Gerar projeto
         if: hashFiles('project.yml') != ''
         run: xcodegen generate

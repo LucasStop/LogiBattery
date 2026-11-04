@@ -1,0 +1,22 @@
+name: release-check
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  tag-matches-version:
+    name: tag = MARKETING_VERSION
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Conferir tag e project.yml
+        run: |
+          version=$(sed -n 's/^ *MARKETING_VERSION: "\(.*\)"/\1/p' project.yml)
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} diverge do MARKETING_VERSION v${version}"
+            exit 1
+          fi
