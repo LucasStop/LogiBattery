@@ -18,6 +18,7 @@ coverage/
 # Testes
 playwright-report/
 test-results/
+.playwright-mcp/
 
 # Sistema e editor
 .DS_Store
