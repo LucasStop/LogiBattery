@@ -141,7 +141,7 @@ Conclusão prática: **o fone aceita a conexão GATT de controle com o link de �
 
 ## 8. Limites e riscos
 
-- **Estojo sem leitura** reporta `0x00`, não 0%. O modelo trata como ausência de dado; o documento não define o caso.
+- **Estojo sem leitura** reporta `0x00`, não 0%. Testado em 2026-11-13 nas duas situações plausíveis: com os fones encaixados e a tampa aberta, o fone anuncia e reporta carga (`83%+`/`84%+`), mas o byte do estojo continua `0x00` no advertising e na resposta a `0x2F`; com a tampa fechada nada anuncia. Não é estado transitório: o firmware 2.0.6 não expõe a bateria do estojo. O modelo trata como ausência de dado.
 - **`0x0C` é escrita morta neste modelo.** Pedido com `0xFE` não responde e escrita não muda nada. Não foi removido do cliente (outros modelos QCY podem usá-lo), mas não deve ser enviado junto com `0x17`: as duas respostas caíam no mesmo campo e o estado oscilava entre `2/0` e `3/2`. Hoje são campos separados (`noiseCancelMode` e `ancScene`), com teste de regressão.
 - **`0x28` fora do mapa.** Depois de cada `0x17` chega `28 01 01`; não modelado.
 - **Normalização de subcena**: pedir `02/02` no modo normal devolve `02/00`. Escrever a cena e reler é a única forma de saber o que o fone aceitou de fato.
