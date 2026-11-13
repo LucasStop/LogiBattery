@@ -12,13 +12,18 @@ prepare)
   # Último passo antes do merge, depois de rebasear na main (ADR 0007): o PR leva a própria versão.
   next=$(scripts/next-version.sh)
   [ "$next" != "$(marketing)" ] || { echo "Nada pede bump nos commits do PR."; exit 1; }
+  section=$(scripts/next-version.sh --changelog) # antes do sed: o rascunho parte da versão ainda não subida
   build=$(sed -n 's/^ *CURRENT_PROJECT_VERSION: "\(.*\)"/\1/p' project.yml)
   sed -i '' -E "s/^( *MARKETING_VERSION: )\".*\"/\1\"$next\"/; s/^( *CURRENT_PROJECT_VERSION: )\".*\"/\1\"$((build + 1))\"/" project.yml
   sed -i '' -E "s/const VERSION=\"[^\"]*\"/const VERSION=\"$next\"/" site/index.html
-  section=$(scripts/next-version.sh --changelog)
-  { echo "# Changelog"; echo; echo "$section"; [ -f CHANGELOG.md ] && tail -n +2 CHANGELOG.md | sed '1{/^$/d;}' | sed '1i\
-'; } > CHANGELOG.md.new
-  mv CHANGELOG.md.new CHANGELOG.md
+  # A seção nova entra antes da primeira versão existente, depois do cabeçalho e da nota de formato.
+  SECTION="$section" python3 - <<'PY'
+import os, re
+text = open("CHANGELOG.md").read()
+match = re.search(r"^## ", text, re.M)
+at = match.start() if match else len(text)
+open("CHANGELOG.md", "w").write(text[:at] + os.environ["SECTION"] + "\n\n" + text[at:])
+PY
   echo "Preparado $next. Reescreva o rascunho do CHANGELOG.md com o porquê de cada item antes de commitar."
   ;;
 publish)

@@ -177,16 +177,17 @@ private struct PopoverRingStrip: View {
                     .frame(maxWidth: .infinity)
             }
         }
-        .padding(.top, 16)
+        .padding(.top, 26) // espaço do tooltip do estojo (T13)
         .padding(.horizontal, 8)
         .padding(.bottom, 12)
         .accessibilityHidden(true)
     }
 
-    private func slotView(_ device: Device?) -> some View {
+    private func slotView(_ device: Device?) -> AnyView {
         let gray = device.map(isGray) == true
+        if let device, device.sides != nil, !isLoading { return AnyView(splitSlot(device, gray: gray)) }
         let fraction = CGFloat(min(max(device?.percent ?? 0, 0), 100)) / 100
-        return VStack(spacing: 8) {
+        return AnyView(VStack(spacing: 8) {
             ZStack {
                 Circle().stroke(.quaternary, lineWidth: Self.stroke)
                 if let device, !isLoading {
@@ -215,6 +216,81 @@ private struct PopoverRingStrip: View {
                     .foregroundStyle(gray ? .secondary : .primary)
                     .opacity(device == nil ? 0 : 1)
             }
+        })
+    }
+
+    /// Fone com lados (T13): anel dividido ao meio, L à esquerda e R à direita, cada metade pelo seu nível, de baixo
+    /// para cima. Embaixo "90 · 85"; o estojo, quando há leitura, é um tooltip acima do anel.
+    private func splitSlot(_ device: Device, gray: Bool) -> some View {
+        let left = device.side(.left)
+        let right = device.side(.right)
+        func tint(_ side: DeviceSide?) -> Color { gray ? .secondary : (side?.tint(thresholds) ?? .secondary) }
+        func text(_ side: DeviceSide?) -> String { side.map { "\($0.percent)" } ?? "—" }
+        return VStack(spacing: 8) {
+            ZStack {
+                HalfRing(percent: left?.percent ?? 0, tint: tint(left), stroke: Self.stroke, mirrored: false)
+                HalfRing(percent: right?.percent ?? 0, tint: tint(right), stroke: Self.stroke, mirrored: true)
+                device.symbol
+                    .font(.system(size: Self.iconSize))
+                    .foregroundStyle(gray ? .secondary : .primary)
+            }
+            .padding(Self.stroke / 2)
+            .frame(width: Self.ringSize, height: Self.ringSize)
+            .overlay(alignment: .top) {
+                if let box = device.side(.case) {
+                    CaseTooltip(side: box, gray: gray, thresholds: thresholds).offset(y: -22)
+                }
+            }
+            Text("\(text(left)) · \(text(right))")
+                .font(.system(size: Self.percentSize, weight: .semibold)).monospacedDigit()
+                .foregroundStyle(gray ? .secondary : .primary)
+        }
+    }
+}
+
+/// Metade de anel (T13): trilho e nível de uma metade do círculo, de baixo para cima, com um vão nas pontas.
+/// `mirrored` espelha a metade esquerda para a direita.
+private struct HalfRing: View {
+    let percent: Int
+    let tint: Color
+    let stroke: CGFloat
+    let mirrored: Bool
+    private static let gap = 0.02
+
+    var body: some View {
+        let span = 0.5 - 2 * Self.gap
+        let fraction = Double(min(max(percent, 0), 100)) / 100
+        ZStack {
+            Circle().trim(from: Self.gap, to: Self.gap + span)
+                .stroke(.quaternary, style: StrokeStyle(lineWidth: stroke, lineCap: .round))
+            if percent > 0 {
+                Circle().trim(from: Self.gap, to: Self.gap + span * fraction)
+                    .stroke(tint, style: StrokeStyle(lineWidth: stroke, lineCap: .round))
+            }
+        }
+        .rotationEffect(.degrees(90))
+        .scaleEffect(x: mirrored ? -1 : 1, y: 1)
+    }
+}
+
+/// Estojo do fone (T13): bolha "E 100%" acima do anel, só com leitura.
+private struct CaseTooltip: View {
+    let side: DeviceSide
+    let gray: Bool
+    let thresholds: BatteryThresholds
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 2) {
+                Text(DeviceSide.Part.case.shortName).foregroundStyle(.secondary)
+                Text("\(side.percent)%").monospacedDigit().foregroundStyle(gray ? .secondary : .primary)
+            }
+            .font(.system(size: 11, weight: .semibold))
+            .padding(.horizontal, 6)
+            .padding(.vertical, 1)
+            .background(.regularMaterial, in: Capsule())
+            .overlay(Capsule().stroke(.separator, lineWidth: 0.5))
+            Image(systemName: "arrowtriangle.down.fill").font(.system(size: 5)).foregroundStyle(.separator)
         }
     }
 }

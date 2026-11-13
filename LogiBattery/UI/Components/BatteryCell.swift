@@ -67,7 +67,18 @@ struct BatteryCell: View {
     }
 }
 
+extension DeviceSide {
+    /// Mesma regra de cor do aparelho, por lado: carregando em `info`, senão o nível (T13).
+    func tint(_ thresholds: BatteryThresholds) -> Color {
+        charging ? Color(light: 0x2B6CB0, dark: 0x63B3ED)
+            : BatteryLevel(percent: percent, thresholds: thresholds).color
+    }
+}
+
 extension Device {
+    /// Lado pedido do fone QCY, `nil` sem leitura (o popover mostra "—", nunca 0%).
+    func side(_ part: DeviceSide.Part) -> DeviceSide? { sides?.first { $0.side == part } }
+
     /// Cor do nível; carregando usa `info` (DESIGN.md), igual ao protótipo.
     func tint(_ thresholds: BatteryThresholds) -> Color {
         chargeState == .charging ? Color(light: 0x2B6CB0, dark: 0x63B3ED)

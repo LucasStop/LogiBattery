@@ -29,6 +29,7 @@ Se a história envolve tela, ela aparece em [../design/telas.md](../design/telas
 | US-13 | Como usuário, quero ver a bateria do Mac e do fone Bluetooth junto com mouse e teclado, para usar só este widget e dispensar o de Baterias da Apple | Dado um Mac com bateria e um fone Bluetooth conectado que informa a bateria ao macOS, quando o app lê, então Mac e fone aparecem no widget, no popover e no histórico com a porcentagem, o Mac em primeiro; fone desligado some na leitura seguinte; fone conectado que veio sem nível nesta leitura mantém a última leitura, em cinza após o tempo definido nos Ajustes (padrão 30 min) |
 | US-14 | Como usuário que só usa o widget, quero esconder o ícone da barra de menus, para o app rodar em segundo plano sem ocupar a barra | Dado a opção desligada nos ajustes, então o ícone some e o widget segue atualizando; quando abro o app de novo (Spotlight, Finder ou clique no widget), então o ícone volta |
 | US-15 | Como usuário, quero ver a bateria de teclado e mouse Bluetooth de qualquer marca, para ter tudo num widget só | Dado um teclado ou mouse BLE conectado que expõe o Battery Service padrão (GATT 0x180F), quando o app lê, então aparecem nome e porcentagem no popover, no ícone e no widget; aparelho Logitech já lido por HID++ não duplica (#121) |
+| US-16 | Como usuário, quero ver a bateria de cada lado do fone QCY numa linha só, para saber qual fone vai acabar primeiro | Dado o QCY MeloBuds Pro por perto, quando o app lê, então o popover mostra uma linha com os dois lados separados ("L 90% · R 85%"), o ícone e o widget usam o menor lado, e a linha do fone que vinha com "—" do macOS some (#142); estojo só aparece se o firmware reportar (o 2.0.6 não reporta); fone fora de alcance fica cinza com a última leitura, como os outros aparelhos |
 
 ## Implementation Decisions
 - Plataforma e stack: macOS 14+, Swift, SwiftUI, WidgetKit, Swift Charts, `UserNotifications`, `SMAppService`; projeto gerado por XcodeGen.
@@ -55,13 +56,13 @@ Se a história envolve tela, ela aparece em [../design/telas.md](../design/telas
 
 ## Out of Scope
 - Controlar o aparelho (DPI, botões, teclas, iluminação, perfis). É um monitor, não um substituto do Logi Options+.
-- Ler periféricos de outras marcas pelo protocolo proprietário deles. Fone Bluetooth e o próprio Mac entram porque o macOS já conhece a bateria (US-13); teclado e mouse de qualquer marca entram pelo Battery Service BLE padrão (US-15).
+- Ler periféricos de outras marcas pelo protocolo proprietário deles. Fone Bluetooth e o próprio Mac entram porque o macOS já conhece a bateria (US-13); teclado e mouse de qualquer marca entram pelo Battery Service BLE padrão (US-15). Exceção só de leitura: a bateria do fone QCY pelo protocolo dele (US-16, [ADR 0006](adr/0006-leitura-do-qcy-no-popover.md)); controle do fone (ANC, LDAC, jogo) fica no app QCYBattery.
 - Windows, Linux, iOS.
 - Conta, nuvem, sincronização ou telemetria.
 - Atualização de firmware.
 
 ## Further Notes
-- Protocolo do fone QCY: a camada de leitura (bateria por lado e estojo, firmware, ANC, LDAC, modo jogo) está medida e implementada em `Core/BLE`, com referência em [QCY.md](QCY.md), mas **não está ligada** à lista de aparelhos. O "Out of Scope" acima ainda exclui protocolo de marca terceira; ligar exige história nova aqui (ou alvo separado) e protótipo aprovado.
+- Protocolo do fone QCY: a camada de leitura (bateria por lado e estojo, firmware, ANC, LDAC, modo jogo) está medida e implementada em `Core/BLE`, com referência em [QCY.md](QCY.md), e o controle vive no app separado QCYBattery (#135). A leitura de bateria por lado entra no popover pela US-16 (#142), depois de protótipo T13 aprovado.
 - Os modelos exatos e o PID do receptor do Lucas são descobertos no primeiro run (`ioreg -p IOUSB -l`).
 - Aparelhos antigos usam HID++ 1.0 e ficam fora do MVP se não houver hardware para testar.
 - Licença MIT; repositório público.
