@@ -74,14 +74,14 @@ struct QCYView: View {
     private var banner: some View {
         if model.writeFailed {
             QCYBanner(tint: BatteryLevel.critical.color, title: "qcy.error.title", detail: "qcy.error.detail",
-                      action: ("qcy.error.retry", model.retryAfterFailure))
+                      action: ("qcy.error.retry", { model.retryAfterFailure() }))
                 .accessibilityAddTraits(.isModal)
         } else if model.pending != nil {
             QCYBanner(tint: Color(light: 0x2B6CB0, dark: 0x63B3ED), title: "qcy.pending.title",
                       detail: "qcy.pending.detail", spinner: true)
         } else if model.phase == .disconnected {
             QCYBanner(tint: BatteryLevel.low.color, title: "qcy.offline.title", detail: "qcy.offline.detail",
-                      action: ("qcy.offline.retry", model.reconnect))
+                      action: ("qcy.offline.retry", { model.reconnect() }))
         } else if model.isReadOnly, model.phase == .connected {
             QCYBanner(tint: Color(light: 0x2B6CB0, dark: 0x63B3ED), title: "qcy.readonly.title",
                       detail: "qcy.readonly.detail")
@@ -105,12 +105,12 @@ struct QCYView: View {
                 }
                 .padding(12)
                 Divider()
-                Toggle(isOn: Binding(get: { model.isLDACOn }, set: model.setLDAC)) {
+                Toggle(isOn: Binding(get: { model.isLDACOn }, set: { model.setLDAC($0) })) {
                     QCYLabel(title: "qcy.ldac.title", hint: "qcy.ldac.hint")
                 }
                 .toggleStyle(.switch).padding(12)
                 Divider()
-                Toggle(isOn: Binding(get: { model.isGameOn }, set: model.setGame)) {
+                Toggle(isOn: Binding(get: { model.isGameOn }, set: { model.setGame($0) })) {
                     QCYLabel(title: "qcy.game.title", hint: "qcy.game.hint")
                 }
                 .toggleStyle(.switch).padding(12)
