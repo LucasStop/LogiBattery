@@ -1,5 +1,7 @@
 included:
   - LogiBattery
   - LogiBatteryWidget
+  - QCYBattery
+  - QCYBatteryTests
   - LogiBatteryTests
   - LogiBatteryUITests

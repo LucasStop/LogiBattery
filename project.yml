@@ -55,6 +55,34 @@ targets:
       properties:
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
+  QCYBattery:
+    type: application
+    platform: macOS
+    sources:
+      - QCYBattery
+      - LogiBattery/Core/BLE
+      - LogiBattery/Core/Domain/Device.swift
+      - LogiBattery/Core/Storage/Snapshot.swift
+      - LogiBattery/UI/Components/BatteryCell.swift
+      - LogiBattery/Symbols.xcassets
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.lucasstop.QCYBattery
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: QCY
+        INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "Para ler a bateria do fone QCY e ajustar cancelamento de ruído, LDAC e modo jogo."
+        CODE_SIGN_ENTITLEMENTS: QCYBattery/QCYBattery.entitlements
+        ENABLE_HARDENED_RUNTIME: YES
+  QCYBatteryTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources: [QCYBatteryTests]
+    dependencies:
+      - target: QCYBattery
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.lucasstop.QCYBatteryTests
+        GENERATE_INFOPLIST_FILE: YES
   LogiBatteryTests:
     type: bundle.unit-test
     platform: macOS
@@ -78,9 +106,9 @@ targets:
 schemes:
   LogiBattery:
     build:
-      targets: {LogiBattery: all, LogiBatteryWidget: all}
+      targets: {LogiBattery: all, LogiBatteryWidget: all, QCYBattery: all}
     test:
-      targets: [LogiBatteryTests]
+      targets: [LogiBatteryTests, QCYBatteryTests]
   LogiBatteryUITests:
     build:
       targets: {LogiBattery: all, LogiBatteryUITests: all}

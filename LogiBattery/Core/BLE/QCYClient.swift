@@ -4,8 +4,9 @@ import Foundation
 /// Cliente do canal de controle do fone QCY: escaneia por manufacturer data `0x521C`, conecta no serviço `A001`,
 /// assina `00001002` (notificações) e lê `00000008` (bateria) e `00000007` (versão).
 ///
-/// Só leitura. O fone aceita a conexão GATT com o áudio A2DP ativo (medido em 2026-11-12), então o app não
-/// precisa derrubar o áudio para ler a bateria. Os callbacks rodam na fila interna do cliente.
+/// Lê o retrato e escreve os ajustes medidos (cena de ANC, LDAC e modo jogo). O fone aceita a conexão GATT com o
+/// áudio A2DP ativo (medido em 2026-11-12), então o app não precisa derrubar o áudio para ler a bateria. Os
+/// callbacks rodam na fila interna do cliente.
 final class QCYClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, @unchecked Sendable {
     /// `CBUUID` não é `Sendable`, então as constantes ficam por instância (mesmo padrão do `BLEBatteryReader`).
     private let service = CBUUID(string: "A001")
@@ -20,6 +21,8 @@ final class QCYClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate,
     var onState: (@Sendable (QCYState) -> Void)?
     /// Chamado uma vez por conexão, quando as características já foram descobertas (é quando dá para escrever).
     var onReady: (@Sendable () -> Void)?
+    /// Chamado quando o link cai, limpo ou com erro. O cliente volta a escanear sozinho.
+    var onDisconnect: (@Sendable () -> Void)?
     /// Bytes crus de cada notificação de `00001002`, para diagnóstico e para virar fixture.
     var onPacket: (@Sendable (Data) -> Void)?
     /// Falha de conexão, serviço ausente ou erro do CoreBluetooth.
@@ -44,6 +47,14 @@ final class QCYClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate,
                 self.manager?.cancelPeripheralConnection(peripheral)
             }
             self.peripheral = nil
+        }
+    }
+
+    /// Pede de novo o retrato (bateria, cena, LDAC e jogo) sem derrubar a conexão.
+    func refresh() {
+        queue.async {
+            guard let peripheral = self.peripheral else { return }
+            self.requestState(peripheral)
         }
     }
 
@@ -92,6 +103,8 @@ final class QCYClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate,
     private func attach(_ peripheral: CBPeripheral) -> Bool {
         guard self.peripheral == nil else { return false }
         self.peripheral = peripheral
+        // Nova conexão, retrato novo: sem o reset o estado antigo sobrevive a um link caído.
+        state = QCYState()
         peripheral.delegate = self
         if peripheral.state == .connected {
             peripheral.discoverServices([service])
@@ -143,6 +156,8 @@ final class QCYClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate,
 
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         self.peripheral = nil
+        state = QCYState()
+        onDisconnect?()
         if error != nil { onFailure?("desconectou: \(error?.localizedDescription ?? "sem motivo informado")") }
         scan(central)
     }

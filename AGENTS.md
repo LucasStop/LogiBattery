@@ -44,7 +44,7 @@ Perfil: monolito · Stack: Swift (SwiftUI, XcodeGen) (ver `.projeto.yml`)
 - Distribuição: assinatura local (uso pessoal) agora; Developer ID e notarização depois, em issue própria. Bundle id e App Group definitivos desde já.
 - Só o app host acessa HID/IOKit; o widget lê `snapshot.json` do App Group (ADR 0001).
 - Protocolo HID++ atrás de protocolo Swift, com fixtures de frames em `Tests/Fixtures/hidpp/`; testes não dependem de hardware.
-- Alvos: `LogiBattery` (host), `LogiBatteryWidget`, `LogiBatteryTests`, `LogiBatteryUITests`. Pastas: `LogiBattery/{UI,Core/{Domain,HIDPP,Storage,Permissions,System}}`.
+- Alvos: `LogiBattery` (host), `LogiBatteryWidget`, `QCYBattery` (app separado do fone QCY, reusa `Core/BLE`; `--read-only` não escreve) e `QCYBatteryTests`, `LogiBatteryTests`, `LogiBatteryUITests`. Pastas: `LogiBattery/{UI,Core/{Domain,HIDPP,Storage,Permissions,System}}`.
 - Strings em `Localizable.xcstrings` (pt-BR e en). Sem log com série ou nome do usuário.
 
 ## Notas do projeto
