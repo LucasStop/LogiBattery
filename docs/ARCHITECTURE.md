@@ -147,5 +147,5 @@ O fone QCY MeloBuds Pro não fala HID++: o canal de controle é GATT proprietár
 
 - O estado não é empurrado em toda conexão: o cliente pede com `0xFE` ao terminar a descoberta.
 - MAC no advertising vem embaralhado (`[12]:[11]:[13]:[16]:[15]:[14]`) e os offsets do documento contam depois do company id. Errar um dos dois devolve MAC lixo.
-- O módulo lê e escreve (cena de ANC, LDAC, modo jogo) e **não está ligado à lista de aparelhos**: o PRD exclui protocolo proprietário de outra marca, e a bateria por lado não cabe no modelo de um número só. Ligar exige história no PRD (ou alvo separado) e protótipo aprovado; o protótipo do alvo separado está aprovado (T12) e a implementação é a #135.
+- O módulo lê e escreve (cena de ANC, LDAC, modo jogo). O LogiBattery usa só a leitura: `QCYLiveReader` e `QCYSides` preenchem `Device.sides` na linha do fone (US-16, T13, ADR 0006, #142); `percent` é o menor lado. Escrita fica no alvo separado QCYBattery (T12, #135, ADR 0005).
 
