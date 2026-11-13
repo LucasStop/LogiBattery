@@ -72,6 +72,7 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: QCY
         INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "Para ler a bateria do fone QCY e ajustar cancelamento de ruído, LDAC e modo jogo."
         CODE_SIGN_ENTITLEMENTS: QCYBattery/QCYBattery.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ENABLE_HARDENED_RUNTIME: YES
   QCYBatteryTests:
     type: bundle.unit-test
@@ -106,9 +107,14 @@ targets:
 schemes:
   LogiBattery:
     build:
-      targets: {LogiBattery: all, LogiBatteryWidget: all, QCYBattery: all}
+      targets: {LogiBattery: all, LogiBatteryWidget: all}
     test:
       targets: [LogiBatteryTests, QCYBatteryTests]
+  QCYBattery:
+    build:
+      targets: {QCYBattery: all}
+    test:
+      targets: [QCYBatteryTests]
   LogiBatteryUITests:
     build:
       targets: {LogiBattery: all, LogiBatteryUITests: all}
