@@ -104,18 +104,32 @@ struct DeviceReading: Equatable, Sendable {
     }
 }
 
+/// Parte de um aparelho com bateria própria: lados do fone QCY e o estojo (#142, ADR 0006).
+struct DeviceSide: Codable, Equatable, Sendable {
+    enum Part: String, Codable, Sendable {
+        case left, right, `case`
+    }
+
+    let side: Part
+    let percent: Int
+    let charging: Bool
+}
+
 struct Device: Codable, Equatable, Identifiable, Sendable {
     let id: String
     let name: String
     let kind: DeviceKind
+    /// Com `sides`, é o menor lado: regra de bateria baixa, ícone da barra, histórico e widget seguem sem mudança.
     let percent: Int?
     let chargeState: ChargeState
     let path: DevicePath
     let readAt: Date
+    /// Só o fone QCY preenche (ausente no `snapshot.json` antigo). Lado sem leitura não entra; o estojo só com leitura.
+    var sides: [DeviceSide]?
 
     /// `readAt` vai como `updatedAt` no `snapshot.json` (docs/API.md).
     enum CodingKeys: String, CodingKey {
-        case id, name, kind, percent, chargeState, path
+        case id, name, kind, percent, chargeState, path, sides
         case readAt = "updatedAt"
     }
 }

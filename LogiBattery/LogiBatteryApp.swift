@@ -83,10 +83,16 @@ private let discovery = HIDDiscovery()
 
 /// Descobre as interfaces a cada leitura: receptor ou aparelho conectado agora aparece sem reiniciar o app.
 /// Soma a bateria do Mac e de qualquer periférico Bluetooth conectado no macOS, deduplicando com HID++ (#88).
+private let qcyReader: any QCYReading = QCYLiveReader()
+
 private struct LiveScanner: DeviceScanning {
     func scan() async -> [Device] {
         let peripherals = await DeviceScanner(endpoints: discovery.endpoints()).scan()
-        let system = await SystemBatteries.read(now: .now)
+        var system = await SystemBatteries.read(now: .now)
+        // O macOS não sabe o nível do QCY (mostra "—" ou um valor errado): troca pelos lados medidos (#142).
+        if let index = system.firstIndex(where: \.isQCYHeadset), let sides = await qcyReader.read() {
+            system[index] = system[index].applying(qcy: sides)
+        }
         return DeviceDeduplicator.merge(peripherals + system)
     }
 }
