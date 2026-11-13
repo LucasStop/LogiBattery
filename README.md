@@ -8,6 +8,7 @@ Monitor de bateria de mouse e teclado Logitech para macOS, em widget e barra de 
 | [docs/PRD.md](docs/PRD.md) | Problema, solução, histórias e critérios de aceite |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Partes do sistema, dados, segurança, deploy |
 | [docs/HIDPP.md](docs/HIDPP.md) | Features HID++ medidas por aparelho e o que cada uma destrava |
+| [docs/QCY.md](docs/QCY.md) | Protocolo BLE do fone QCY medido e o que ele destrava |
 | [docs/TESTING.md](docs/TESTING.md) | Testes por parte, comandos e definição de pronto |
 | [docs/adr/](docs/adr/) | Decisões de arquitetura |
 | [DESIGN.md](DESIGN.md) | Design system (tokens, componentes, regras) |

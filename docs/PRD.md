@@ -61,6 +61,7 @@ Se a história envolve tela, ela aparece em [../design/telas.md](../design/telas
 - Atualização de firmware.
 
 ## Further Notes
+- Protocolo do fone QCY: a camada de leitura (bateria por lado e estojo, firmware, ANC, LDAC, modo jogo) está medida e implementada em `Core/BLE`, com referência em [QCY.md](QCY.md), mas **não está ligada** à lista de aparelhos. O "Out of Scope" acima ainda exclui protocolo de marca terceira; ligar exige história nova aqui (ou alvo separado) e protótipo aprovado.
 - Os modelos exatos e o PID do receptor do Lucas são descobertos no primeiro run (`ioreg -p IOUSB -l`).
 - Aparelhos antigos usam HID++ 1.0 e ficam fora do MVP se não houver hardware para testar.
 - Licença MIT; repositório público.
