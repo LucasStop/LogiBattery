@@ -3,11 +3,6 @@ import Foundation
 /// Leitura de um aparelho por HID++ 2.0 (nome, tipo e bateria). Um índice de receptor, uma sessão.
 struct HIDPPSession: Sendable {
     // Features usadas: Root `0x0000`, DeviceName `0x0005`, e bateria `0x1004`, `0x1000` ou `0x1001` (#89).
-    private static let deviceNameFeature: UInt16 = 0x0005
-    private static let unifiedBatteryFeature: UInt16 = 0x1004
-    private static let batteryLevelStatusFeature: UInt16 = 0x1000
-    private static let batteryVoltageFeature: UInt16 = 0x1001
-
     let transport: any HIDPPTransport
     let deviceIndex: UInt8
 
@@ -27,7 +22,7 @@ struct HIDPPSession: Sendable {
     }
 
     private func readIdentity() async throws -> (name: String, kind: DeviceKind) {
-        let feature = try await featureIndex(Self.deviceNameFeature)
+        let feature = try await featureIndex(HIDPPFeatureID.deviceName)
         let count = Int(try await call(feature, function: 0).params[0])
         var name = [UInt8]()
         while name.count < count {
@@ -42,18 +37,36 @@ struct HIDPPSession: Sendable {
     }
 
     private func readBattery() async throws -> (percent: Int, chargeState: ChargeState) {
-        if let feature = try? await featureIndex(Self.unifiedBatteryFeature) {
+        if let feature = try? await featureIndex(HIDPPFeatureID.unifiedBattery) {
             let params = try await call(feature, function: 1).params
             return (Int(params[0]), ChargeState(unifiedBatteryStatus: params[2]))
         }
-        if let feature = try? await featureIndex(Self.batteryLevelStatusFeature) {
+        if let feature = try? await featureIndex(HIDPPFeatureID.batteryLevelStatus) {
             let params = try await call(feature, function: 0).params
             return (Int(params[0]), ChargeState(batteryLevelStatus: params[2]))
         }
-        let feature = try await featureIndex(Self.batteryVoltageFeature)
+        let feature = try await featureIndex(HIDPPFeatureID.batteryVoltage)
         let params = try await call(feature, function: 0).params
         let millivolts = Int(params[0]) << 8 | Int(params[1])
         return (DeviceReading.percent(fromMillivolts: millivolts), ChargeState(voltageFlags: params[2]))
+    }
+
+    /// Tabela de features do aparelho (`0x0001`): o que o firmware realmente expõe, com a versão de cada uma.
+    /// Fora do ciclo de bateria de propósito — cada chamada custa uma troca por feature.
+    func featureTable() async throws -> HIDPPFeatureTable {
+        let featureSet = try await featureIndex(HIDPPFeatureID.featureSet)
+        let count = Int(try await call(featureSet, function: 0).params[0])
+        guard count > 0 else { return HIDPPFeatureTable(entries: []) }
+        var entries: [HIDPPFeature] = []
+        for slot in 1...UInt8(min(count, Int(UInt8.max))) {
+            let params = try await call(featureSet, function: 1, params: [slot]).params
+            let id = UInt16(params[0]) << 8 | UInt16(params[1])
+            guard id != 0 else { continue }
+            // Byte 2 = versão no nibble alto e tipo no baixo (hidpp20.py, FeatureSet.get_feature).
+            entries.append(HIDPPFeature(slot: slot, id: id,
+                                        type: params[2] & 0x0F, version: params[2] >> 4))
+        }
+        return HIDPPFeatureTable(entries: entries)
     }
 
     private func call(_ feature: UInt8, function: UInt8, params: [UInt8] = []) async throws -> HIDPPFrame {

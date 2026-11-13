@@ -9,6 +9,7 @@ Perfil: monolito · Stack: Swift (SwiftUI, XcodeGen) (ver `.projeto.yml`)
 ## Documentação (ler antes de mexer)
 - [docs/PRD.md](docs/PRD.md): problema, histórias e critérios de aceite
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): partes do sistema e decisões (ADR em docs/adr/)
+- [docs/HIDPP.md](docs/HIDPP.md): features HID++ medidas por aparelho e o que cada uma destrava
 - [docs/TESTING.md](docs/TESTING.md): quais testes valem para cada parte e como rodar
 - [DESIGN.md](DESIGN.md): design system
 - [design/telas.md](design/telas.md): inventário de telas e aprovação
@@ -30,6 +31,7 @@ Perfil: monolito · Stack: Swift (SwiftUI, XcodeGen) (ver `.projeto.yml`)
 - Build: `xcodebuild -scheme LogiBattery -configuration Release build`
 - Testes: `xcodebuild test -scheme LogiBattery -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO` (sem assinar: App Group exige certificado) · E2E: `xcodebuild test -scheme LogiBatteryUITests -destination 'platform=macOS'`
 - Lint/typecheck: `swiftlint --strict`
+- Dump de features HID++: `swiftc -O tools/hidpp-dump/main.swift LogiBattery/Core/HIDPP/HIDPPFeatures.swift -o /tmp/hidpp-dump && /tmp/hidpp-dump` (somente leitura; `HIDPP_RECORD=<arquivo>` grava a fixture)
 
 ## Convenções
 - Swift 6 + SwiftUI (AppKit/UIKit onde preciso); projeto gerado por XcodeGen (`project.yml` é a fonte, `.xcodeproj` não se edita à mão); alvo macOS 14+.
@@ -43,6 +45,7 @@ Perfil: monolito · Stack: Swift (SwiftUI, XcodeGen) (ver `.projeto.yml`)
 - Strings em `Localizable.xcstrings` (pt-BR e en). Sem log com série ou nome do usuário.
 
 ## Notas do projeto
-- Sem variáveis de ambiente nem rede. Hardware do Lucas: mouse e teclado Logitech por receptor e por Bluetooth; modelos e PID do receptor saem de `ioreg -p IOUSB -l` no primeiro run.
-- Receptores: Unifying `0xC52B`, Bolt `0xC548`, Lightspeed `0xC539`/`0xC547`. Features de bateria: `0x1004`, `0x1000`, `0x1001`.
-- Estado: fundação e docs em rascunho. Próximos passos: aprovar protótipos (`design/telas.md`), aprovar arquitetura e testes, aprovar BACKLOG e rodar `criar-issues.sh --criar`.
+- Sem variáveis de ambiente nem rede. Hardware do Lucas: MX Master 3S no receptor Bolt `0xC548` (índice 2, HID++ 4.5) e também por Bluetooth `0xB034`; teclado G PRO X TKL no receptor Lightspeed `0xC547` (índice 1, HID++ 4.2) e também por Bluetooth `0xB382`.
+- Receptores: Unifying `0xC52B`, Bolt `0xC548`, Lightspeed `0xC539`/`0xC547`.
+- Features medidas em 2026-11-12 (`docs/HIDPP.md`): bateria nos dois é `0x1004` (slot 7/8); teclado tem `0x8060` ReportRate, `0x8071` RgbEffects, `0x8081` PerKeyLightingV2, `0x8040` BrightnessControl, `0x8100` OnboardProfiles, `0x40A3`; mouse tem `0x2201` DPI, `0x2110` SmartShift, `0x2121` HiResWheel, `0x1B04`, `0x1814`/`0x1815`, `0x2250`/`0x2251`. Nenhum dos dois tem `0x1000`/`0x1001`.
+- Estado: fundação e docs em rascunho. Próximos passos: aprovar protótipos (`design/telas.md`), aprovar arquitetura e testes, aprovar BACKLOG e rodar `criar-issues.sh --criar`. Escrita de configuração (RGB, DPI, perfil onboard) ainda não existe e depende de definir quem é dono do Bolt com o Options+ aberto.

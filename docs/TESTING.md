@@ -15,7 +15,7 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 | Parte | Risco principal | Tipos aplicados | Ferramenta | Roda em | Fora de escopo e motivo |
 |---|---|---|---|---|---|
 | Domínio (dedupe, regra de aviso, política de leitura) | Aviso repetido ou perdido, duplicata de aparelho | estático, unitário, aceitação | Swift Testing / XCTest | local, PR | Mutação só no núcleo crítico (custo) |
-| HID++ (transporte e protocolo) | Frame mal interpretado, bateria errada, voltagem mal convertida | unitário (frames gravados), contrato do protocolo, smoke com hardware | Swift Testing com frames gravados e fake de `IOHIDDevice`; smoke manual com receptor e Bluetooth | local, PR (sem hardware) | Hardware real fora do CI; HID++ 1.0 fora do MVP |
+| HID++ (transporte e protocolo) | Frame mal interpretado, bateria errada, voltagem mal convertida, tabela de features lida errada | unitário (frames gravados), contrato do protocolo, smoke com hardware | Swift Testing com frames gravados e fake de `IOHIDDevice`; smoke manual com receptor e Bluetooth | local, PR (sem hardware) | Hardware real fora do CI; HID++ 1.0 fora do MVP |
 | Bateria do sistema (Mac e fone Bluetooth) | % errado, estado de carga trocado, fone desligado que não some | unitário (dicionário do `IOPowerSources` gravado, níveis do fone) | XCTest (`SystemBatteriesTests`, `KeepLastReadingTests`) | local, PR | Leitura real do `IOPowerSources` e do `IOBluetooth` só no smoke manual: depende do hardware e da permissão de Bluetooth |
 | Persistência (snapshot e histórico) | Snapshot corrompido, histórico perdido, retenção errada | integração, migração | XCTest com App Group em diretório temporário; teste de migração de schema (quando houver) | PR | |
 | Permissões do sistema (Input Monitoring, Bluetooth) | Leitura vazia sem explicação, entitlement faltando | unitário (estado), segurança | XCTest com fake de `IOHIDCheckAccess`; gitleaks + revisão de entitlements | PR | Fluxo real do painel de Privacidade só manual |
@@ -60,7 +60,7 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 - Cada teste no nível mais baixo que pega o defeito; sem repetir caso de borda entre níveis.
 - Teste de regra de negócio nasce antes ou junto do código (TDD, `/tdd`).
 - Dependência externa nunca é real nos testes automatizados de PR: usar fake, stub ou servidor de teste. Produção nunca.
-- Dados de teste: frames HID++ gravados em fixtures (`Tests/Fixtures/hidpp/`), sem série real; snapshots JSON de exemplo.
+- Dados de teste: frames HID++ gravados em fixtures (`Tests/Fixtures/hidpp/`), sem série real; snapshots JSON de exemplo. Bateria: `bolt-*.txt`, `lightspeed-*.txt`, `bluetooth-*.txt`; tabela de features: `features-*.txt`, geradas por `tools/hidpp-dump` e testadas em `HIDPPFeatureTableTests`.
 - Flaky: corrigir ou quarentenar com issue em até 1 semana; nunca reexecutar até passar.
 - Cobertura: sem gate no CI e sem número no relatório (fora por escolha do Lucas: suíte pequena, revisão pega o buraco). Se entrar, 80% sobre Domínio e HID++, como alarme e não meta.
 - Desempenho: o baseline é contagem determinística (trocas, timeouts, aparelhos em voo), nunca segundos. O `measure` do XCTest guarda o baseline por máquina e o runner do GitHub muda a cada job, então ele serve só para tendência local e não tem baseline commitado. Orçamento estourado é teste vermelho e aparece na Regressão do relatório.
