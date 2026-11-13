@@ -21,7 +21,7 @@ Inventário. `-` quando a parte não existe.
 | Site público | Landing com download, prints e apoio por Pix; pt-BR, en, es; claro e escuro | HTML, CSS e JS estáticos, GitHub Pages (`deploy-site.yml`) | `site/`, design system em DESIGN.md §9 | Release do GitHub (link de download) | Não (a chave Pix é pública, de doação) |
 | API / backend | - | - | - | - | - |
 | Domínio | Modelo de aparelho, deduplicação, regras de aviso, política de leitura | Swift puro | `LogiBattery/Core/Domain` | HIDPP (via protocolo) | Não |
-| HID++ (transporte e protocolo) | Enumerar receptores e Bluetooth, falar HID++ 1.0/2.0, ler bateria e carga | `IOHIDManager`, Swift | `LogiBattery/Core/HIDPP` | Sistema (IOKit) | Número de série do aparelho |
+| HID++ (transporte e protocolo) | Enumerar receptores e Bluetooth, falar HID++ 1.0/2.0, ler bateria, carga e a tabela de features | `IOHIDManager`, Swift | `LogiBattery/Core/HIDPP` | Sistema (IOKit) | Número de série do aparelho |
 | Bateria do sistema | Ler a bateria interna do Mac e a de fone Bluetooth conectado (US-13) | `IOPowerSources`, `IOBluetooth` (chaves KVC privadas) | `LogiBattery/Core/System/SystemBatteries.swift` | Sistema | Não |
 | Persistência | Snapshot JSON e histórico de leituras no App Group | JSON + SwiftData (ou SQLite) | `LogiBattery/Core/Storage` | App Group | Não |
 | Autenticação e permissões | Estado de Input Monitoring e Bluetooth, guia ao painel de Privacidade | TCC, `IOHIDCheckAccess` | `LogiBattery/Core/Permissions` | Sistema | Não |
@@ -110,3 +110,19 @@ Achados que viram regra do parser:
 - Respostas chegam fora de ordem e misturadas com eventos: casar resposta por índice, feature e função+sw, nunca pegar "o próximo frame".
 - Feature de bateria nos dois aparelhos é `0x1004`; `0x1000` e `0x1001` não foram observadas e não foram implementadas.
 - Bluetooth (US-02, 2026-10-29): os aparelhos aparecem no `IOHIDManager` com transporte `Bluetooth Low Energy` (MX Master 3S `0xB034`, PRO X TKL `0xB382`), só com as interfaces genéricas de mouse e teclado, sem página `0xFF43`. Mesmo assim respondem ao long report `0x11` com índice `0xFF`, com os mesmos frames e a mesma feature `0x1004` do receptor (fixtures `bluetooth-*.txt`). Receptor ou Bluetooth do mesmo aparelho aparecem hoje como dois itens; a deduplicação é a US-03 (#14).
+
+### 11.1 Tabela de features (2026-11-12)
+
+`tools/hidpp-dump/` lê a feature `0x0001` e despeja a tabela completa de cada aparelho; `HIDPPSession.featureTable()` faz o mesmo dentro do app, com o catálogo em `HIDPPFeatureCatalog`. Referência completa, feature por feature e o que cada bloco destrava: [HIDPP.md](HIDPP.md).
+
+| Aparelho | Índice | Features | Achados que mudam o plano |
+|---|---|---|---|
+| PRO X TKL | 1 | 33 | `0x8060` ReportRate, `0x8071` RgbEffects, `0x8081` PerKeyLightingV2, `0x8040` BrightnessControl, `0x8100` OnboardProfiles, `0x40A3` K375sFnInversion, `0x1E00`; **sem** `0x8070` e **sem** `0x8061` |
+| MX Master 3S | 2 | 35 | `0x2201` AdjustableDpi, `0x2110` SmartShift, `0x2121` HiResWheel, `0x1B04` ReprogControlsV4, `0x1814`/`0x1815`, `0x2250`/`0x2251` (diagnóstico), `0x1E00`; **sem** `0x2202` e **sem** `0x2111` |
+
+- A versão de cada feature vem no nibble alto do byte 3 da resposta (`versão << 4 | tipo`); o slot, não o ID, é o que entra no byte 2 dos frames seguintes.
+- O catálogo só nomeia ID com evidência (tabela do Solaar ou documento do projeto). ID desconhecido sai em hex — nome inventado sugere capacidade que o firmware pode não ter.
+- Leitura da tabela custa uma troca por feature (~35 por aparelho) e fica fora do ciclo de bateria.
+- Com o aparelho dormindo, o Bolt pode responder depois de ~0,6 s: o dump espera 1,6 s no primeiro frame e para cedo no erro HID++ 1.0 `10 idx 8F`.
+- Escrita (RGB, DPI, perfil onboard) ainda não existe. Antes de existir precisa de dono único do Bolt, porque o Options+ reaplica o perfil dele.
+
