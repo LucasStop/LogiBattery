@@ -1,0 +1,142 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T12 · Módulo QCY (alvo separado)</title><link rel="stylesheet" href="proto.css">
+<style>
+/* Só deste protótipo (#132/#134). Janela de app separado, não é o popover do LogiBattery. */
+.qcy{width:468px}
+.qcy .bd{gap:var(--s3)}
+.hdr{display:flex;align-items:center;gap:var(--s3);padding:0 var(--s1)}
+.hdr .ic{width:44px;height:44px;border-radius:10px;background:var(--raised);display:grid;place-items:center;color:var(--fg);flex:none}
+.hdr .ic .sf{font-size:26px}
+.hdr .t{flex:1;min-width:0}
+.hdr .t b{display:block;font-size:15px;line-height:19px}
+.bat{display:grid;gap:var(--s2);padding:var(--s4) var(--s3) var(--s3)}
+.bat .slot{display:grid;justify-items:center;gap:var(--s2)}
+.bat .ring{width:54px}
+.bat .ring .num{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--fg)}
+.bat .none .num{font-size:11px;color:var(--muted)}
+.bat .lbl{font-size:11px;line-height:14px;color:var(--muted)}
+.bat .lbl b{display:block;font-size:12px;line-height:15px;color:var(--fg);font-weight:500}
+.foot{padding:0 var(--s3) var(--s3);text-align:center;font-size:11px;color:var(--muted)}
+.dis{opacity:.55}
+.dis .sw,.dis .seg button{cursor:default}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none;border-top-color:var(--border);border-left-color:var(--primary)}}
+.banner.info{border-left-color:var(--info)}
+.banner.warn{border-left-color:var(--warning)}
+.banner.ok{border-left-color:var(--success)}
+.banner .what{flex:1;min-width:0}
+.banner small{display:block;color:var(--muted);font-size:11px;line-height:14px;margin-top:2px}
+.row.stack{flex-direction:column;align-items:stretch;gap:var(--s2)}
+.row.stack .seg{display:flex}
+.row.stack .seg button{flex:1}
+.note{max-width:82ch;margin:0 0 var(--s5)}
+.note li{margin-bottom:var(--s1)}
+.tbl{border-collapse:collapse;margin:0 0 var(--s5);font-size:12px}
+.tbl th,.tbl td{text-align:left;padding:6px 12px;border-bottom:1px solid #ddd}
+.tbl th{font-weight:600;color:#6e6e73}
+</style></head><body>
+<h1>T12 · Módulo QCY, alvo separado</h1>
+<p class="lead">Janela do app do fone, separada do LogiBattery: o PRD exclui protocolo de marca terceira da lista de aparelhos e a bateria por lado não cabe no modelo de um número só (ADR 0005). Este protótipo cobre leitura e escrita, porque as três escritas foram medidas no fone em 2026-11-13. Estados: padrão, carregando, sem conexão, aplicando, erro de escrita e somente leitura, em claro e escuro. Valores reais do fone do Lucas: 90 / 91 %, firmware 2.0.6.</p>
+
+<ul class="note">
+<li><b>O que a tela lê:</b> bateria do lado esquerdo e do direito; firmware por lado; estado da conexão. O sistema mostra 100% quando o fone reporta 90–91%, e a tela usa o número do fone.</li>
+<li><b>O que a tela escreve:</b> cena de ANC (<code>0x17</code>), LDAC (<code>0x23</code>) e modo jogo (<code>0x09</code>). Todos persistem na reconexão.</li>
+<li><b>Sem bateria do estojo:</b> este modelo manda <code>0x00</code> no byte do estojo mesmo com os fones encaixados e a tampa aberta, e com a tampa fechada não anuncia nada. Medido em 2026-11-13. Por isso a tela mostra só os dois lados; se algum modelo reportar, o terceiro anel entra.</li>
+<li><b>LDAC derruba o link por um instante</b> ao trocar; a tela avisa e volta sozinha.</li>
+</ul>
+
+<table class="tbl">
+<caption class="caption" style="text-align:left;padding-bottom:6px">Cena de ANC medida no fone (`0x17 modo/subcena/profundidade`)</caption>
+<tr><th>Modo</th><th>Envio</th><th>Resposta do fone</th></tr>
+<tr><td>ANC</td><td><code>01/02/03</code></td><td><code>01 02 03</code></td></tr>
+<tr><td>Normal (desligado)</td><td><code>02/00/00</code></td><td><code>02 00 00</code> (normaliza a subcena)</td></tr>
+<tr><td>Transparência</td><td><code>03/02/00</code></td><td><code>03 02 00</code></td></tr>
+</table>
+
+<div id="root"></div>
+<script src="symbols.js"></script><script src="custom-symbols.js"></script>
+<script>
+const S={
+  padrao:{conn:1,l:90,r:91,fw:'2.0.6',anc:'trans',ldac:0,game:0},
+  carregando:{loading:1},
+  semConexao:{conn:0},
+  aplicando:{conn:1,l:90,r:91,fw:'2.0.6',anc:'anc',ldac:0,game:0,pending:'anc'},
+  erroEscrita:{conn:1,l:90,r:91,fw:'2.0.6',anc:'trans',ldac:0,game:0,error:1},
+  somenteLeitura:{conn:1,l:90,r:91,fw:'2.0.6',anc:'trans',ldac:0,game:0,readonly:1}
+};
+
+const level=p=>p==null?'none':p<=20?'crit':p<=40?'low':p<=80?'ok':'full';
+const ring=(p,lbl,name)=>`<div class="slot ${lbl==='Sem leitura'?'none':level(p)}" role="group" aria-label="${name}: ${lbl==='Sem leitura'?'sem leitura':p+'%'}">
+  <div class="ring" style="--p:${p==null?0:p}" aria-hidden="true"><span class="num">${p==null?'—':p+'%'}</span></div>
+  <span class="lbl"><b>${name}</b>${lbl}</span></div>`;
+
+const batSlot=(s,name,p)=>s.loading?`<div class="slot"><div class="ring" style="--p:0" aria-hidden="true"><span class="num"><span class="skeleton" style="width:22px;height:9px"></span></span></div><span class="lbl"><b>${name}</b><span class="skeleton" style="width:44px;height:7px"></span></span></div>`
+  :s.conn?ring(p,p==null?'Sem leitura':(p<20?'Baixa':'Bateria'),name)
+  :`<div class="slot none"><div class="ring" style="--p:0" aria-hidden="true"><span class="num">—</span></div><span class="lbl"><b>${name}</b>Sem conexão</span></div>`;
+
+const seg=(s,off)=>`<div class="seg" role="group" aria-label="Cancelamento de ruído">
+  <button ${s.anc==='anc'?'aria-pressed="true"':'aria-pressed="false"'} ${off?'tabindex="-1"':''}>ANC</button>
+  <button ${s.anc==='off'?'aria-pressed="true"':'aria-pressed="false"'} ${off?'tabindex="-1"':''}>Normal</button>
+  <button ${s.anc==='trans'?'aria-pressed="true"':'aria-pressed="false"'} ${off?'tabindex="-1"':''}>Transparência</button></div>`;
+
+const sw=(on,label,off)=>`<input class="sw" type="checkbox" role="switch" aria-label="${label}" ${on?'checked':''} ${off?'disabled tabindex="-1"':''}>`;
+
+const banner=(s)=>{
+  if(s.error)return `<div class="banner" role="alert"><div class="what"><b>O fone não respondeu</b><small>A cena anterior foi mantida. Se o ajuste falhar de novo, reconecte o fone.</small><div style="margin-top:8px"><button class="btn">Tentar de novo</button></div></div></div>`;
+  if(s.pending)return `<div class="banner info" role="status"><div class="what"><b><span class="spin" aria-hidden="true"></span>Aplicando no fone…</b><small>Não feche a janela. O ajuste volta aqui quando o fone confirmar.</small></div></div>`;
+  if(s.loading)return '';
+  if(!s.conn)return `<div class="banner warn" role="status"><div class="what"><b>Sem conexão</b><small>Ligue o fone e aproxime do Mac. O app reconecta sozinho.</small><div style="margin-top:8px"><button class="btn">Procurar de novo</button></div></div></div>`;
+  if(s.readonly)return `<div class="banner info" role="note"><div class="what"><b>Somente leitura</b><small>Os controles ficam desligados e nenhuma escrita é enviada ao fone.</small></div></div>`;
+  return '';
+};
+
+const win=(s)=>{
+  const off=!s.conn||s.loading||s.pending||s.readonly;
+  return `<div class="window qcy">
+  <div class="tb">QCY MeloBuds Pro</div>
+  <div class="bd">
+    <div class="hdr">
+      <span class="ic" data-i="${s.conn?'lb.headphones.bluetooth':'headphones'}"></span>
+      <div class="t"><b>MeloBuds Pro</b><span class="caption">${s.loading?'Lendo…':s.conn?'Conectado · Bluetooth LE':'Desconectado'}</span></div>
+      <span class="badge ${s.conn?'ok':'none'}">${s.loading?'Lendo':s.conn?'Conectado':'Sem conexão'}</span>
+    </div>
+    <div class="group"><div class="bat" style="grid-template-columns:repeat(2,1fr)">
+      ${batSlot(s,'Esquerdo',s.l)}${batSlot(s,'Direito',s.r)}
+    </div>
+    <div class="foot">${s.loading?'Lendo…':s.conn?'Atualizado agora · leitura a cada 30 s':'Última leitura há 12 min'}</div></div>
+    ${banner(s)}
+    <div class="group ${off?'dis':''}">
+      <div class="row stack"><label>Cancelamento de ruído<small>${s.pending==='anc'?'Aplicando…':'Cena gravada no fone e mantida entre conexões'}</small></label>${seg(s,off)}</div>
+      <div class="row"><label>LDAC<small>Áudio de alta resolução. A conexão cai por um instante ao trocar.</small></label>${sw(s.ldac,'LDAC',off)}</div>
+      <div class="row"><label>Modo jogo<small>Menor latência, com perda de qualidade</small></label>${sw(s.game,'Modo jogo',off)}</div>
+    </div>
+    <div class="group">
+      <div class="row"><label>Firmware<small>Esquerdo / direito</small></label><span class="tabular ${s.loading?'':''}">${s.loading?'<span class="skeleton" style="width:64px;height:12px"></span>':s.conn?(s.fw+' / '+s.fw):'—'}</span></div>
+      <div class="row"><label>Endereço<small>MAC de controle</small></label><span class="tabular muted">${s.conn?'84:AC:60:E9:90:6E':'—'}</span></div>
+    </div>
+  </div></div>`;
+};
+
+const states=[
+  ['padrao','Padrão (conectado)','Transparência selecionada; LDAC e jogo desligados'],
+  ['carregando','Carregando (nunca zero)','Leitura em curso; controles desligados até o retrato chegar'],
+  ['semConexao','Sem conexão','Fone fora de alcance ou desligado'],
+  ['aplicando','Aplicando escrita','Cena enviada, esperando confirmação do fone'],
+  ['erroEscrita','Erro de escrita','Fone não respondeu; estado anterior mantido'],
+  ['somenteLeitura','Somente leitura','Modo sem escrita, para quando o módulo não deve mudar o fone']
+];
+
+document.getElementById('root').innerHTML=states.map(([k,h,sub])=>
+  `<section class="state"><h2>${h}</h2><p class="caption" style="margin:-4px 0 12px">${sub}</p><div class="pair">${win(S[k])}</div></section>`).join('');
+
+document.getElementById('root').insertAdjacentHTML('beforeend',
+  `<section class="state"><h2>Notas de implementação</h2>
+   <ul class="note">
+   <li>O alvo é um app separado, com bundle e permissão de Bluetooth próprios. A leitura convive com o áudio A2DP ativo.</li>
+   <li>Sem controle de modo simples (<code>0x0C</code>): o MeloBuds Pro não responde e o envio não muda nada. A cena <code>0x17</code> é a única via.</li>
+   <li>Depois de escrever a cena, o fone devolve <code>28 01 01</code>, um comando ainda não documentado; a tela ignora.</li>
+   <li>Toda escrita é otimista e confirmada pela notificação: a tela só muda o controle depois do eco do fone, e volta ao valor anterior em caso de erro ou de link caído.</li>
+   <li>Estojo: testado encaixado e com a tampa aberta (fones a 83%+ e 84%+, carregando) e com a tampa fechada. O byte do estojo ficou em <code>0x00</code> e com a tampa fechada o fone nem anuncia. Não é estado transitório, é ausência no firmware 2.0.6.</li>
+   <li>Sem menu de barra, sem widget e sem histórico nesta etapa: a janela é o único ponto de entrada.</li>
+   </ul></section>`);
+</script><script src="proto.js"></script></body></html>
