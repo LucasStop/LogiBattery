@@ -22,7 +22,7 @@ Inventário. `-` quando a parte não existe.
 | API / backend | - | - | - | - | - |
 | Domínio | Modelo de aparelho, deduplicação, regras de aviso, política de leitura | Swift puro | `LogiBattery/Core/Domain` | HIDPP (via protocolo) | Não |
 | HID++ (transporte e protocolo) | Enumerar receptores e Bluetooth, falar HID++ 1.0/2.0, ler bateria, carga e a tabela de features | `IOHIDManager`, Swift | `LogiBattery/Core/HIDPP` | Sistema (IOKit) | Número de série do aparelho |
-| BLE do fone QCY (protocolo proprietário) | Ler bateria por lado e do estojo, firmware, ANC, LDAC e modo jogo do fone | `CoreBluetooth`, Swift | `LogiBattery/Core/BLE` | Sistema (CoreBluetooth) | Endereço MAC do fone |
+| BLE do fone QCY (protocolo proprietário) | Ler bateria por lado e do estojo, firmware, ANC, LDAC e modo jogo do fone | `CoreBluetooth`, Swift | `LogiBattery/Core/BLE`; janela no alvo `QCYBattery/` (app separado, ADR 0005) | Sistema (CoreBluetooth) | Endereço MAC do fone |
 | Bateria do sistema | Ler a bateria interna do Mac e a de fone Bluetooth conectado (US-13) | `IOPowerSources`, `IOBluetooth` (chaves KVC privadas) | `LogiBattery/Core/System/SystemBatteries.swift` | Sistema | Não |
 | Persistência | Snapshot JSON e histórico de leituras no App Group | JSON + SwiftData (ou SQLite) | `LogiBattery/Core/Storage` | App Group | Não |
 | Autenticação e permissões | Estado de Input Monitoring e Bluetooth, guia ao painel de Privacidade | TCC, `IOHIDCheckAccess` | `LogiBattery/Core/Permissions` | Sistema | Não |
