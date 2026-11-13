@@ -53,3 +53,9 @@ struct PermissionBanner: View {
         .accessibilityElement(children: .combine)
     }
 }
+
+#if DEBUG
+#Preview("Guia de permissão") {
+    PermissionView(model: PermissionModel(access: PreviewAccess(status: .denied)))
+}
+#endif

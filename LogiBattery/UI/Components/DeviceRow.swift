@@ -121,3 +121,14 @@ extension DeviceSide.Part {
         }
     }
 }
+
+#if DEBUG
+#Preview("Cartões") {
+    VStack(spacing: 8) {
+        DeviceRow(device: Sample.mouse)
+        DeviceRow(device: Sample.keyboard, gray: true)
+        DeviceRow(device: Sample.headphones)
+    }
+    .padding().frame(width: 360)
+}
+#endif

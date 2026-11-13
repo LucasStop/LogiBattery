@@ -294,3 +294,17 @@ private struct CaseTooltip: View {
         }
     }
 }
+
+#if DEBUG
+#Preview("Com aparelhos") {
+    let model = DeviceListViewModel(scanner: PreviewScanner(devices: Sample.all))
+    DeviceList(viewModel: model, permission: PermissionModel(access: PreviewAccess(status: .granted)))
+        .task { await model.refresh() }
+}
+
+#Preview("Sem permissão") {
+    let model = DeviceListViewModel(scanner: PreviewScanner(devices: []))
+    DeviceList(viewModel: model, permission: PermissionModel(access: PreviewAccess(status: .denied)))
+        .task { await model.refresh() }
+}
+#endif

@@ -75,7 +75,7 @@ struct QCYView: View {
         if model.writeFailed {
             QCYBanner(tint: BatteryLevel.critical.color, title: "qcy.error.title", detail: "qcy.error.detail",
                       action: ("qcy.error.retry", { model.retryAfterFailure() }))
-                .accessibilityAddTraits(.isModal)
+            .accessibilityAddTraits(.isModal)
         } else if model.pending != nil {
             QCYBanner(tint: Color(light: 0x2B6CB0, dark: 0x63B3ED), title: "qcy.pending.title",
                       detail: "qcy.pending.detail", spinner: true)
@@ -93,27 +93,63 @@ struct QCYView: View {
     private var controlsGroup: some View {
         QCYGroup {
             VStack(spacing: 0) {
-                VStack(alignment: .leading, spacing: 8) {
+
+                VStack(alignment: .leading, spacing: 10) {
                     QCYLabel(title: "qcy.anc.title", hint: model.pending.isANC ? "qcy.pending.short" : "qcy.anc.hint")
-                    Picker("qcy.anc.title", selection: Binding(
-                        get: { model.ancSelection }, set: { if let choice = $0 { model.select(choice) } })) {
-                        Text("qcy.anc.anc").tag(QCYANCChoice?.some(.anc))
-                        Text("qcy.anc.normal").tag(QCYANCChoice?.some(.normal))
-                        Text("qcy.anc.transparency").tag(QCYANCChoice?.some(.transparency))
+
+                    HStack(spacing: 0) {
+                        ForEach([
+                            (QCYANCChoice.anc, LocalizedStringKey("qcy.anc.anc")),
+                            (QCYANCChoice.normal, LocalizedStringKey("qcy.anc.normal")),
+                            (QCYANCChoice.transparency, LocalizedStringKey("qcy.anc.transparency"))
+                        ], id: \.0) { choice, label in
+                            let isSelected = model.ancSelection == choice
+
+                            Button {
+                                model.select(choice)
+                            } label: {
+                                Text(label)
+                                    .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
+                                    .foregroundStyle(isSelected ? Color.white : Color.primary)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 6)
+                                    .background(isSelected ? Color.accentColor : Color.clear,
+                                                in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityAddTraits(isSelected ? .isSelected : [])
+                        }
                     }
-                    .pickerStyle(.segmented).labelsHidden()
+                    .accessibilityElement(children: .contain)
+                    .accessibilityLabel("qcy.anc.title")
+                    .padding(2)
+                    .background(.quaternary, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(12)
+
+                Divider()
+
+                HStack {
+                    QCYLabel(title: "qcy.ldac.title", hint: "qcy.ldac.hint")
+                    Spacer()
+                    Toggle("qcy.ldac.title", isOn: Binding(get: { model.isLDACOn }, set: { model.setLDAC($0) }))
+                        .labelsHidden()
+                        .toggleStyle(.switch)
                 }
                 .padding(12)
+
                 Divider()
-                Toggle(isOn: Binding(get: { model.isLDACOn }, set: { model.setLDAC($0) })) {
-                    QCYLabel(title: "qcy.ldac.title", hint: "qcy.ldac.hint")
-                }
-                .toggleStyle(.switch).padding(12)
-                Divider()
-                Toggle(isOn: Binding(get: { model.isGameOn }, set: { model.setGame($0) })) {
+
+                HStack {
                     QCYLabel(title: "qcy.game.title", hint: "qcy.game.hint")
+                    Spacer()
+                    Toggle("qcy.game.title", isOn: Binding(get: { model.isGameOn }, set: { model.setGame($0) }))
+                        .labelsHidden()
+                        .toggleStyle(.switch)
                 }
-                .toggleStyle(.switch).padding(12)
+                .padding(12)
+
             }
             .disabled(model.areControlsDisabled)
             .opacity(model.areControlsDisabled && model.pending == nil ? 0.55 : 1)
@@ -194,7 +230,7 @@ private struct QCYRing: View {
     private var percent: Int? { phase == .connected ? level?.percent : nil }
     private var tint: Color {
         level?.isCharging == true ? Color(light: 0x2B6CB0, dark: 0x63B3ED)
-            : BatteryLevel(percent: percent).color
+        : BatteryLevel(percent: percent).color
     }
 
     var body: some View {
@@ -264,3 +300,10 @@ private struct QCYBanner: View {
         .accessibilityElement(children: .contain)
     }
 }
+
+#if DEBUG
+#Preview("Conectado") { QCYView(model: previewModel(.connected)) }
+#Preview("Somente leitura") { QCYView(model: previewModel(.connected, readOnly: true)) }
+#Preview("Lendo") { QCYView(model: previewModel(.loading)) }
+#Preview("Sem conexão") { QCYView(model: previewModel(.disconnected)) }
+#endif

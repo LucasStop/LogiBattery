@@ -37,3 +37,7 @@ struct HistoryView: View {
         }
     }
 }
+
+#if DEBUG
+#Preview("Histórico") { HistoryView() }
+#endif
