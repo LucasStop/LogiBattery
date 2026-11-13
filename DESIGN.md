@@ -345,3 +345,6 @@ Nenhuma tela é desenvolvida sem protótipo aprovado. O inventário e o status d
 
 ## Ícone do app
 Opção A aprovada por Lucas em 2026-10-29: anel de carga verde (gradiente `#5EE59A` a `#1F9D55`) sobre fundo escuro `#1C2333`/`#0B0F19`, com raio branco no centro. Fonte em `design/icon/appicon.svg` (1024 pt, margem de 100 pt); os PNGs de `LogiBattery/Assets.xcassets/AppIcon.appiconset` saem dela com `rsvg-convert`.
+
+### Ícone do QCYBattery
+Opção 2 aprovada por Lucas em 2026-11-13 (#140): par de fones esquerdo (branco) e direito (verde `#7FE3B0`) sobre o mesmo fundo escuro do LogiBattery. Fonte em `design/icon/qcy/appicon.svg`; os PNGs de `QCYBattery/Assets.xcassets/AppIcon.appiconset` saem dela com `rsvg-convert`.
