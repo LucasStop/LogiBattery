@@ -209,3 +209,7 @@ private struct SettingsRowIcon: View {
             .accessibilityHidden(true)
     }
 }
+
+#if DEBUG
+#Preview("Ajustes") { SettingsView() }
+#endif

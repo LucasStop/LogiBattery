@@ -66,6 +66,7 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 - Cobertura: sem gate no CI e sem número no relatório (fora por escolha do Lucas: suíte pequena, revisão pega o buraco). Se entrar, 80% sobre Domínio e HID++, como alarme e não meta.
 - Desempenho: o baseline é contagem determinística (trocas, timeouts, aparelhos em voo), nunca segundos. O `measure` do XCTest guarda o baseline por máquina e o runner do GitHub muda a cada job, então ele serve só para tendência local e não tem baseline commitado. Orçamento estourado é teste vermelho e aparece na Regressão do relatório.
 - Teste visual/E2E de tela referencia o protótipo aprovado em `design/telas.md`.
+- Toda tela leva `#Preview` com dados de exemplo no fim do próprio arquivo da view, em `#if DEBUG`; dados e fakes de exemplo ficam à parte (`LogiBattery/UI/PreviewSupport.swift`, `QCYBattery/QCYPreviewSupport.swift`), para ver no canvas do Xcode (Option+Cmd+Enter) sem rodar o app. Não é teste e não roda no CI; o CI só garante que compila.
 
 ## 5. Rastreabilidade
 
