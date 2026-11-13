@@ -2,7 +2,8 @@
 // Roda dentro de um .app assinado por tools/qcyctl/run.sh — sem bundle o TCC aborta o processo por falta de
 // NSBluetoothAlwaysUsageDescription. Não loga série.
 //
-// Uso: tools/qcyctl/run.sh [--seconds 8] [--anc off|anc|outdoor|transparency] [--low-latency on|off] [--ldac on|off]
+// Uso: tools/qcyctl/run.sh [--seconds 8] [--anc off|anc|outdoor|transparency] [--scene MM/SS/NV em hex]
+//                              [--low-latency on|off] [--ldac on|off] [--verbose]
 import CoreBluetooth
 import Foundation
 
@@ -10,17 +11,21 @@ final class Tool: @unchecked Sendable {
     private let logURL: URL?
     private let seconds: TimeInterval
     private let packet: QCYPacket?
+    private let verbose: Bool
     private let client = QCYClient()
 
     init(arguments: [String]) {
         var logPath: String?
         var seconds: TimeInterval = 8
-        var packet: QCYPacket?
+        var blocks: [QCYPacket.Block] = []
+        var verbose = false
         var index = 0
         func value(_ flag: String) -> String {
-            guard index + 1 < arguments.count else { return "" }
-            print("falta valor para \(flag)")
-            exit(64)
+            guard index < arguments.count else {
+                print("falta valor para \(flag)")
+                exit(64)
+            }
+            return arguments[index]
         }
         while index < arguments.count {
             let flag = arguments[index]
@@ -35,15 +40,23 @@ final class Tool: @unchecked Sendable {
                 index += 1
                 let modes: [String: UInt8] = ["off": 0x00, "anc": 0x01, "outdoor": 0x02, "transparency": 0x03]
                 guard let mode = modes[value(flag)] else { exit(64) }
-                packet = QCYPacket.noiseCancelMode(mode)
+                blocks += QCYPacket.noiseCancelMode(mode).blocks
+            case "--scene":
+                index += 1
+                guard let scene = Self.scene(value(flag)) else { exit(64) }
+                blocks += QCYPacket.ancSetting(mode: scene.mode,
+                                               subScene: scene.subScene,
+                                               noiseValue: scene.noiseValue).blocks
             case "--low-latency":
                 index += 1
                 guard let enabled = Self.toggle(value(flag)) else { exit(64) }
-                packet = QCYPacket.setLowLatency(enabled)
+                blocks += QCYPacket.setLowLatency(enabled).blocks
             case "--ldac":
                 index += 1
                 guard let enabled = Self.toggle(value(flag)) else { exit(64) }
-                packet = QCYPacket.setLDAC(enabled)
+                blocks += QCYPacket.setLDAC(enabled).blocks
+            case "--verbose":
+                verbose = true
             default:
                 print("argumento desconhecido: \(flag)")
                 exit(64)
@@ -52,7 +65,18 @@ final class Tool: @unchecked Sendable {
         }
         self.logURL = logPath.map { URL(fileURLWithPath: $0) }
         self.seconds = seconds
-        self.packet = packet
+        self.packet = blocks.isEmpty ? nil : QCYPacket(blocks)
+        self.verbose = verbose
+    }
+
+    /// `MM/SS/NV` em hexadecimal, como o fone devolve em `0x17`.
+    private static func scene(_ text: String) -> (mode: UInt8, subScene: UInt8, noiseValue: UInt8)? {
+        let parts = text.split(separator: "/")
+        guard parts.count == 3,
+              let mode = UInt8(parts[0], radix: 16),
+              let subScene = UInt8(parts[1], radix: 16),
+              let noiseValue = UInt8(parts[2], radix: 16) else { return nil }
+        return (mode, subScene, noiseValue)
     }
 
     private static func toggle(_ text: String) -> Bool? {
@@ -71,6 +95,10 @@ final class Tool: @unchecked Sendable {
                       + "R=\(advertisement.right.percent)%\(advertisement.right.isCharging ? " (carregando)" : "") "
                       + "estojo=\(advertisement.caseBattery.map { "\($0.percent)%" } ?? "-") "
                       + "control=\(advertisement.controlMAC ?? "-") outr=\(advertisement.otherMAC ?? "-")")
+        }
+        client.onPacket = { [weak self] data in
+            guard let self, self.verbose else { return }
+            self.log("rx " + data.map { String(format: "%02x", $0) }.joined(separator: " "))
         }
         client.onState = { [weak self] state in
             self?.log(Self.describe(state))
@@ -100,7 +128,8 @@ final class Tool: @unchecked Sendable {
         if let firmware = state.firmware {
             parts.append("firmware \(firmware.left)\(firmware.right.map { " / \($0)" } ?? "")")
         }
-        if let noise = state.noiseMode { parts.append("anc \(noise.name) [\(noise.mode)/\(noise.subScene)]") }
+        if let mode = state.noiseCancelMode { parts.append("anc \(mode.name)") }
+        if let scene = state.ancScene { parts.append("cena \(scene.name)") }
         if let lowLatency = state.isLowLatencyEnabled { parts.append("jogo \(lowLatency ? "on" : "off")") }
         if let ldac = state.isLDACEnabled { parts.append("ldac \(ldac ? "on" : "off")") }
         if let inEar = state.isInEarDetectionEnabled { parts.append("deteccao de ouvido \(inEar ? "on" : "off")") }

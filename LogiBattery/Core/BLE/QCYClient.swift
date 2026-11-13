@@ -20,6 +20,8 @@ final class QCYClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate,
     var onState: (@Sendable (QCYState) -> Void)?
     /// Chamado uma vez por conexão, quando as características já foram descobertas (é quando dá para escrever).
     var onReady: (@Sendable () -> Void)?
+    /// Bytes crus de cada notificação de `00001002`, para diagnóstico e para virar fixture.
+    var onPacket: (@Sendable (Data) -> Void)?
     /// Falha de conexão, serviço ausente ou erro do CoreBluetooth.
     var onFailure: (@Sendable (String) -> Void)?
 
@@ -174,6 +176,7 @@ final class QCYClient: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate,
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         guard error == nil, let data = characteristic.value else { return }
         if characteristic.uuid == notifyCharacteristic {
+            onPacket?(data)
             guard let packet = QCYPacket(data: data) else { return }
             state.apply(packet)
         } else if characteristic.uuid == batteryCharacteristic {

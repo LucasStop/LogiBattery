@@ -73,6 +73,7 @@ final class QCYProtocolTests: XCTestCase {
         XCTAssertEqual(Array(QCYPacket.setLowLatency(false).encoded()), [0xFF, 0x03, 0x09, 0x01, 0x02])
         XCTAssertEqual(Array(QCYPacket.setInEarDetection(false).encoded()), [0xFF, 0x03, 0x06, 0x01, 0x02])
         XCTAssertEqual(Array(QCYPacket.setLDAC(true).encoded()), [0xFF, 0x03, 0x23, 0x01, 0x01])
+        XCTAssertEqual(Array(QCYPacket.setLDAC(false).encoded()), [0xFF, 0x03, 0x23, 0x01, 0x02])
     }
 
     func testRoundTripKeepsBlocks() throws {
@@ -114,14 +115,31 @@ final class QCYProtocolTests: XCTestCase {
         XCTAssertEqual(state.caseBattery?.percent, 40)
         XCTAssertEqual(state.isLDACEnabled, false)
         XCTAssertEqual(state.isLowLatencyEnabled, false)
-        XCTAssertEqual(state.noiseMode, QCYNoiseMode(mode: 0x03, subScene: 0x02, noiseValue: 0x00))
+        XCTAssertEqual(state.ancScene, QCYANScene(mode: 0x03, subScene: 0x02, noiseValue: 0x00))
+        XCTAssertNil(state.noiseCancelMode) // o retrato não traz 0x0C
         XCTAssertNil(state.isInEarDetectionEnabled) // o retrato não traz 0x06
     }
 
-    func testNoiseModeNameOnlyUsesSimpleTableWithoutScene() {
-        XCTAssertEqual(QCYNoiseMode(mode: 0x01).name, "ANC")
-        XCTAssertEqual(QCYNoiseMode(mode: 0x03).name, "Transparência")
-        XCTAssertEqual(QCYNoiseMode(mode: 0x03, subScene: 0x02).name, "cena 0x03/02")
-        XCTAssertEqual(QCYNoiseMode(mode: 0x7F).name, "0x7F")
+    func testNoiseCancelModeUsesTheSimpleTable() {
+        XCTAssertEqual(QCYNoiseCancelMode(rawValue: 0x00)?.name, "Desligado")
+        XCTAssertEqual(QCYNoiseCancelMode(rawValue: 0x01)?.name, "ANC")
+        XCTAssertEqual(QCYNoiseCancelMode(rawValue: 0x02)?.name, "ANC externo")
+        XCTAssertEqual(QCYNoiseCancelMode(rawValue: 0x03)?.name, "Transparência")
+        XCTAssertNil(QCYNoiseCancelMode(rawValue: 0x7F))
+    }
+
+    /// Regressão do bug que a escrita expôs: `0x0C` (modo atual) e `0x17` (cena) vêm na mesma conexão e,
+    /// guardados num campo só, o estado oscilava conforme a ordem das respostas.
+    func testNoiseModeAndSceneDoNotOverwriteEachOther() {
+        var state = QCYState()
+        state.apply(QCYPacket.Block(command: 0x0C, parameters: [0x02]))
+        state.apply(QCYPacket.Block(command: 0x17, parameters: [0x03, 0x02, 0x00]))
+        XCTAssertEqual(state.noiseCancelMode, .outdoor)
+        XCTAssertEqual(state.ancScene, QCYANScene(mode: 3, subScene: 2, noiseValue: 0))
+
+        var reversed = QCYState()
+        reversed.apply(QCYPacket.Block(command: 0x17, parameters: [0x03, 0x02, 0x00]))
+        reversed.apply(QCYPacket.Block(command: 0x0C, parameters: [0x02]))
+        XCTAssertEqual(reversed, state)
     }
 }

@@ -9,7 +9,7 @@ O teclado e o mouse entram por HID++ e o fone Bluetooth por `IOBluetooth` (ADR 0
 ## Decisão
 - Cliente próprio escrito a partir da **descrição** do protocolo em `docs/protocol.md` do Quicky. Nenhum código foi copiado: o repositório não tem licença.
 - Módulo isolado em `LogiBattery/Core/BLE` (`QCYAdvertisement`, `QCYPacket`, `QCYState`, `QCYClient`), dependendo só de Foundation e CoreBluetooth, sem tocar no modelo de `Device`.
-- **Somente leitura** nesta etapa. Bateria, firmware, ANC, LDAC e jogo saem de notificação e de pedido `0xFE`; escrita existe no cliente mas não foi exercitada no hardware.
+- **Somente leitura** no escopo do módulo. Bateria, firmware, ANC, LDAC e jogo saem de notificação e de pedido `0xFE`. Escrita existe no cliente (`setLDAC`, `setLowLatency`, `ancSetting`), foi exercitada uma vez no hardware com o Lucas presente e o estado restaurado no fim — achados em `docs/QCY.md` §6. O módulo continua sem expor escrita para a interface.
 - `tools/qcyctl` para smoke manual, reaproveitando os mesmos arquivos do app.
 - Nada é ligado à lista de aparelhos, ao widget ou ao histórico antes de uma decisão de produto: bateria por lado não cabe no modelo de um número só, e o PRD precisa de história nova (ou alvo separado).
 
@@ -20,5 +20,5 @@ O teclado e o mouse entram por HID++ e o fone Bluetooth por `IOBluetooth` (ADR 0
 
 ## Consequências
 - Positivas: o que o sistema não dá passa a existir no repositório, com protocolo medido e fixtures reais; o fone aceita GATT com o áudio ativo, então não é preciso derrubar o som para ler.
-- Negativas e riscos: mais uma superfície de TCC e um vínculo GATT a mais; o app da QCY no celular compete pelo vínculo e muda o advertising; a cena de ANC medida (`0x03/0x02`) é ambígua no documento; escrita mexe no estado de quem está usando o fone, então só entra com o Lucas presente.
+- Negativas e riscos: mais uma superfície de TCC e um vínculo GATT a mais; o app da QCY no celular compete pelo vínculo e muda o advertising; a cena de ANC (`0x17`) é a única via real de troca de modo neste modelo — o `0x0C` não responde; escrita mexe no estado de quem está usando o fone, então só entra com o Lucas presente e um modo de voltar combinado.
 - Impacto em testes: parsers cobertos por `QCYProtocolTests` com bytes gravados; CoreBluetooth não roda no CI, então o vínculo real fica no smoke manual.

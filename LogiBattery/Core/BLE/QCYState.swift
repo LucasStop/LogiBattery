@@ -1,30 +1,37 @@
 import Foundation
 
-/// Modo de cancelamento de ruído. O canal simples (`0x0C`) manda só o modo; o avançado (`0x17`) manda
-/// cena e profundidade junto, e numera diferente — por isso o nome só vale quando não há cena.
-struct QCYNoiseMode: Equatable, Sendable {
+/// Modo atual de cancelamento de ruído (comando `0x0C`).
+enum QCYNoiseCancelMode: UInt8, Equatable, Sendable {
+    case off = 0x00
+    case anc = 0x01
+    case outdoor = 0x02
+    case transparency = 0x03
+
+    var name: String {
+        switch self {
+        case .off: return "Desligado"
+        case .anc: return "ANC"
+        case .outdoor: return "ANC externo"
+        case .transparency: return "Transparência"
+        }
+    }
+}
+
+/// Cena de ANC configurada (comando `0x17`): modo de ambiente, nível e profundidade.
+///
+/// Não é o mesmo que o modo atual. No MeloBuds Pro os dois discordam: o `0x0C` responde `2` (ANC externo)
+/// enquanto o `0x17` responde `3/2`. Guardar num campo só fazia o valor oscilar conforme a ordem das respostas.
+struct QCYANScene: Equatable, Sendable {
     let mode: UInt8
     let subScene: UInt8
     let noiseValue: UInt8
 
-    init(mode: UInt8, subScene: UInt8 = 0, noiseValue: UInt8 = 0) {
-        self.mode = mode
-        self.subScene = subScene
-        self.noiseValue = noiseValue
-    }
-
-    /// Tabela do modo simples. Com cena o firmware do MeloBuds Pro usa outra numeração (mediu-se `3/2`, que o
-    /// documento do Quicky chama de transparência no remapeamento e de "ambiente de trabalho nível 2" na tabela),
-    /// então o valor sai em hex em vez de um nome inventado.
+    /// O documento do Quicky dá `0x02/0x01..03` como ambiente silencioso, `0x03/0x01..03` como ambiente de
+    /// trabalho, `0x04/0x01..03` como ambiente ruidoso e `0x0A/0x01..07` como transparência — mas também diz
+    /// que o app dele remapeia `0x03/0x01` para `0x03/0x02` no caso da transparência. Como as duas leituras se
+    /// contradizem, nada de nome: sai o par em hex.
     var name: String {
-        guard subScene == 0 else { return String(format: "cena 0x%02X/%02X", mode, subScene) }
-        switch mode {
-        case 0x00: return "Desligado"
-        case 0x01: return "ANC"
-        case 0x02: return "ANC externo"
-        case 0x03: return "Transparência"
-        default: return String(format: "0x%02X", mode)
-        }
+        String(format: "%02X/%02X", mode, subScene)
     }
 }
 
@@ -41,7 +48,8 @@ struct QCYState: Equatable, Sendable {
     var right: QCYBatteryLevel?
     var caseBattery: QCYBatteryLevel?
     var firmware: QCYFirmware?
-    var noiseMode: QCYNoiseMode?
+    var noiseCancelMode: QCYNoiseCancelMode?
+    var ancScene: QCYANScene?
     var isLowLatencyEnabled: Bool?
     var isInEarDetectionEnabled: Bool?
     var isLDACEnabled: Bool?
@@ -57,7 +65,8 @@ struct QCYState: Equatable, Sendable {
         switch command {
         case .battery: applyBattery(block.parameters)
         case .version: applyVersion(block.parameters)
-        case .noiseCancelMode, .ancSetting: applyNoise(command, block.parameters)
+        case .noiseCancelMode: applyNoiseCancelMode(block.parameters)
+        case .ancSetting: applyANScene(block.parameters)
         case .lowLatency, .inEarDetection, .ldac: applyToggle(command, block.parameters)
         case .requestData: break
         }
@@ -80,13 +89,14 @@ struct QCYState: Equatable, Sendable {
         "\(parameters[start]).\(parameters[start + 1]).\(parameters[start + 2])"
     }
 
-    private mutating func applyNoise(_ command: QCYCommand, _ parameters: [UInt8]) {
-        if command == .ancSetting {
-            guard parameters.count >= 3 else { return }
-            noiseMode = QCYNoiseMode(mode: parameters[0], subScene: parameters[1], noiseValue: parameters[2])
-        } else if let mode = parameters.first {
-            noiseMode = QCYNoiseMode(mode: mode)
-        }
+    private mutating func applyNoiseCancelMode(_ parameters: [UInt8]) {
+        guard let raw = parameters.first else { return }
+        noiseCancelMode = QCYNoiseCancelMode(rawValue: raw)
+    }
+
+    private mutating func applyANScene(_ parameters: [UInt8]) {
+        guard parameters.count >= 3 else { return }
+        ancScene = QCYANScene(mode: parameters[0], subScene: parameters[1], noiseValue: parameters[2])
     }
 
     private mutating func applyToggle(_ command: QCYCommand, _ parameters: [UInt8]) {
