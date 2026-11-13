@@ -1,5 +1,7 @@
 # Changelog
 
+Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), em português, uma seção por versão publicada (ADR 0007). Cada PR `feat` ou `fix` traz a própria seção, com o que mudou e por quê; os demais tipos não entram. Seções: Adicionado, Alterado, Corrigido, Removido.
+
 ## 0.2.0 - 2026-11-04
 
 ### Novidades

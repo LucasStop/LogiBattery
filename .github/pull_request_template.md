@@ -16,5 +16,6 @@ Closes #
 - [ ] Testes novos ou alterados no nível certo (docs/TESTING.md); bug corrigido tem teste de regressão
 - [ ] Testes/checagens do projeto passam
 - [ ] Tela nova ou alterada tem protótipo aprovado em `design/telas.md`
+- [ ] Versão: `feat` e `fix` trazem o bump (`scripts/release.sh prepare`) e a entrada do CHANGELOG com o porquê; os demais tipos não mexem na versão
 - [ ] Docs atualizadas (PRD, ARCHITECTURE, TESTING, DESIGN) se o comportamento mudou
 - [ ] Sem `.env`, credenciais ou API key no diff

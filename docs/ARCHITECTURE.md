@@ -69,7 +69,7 @@ Só o app host acessa o hardware. O widget lê o snapshot e nunca fala com HID.
 - Ambientes: local e CI. Sem preview, sem produção hospedada.
 - Portas locais: não se aplica (app nativo, sem servidor).
 - Deploy: app em `~/Applications/LogiBattery.app` com assinatura local; distribuição futura com Developer ID e notarização; rollback: reinstalar a versão anterior.
-- Versionamento e release ([ADR 0004](adr/0004-versionamento-semver-e-release-por-script.md)): SemVer em 0.x, `MARKETING_VERSION` no `project.yml` como fonte única e `CURRENT_PROJECT_VERSION` igual à contagem de commits da main. `feat` sobe o MINOR e `fix` o PATCH. O bump é um PR `chore(release): vX.Y.Z` (só `project.yml` e `CHANGELOG.md`); depois do merge, `scripts/release.sh` builda assinado, gera o zip, cria a tag e o GitHub Release. O CI confere tag e versão e nunca cria release.
+- Versionamento e release ([ADR 0004](adr/0004-versionamento-semver-e-release-por-script.md)): SemVer em 0.x, `MARKETING_VERSION` no `project.yml` como fonte única e `CURRENT_PROJECT_VERSION` igual à contagem de commits da main. `feat` sobe o MINOR e `fix` o PATCH. O bump entra no próprio PR `feat`/`fix` ([ADR 0007](adr/0007-versao-por-pr.md): `project.yml`, `CHANGELOG.md` e versão do site, conferidos pelo check `version-bump`); depois do merge, `scripts/release.sh` builda assinado, gera o zip, cria a tag e o GitHub Release. O CI confere tag e versão e nunca cria release.
 
 ## 8. Qualidade e operação
 - Estratégia de testes: [TESTING.md](TESTING.md).
@@ -95,6 +95,7 @@ Só o app host acessa o hardware. O widget lê o snapshot e nunca fala com HID.
 | [0003](adr/0003-bateria-de-ble-pelo-battery-service-padrao.md) | Bateria de teclado e mouse BLE de qualquer marca pelo Battery Service padrão (`CoreBluetooth`) | aceita |
 | [0004](adr/0004-versionamento-semver-e-release-por-script.md) | Versionamento SemVer e release por script, com tag conferida no CI | aceita |
 | [0005](adr/0005-protocolo-do-fone-qcy-em-modulo-proprio.md) | Protocolo do fone QCY em módulo próprio, somente leitura, fora da lista de aparelhos por enquanto | aceita |
+| [0007](adr/0007-versao-por-pr.md) | Bump de versão e CHANGELOG no próprio PR; publicação por script depois do merge | aceita |
 
 ## 11. Spike HID++ (issue #10, 2026-10-29)
 
