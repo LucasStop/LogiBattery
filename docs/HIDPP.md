@@ -2,7 +2,7 @@
 
 Referência do protocolo medido nos aparelhos do Lucas. Complementa [ARCHITECTURE.md](ARCHITECTURE.md) §11 e as fixtures de `Tests/Fixtures/hidpp/`.
 
-Status: medido em 2026-11-12 (macOS, macOS 26). Somente leitura; nenhuma escrita de configuração foi feita nos aparelhos.
+Status: features medidas em 2026-11-12 (macOS, macOS 26); leitura de DPI e SmartShift validada em 2026-11-13. Nenhuma escrita de configuração foi feita nos aparelhos até esta data.
 
 ## 1. Como a tabela é lida
 
@@ -133,3 +133,46 @@ Não destrava:
 - `0x1E00` muda a tabela de features. Se for usado, o dump tem que ser refeito e a diferença registrada aqui.
 - Escrita de RGB/perfil não tem rollback automático: `set` só entra com leitura de confirmação e `--dry-run` no CLI.
 - Firmware (`0x00D0` DFU) não entra em nenhuma fase. É o único caminho com risco real de tijolar.
+
+## 8. Escrita: DPI e SmartShift
+
+A escrita nasceu na #137 com `--dry-run` como padrão: o CLI monta o frame, mostra byte a byte e só envia com `--apply`. Até 2026-11-13 nenhuma escrita foi feita nos aparelhos; a validação foi só de leitura.
+
+Implementação: `HIDPPWrite` (feature, função e parâmetros), `HIDPPSession.writeFrame(_:)` (resolve o slot no Root e monta sem enviar), `HIDPPSession.apply(_:dryRun:)` e `tools/hidpp-write/`.
+
+### `0x2201` AdjustableDpi (slot 13 no MX Master 3S)
+
+| Função | Nome | Pedido | Resposta |
+|---|---|---|---|
+| 0 | `getSensorCount` | — | `[quantidade]` |
+| 1 | `getSensorDpiList` | `[sensor]` | `[sensor, dpi…, 0]`, pares big-endian |
+| 2 | `getSensorDpi` | `[sensor]` | `[sensor, atual hi, atual lo, padrão hi, padrão lo]` |
+| 3 | `setSensorDpi` | `[sensor, dpi hi, dpi lo]` | eco quando a versão suporta; v0 pode não ecoar |
+
+Na lista, valor acima de `0xE000` é o passo do firmware (`valor - 0xE000`), não um DPI; mesma leitura do libratbag. Medido no MX Master 3S em 2026-11-13: atual 2000, padrão 1000, faixa 200–8000, passo 50. Frame de 1600: `11 02 0d 31 00 06 40 …` (função 3, software id 1).
+
+### `0x2110` SmartShift (slot 14 no MX Master 3S)
+
+| Função | Nome | Pedido | Resposta |
+|---|---|---|---|
+| 0 | `getRatchetControlMode` | — | `[modo, threshold, padrão]` |
+| 1 | `setRatchetControlMode` | `[modo, threshold, padrão]` | eco |
+
+Modo `0x01` = free-spin, `0x02` = catraca. Byte `0x00` preserva o valor, então dá para trocar só o modo ou só o threshold; `0xFF` no threshold é catraca permanente. O terceiro byte é o **threshold padrão**, não torque: torque só existe em `0x2111` (SmartShiftEnhanced), que este firmware não tem. Medido em 2026-11-13: catraca, threshold 15, padrão 10. Frame para catraca preservando o threshold: `11 02 0e 11 02 00 00 …`.
+
+### Como usar
+
+```bash
+swiftc -O tools/hidpp-write/main.swift \
+  LogiBattery/Core/HIDPP/HIDPPFrame.swift \
+  LogiBattery/Core/HIDPP/HIDPPFeatures.swift \
+  LogiBattery/Core/HIDPP/HIDPPWrite.swift \
+  -o /tmp/hidpp-write
+/tmp/hidpp-write --dpi 1600              # dry-run: mostra o frame
+/tmp/hidpp-write --dpi 1600 --apply      # escreve e lê de volta
+/tmp/hidpp-write --smartshift ratchet --threshold 20
+```
+
+O CLI procura o primeiro aparelho que responde e tem a feature pedida; `--index` força um índice do receptor (1–6; Bluetooth 255). `--sensor` escolhe o sensor de DPI (padrão 0). A escrita de DPI recusa valor fora da faixa que o aparelho informa e, depois de escrever, relê para confirmar; SmartShift confirma modo e threshold pela leitura.
+
+Riscos continuam os da §7: o Options+ também é dono do Bolt e pode reaplicar o perfil dele; `--apply` só com o Lucas presente e um valor combinado.

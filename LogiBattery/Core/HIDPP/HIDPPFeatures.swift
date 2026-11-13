@@ -8,6 +8,8 @@ enum HIDPPFeatureID {
     static let batteryLevelStatus: UInt16 = 0x1000
     static let batteryVoltage: UInt16 = 0x1001
     static let unifiedBattery: UInt16 = 0x1004
+    static let smartShift: UInt16 = 0x2110
+    static let adjustableDpi: UInt16 = 0x2201
 }
 
 /// Entrada da tabela de features (`0x0001`): o `slot` é o índice usado no byte 2 dos frames,

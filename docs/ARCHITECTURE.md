@@ -117,6 +117,8 @@ Achados que viram regra do parser:
 
 `tools/hidpp-dump/` lê a feature `0x0001` e despeja a tabela completa de cada aparelho; `HIDPPSession.featureTable()` faz o mesmo dentro do app, com o catálogo em `HIDPPFeatureCatalog`. Referência completa, feature por feature e o que cada bloco destrava: [HIDPP.md](HIDPP.md).
 
+A escrita de configuração segue o mesmo caminho: `HIDPPWrite` monta `0x2201` (DPI) e `0x2110` (SmartShift), `HIDPPSession.writeFrame(_:)` resolve o slot e `apply(_:dryRun:)` só envia com `dryRun: false`; `tools/hidpp-write/` usa o mesmo encoding com `--dry-run` padrão. Frames e valores medidos: [HIDPP.md](HIDPP.md) §8.
+
 | Aparelho | Índice | Features | Achados que mudam o plano |
 |---|---|---|---|
 | PRO X TKL | 1 | 33 | `0x8060` ReportRate, `0x8071` RgbEffects, `0x8081` PerKeyLightingV2, `0x8040` BrightnessControl, `0x8100` OnboardProfiles, `0x40A3` K375sFnInversion, `0x1E00`; **sem** `0x8070` e **sem** `0x8061` |
@@ -143,5 +145,5 @@ O fone QCY MeloBuds Pro não fala HID++: o canal de controle é GATT proprietár
 
 - O estado não é empurrado em toda conexão: o cliente pede com `0xFE` ao terminar a descoberta.
 - MAC no advertising vem embaralhado (`[12]:[11]:[13]:[16]:[15]:[14]`) e os offsets do documento contam depois do company id. Errar um dos dois devolve MAC lixo.
-- O módulo é **somente leitura e não está ligado à lista de aparelhos**: o PRD exclui protocolo proprietário de outra marca, e a bateria por lado não cabe no modelo de um número só. Ligar exige história no PRD (ou alvo separado) e protótipo aprovado.
+- O módulo lê e escreve (cena de ANC, LDAC, modo jogo) e **não está ligado à lista de aparelhos**: o PRD exclui protocolo proprietário de outra marca, e a bateria por lado não cabe no modelo de um número só. Ligar exige história no PRD (ou alvo separado) e protótipo aprovado; o protótipo do alvo separado está aprovado (T12) e a implementação é a #135.
 
