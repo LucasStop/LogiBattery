@@ -13,7 +13,7 @@ struct HIDPPSession: Sendable {
                              kind: identity.kind)
     }
 
-    private func featureIndex(_ id: UInt16) async throws -> UInt8 {
+    func featureIndex(_ id: UInt16) async throws -> UInt8 {
         let request = HIDPPFrame(deviceIndex: deviceIndex, featureIndex: 0x00, function: 0,
                                  params: [UInt8(id >> 8), UInt8(id & 0xFF)])
         let index = try await transport.exchange(request).params[0]
@@ -69,8 +69,42 @@ struct HIDPPSession: Sendable {
         return HIDPPFeatureTable(entries: entries)
     }
 
-    private func call(_ feature: UInt8, function: UInt8, params: [UInt8] = []) async throws -> HIDPPFrame {
+    func call(_ feature: UInt8, function: UInt8, params: [UInt8] = []) async throws -> HIDPPFrame {
         try await transport.exchange(HIDPPFrame(deviceIndex: deviceIndex, featureIndex: feature,
                                                 function: function, params: params))
+    }
+}
+
+/// Escrita de configuração e leitura de confirmação. O frame sai da tabela do aparelho: feature ausente vira
+/// `HIDPPError.unsupported` antes de qualquer envio.
+extension HIDPPSession {
+    /// Resolve o slot da feature e monta o frame, sem enviar nada além da consulta ao Root.
+    func writeFrame(_ write: HIDPPWrite) async throws -> HIDPPFrame {
+        let feature = try await featureIndex(write.featureID)
+        return write.frame(deviceIndex: deviceIndex, featureIndex: feature)
+    }
+
+    /// Envia a escrita; com `dryRun` (padrão) só devolve o frame. Escrever exige `dryRun: false` explícito.
+    @discardableResult
+    func apply(_ write: HIDPPWrite, dryRun: Bool = true) async throws -> HIDPPFrame {
+        let frame = try await writeFrame(write)
+        guard !dryRun else { return frame }
+        return try await transport.exchange(frame)
+    }
+
+    /// DPI do sensor (`0x2201`): função 0 dá a quantidade, 1 a lista (mínimo, máximo e passo) e 2 o atual/padrão.
+    func readDPISensor(_ index: UInt8 = 0) async throws -> HIDPPDPISensor {
+        let feature = try await featureIndex(HIDPPFeatureID.adjustableDpi)
+        let count = Int(try await call(feature, function: 0).params[0])
+        guard Int(index) < count else { throw HIDPPError.unsupported }
+        let list = try await call(feature, function: 1, params: [index]).params
+        let current = try await call(feature, function: 2, params: [index]).params
+        return try HIDPPDPISensor(index: index, list: list, current: current)
+    }
+
+    /// Estado do SmartShift (`0x2110` função 0): modo, threshold atual e o padrão de fábrica.
+    func readSmartShift() async throws -> HIDPPSmartShift {
+        let feature = try await featureIndex(HIDPPFeatureID.smartShift)
+        return try HIDPPSmartShift(params: try await call(feature, function: 0).params)
     }
 }
