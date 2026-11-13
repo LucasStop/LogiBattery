@@ -31,7 +31,9 @@ jobs:
         run: gitleaks git --redact --no-banner
 
       - name: Scripts de release
-        run: scripts/test-next-version.sh
+        run: |
+          scripts/test-next-version.sh
+          scripts/test-check-version.sh
 
       - name: Gerar projeto
         if: hashFiles('project.yml') != ''

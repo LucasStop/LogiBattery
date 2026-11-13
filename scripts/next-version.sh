@@ -1,29 +1,27 @@
 #!/usr/bin/env bash
-# Próxima versão (ADR 0004) a partir dos Conventional Commits desde a última tag vX.Y.Z.
+# Próxima versão (ADR 0007) a partir dos Conventional Commits do PR: os de BASE..HEAD, sobre o MARKETING_VERSION atual.
 # Uso: next-version.sh            -> imprime a próxima versão (ou a atual, se nada pede bump)
-#      next-version.sh --changelog -> imprime a seção do CHANGELOG da próxima versão
-# REPO=<dir> aponta para outro repositório (testes).
+#      next-version.sh --changelog -> imprime o rascunho da seção do CHANGELOG (reescrever com o porquê antes do PR)
+# REPO=<dir> aponta para outro repositório (testes); BASE=<ref> troca a base (padrão origin/main).
 set -euo pipefail
 git_() { git -C "${REPO:-.}" "$@"; }
 
-last_tag=$(git_ describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null || true)
-current=${last_tag#v}
-current=${current:-0.0.0}
-range=${last_tag:+$last_tag..HEAD}
+current=$(sed -n 's/^ *MARKETING_VERSION: "\(.*\)"/\1/p' "${REPO:-.}/project.yml")
+range="${BASE:-origin/main}..HEAD"
 
 major=${current%%.*}; rest=${current#*.}; minor=${rest%%.*}; patch=${rest#*.}
 bump=none
-feats=""; fixes=""
+added=""; fixed=""
 while IFS=$'\t' read -r hash subject; do
   [ -n "$hash" ] || continue
   re='^([a-z]+)(\([a-z0-9-]+\))?(!)?: (.+)$'
   [[ $subject =~ $re ]] || continue
   type=${BASH_REMATCH[1]}; breaking=${BASH_REMATCH[3]}; text=${BASH_REMATCH[4]}
-  line="- ${text} (${hash})"
+  line="- ${text}"
   if [ -n "$breaking" ]; then bump=minor; [ "$major" -ge 1 ] && bump=major; fi
   case $type in
-    feat) feats+="$line"$'\n'; [ "$bump" = major ] || bump=minor ;;
-    fix) fixes+="$line"$'\n'; [ "$bump" = none ] && bump=patch ;;
+    feat) added+="$line"$'\n'; [ "$bump" = major ] || bump=minor ;;
+    fix) fixed+="$line"$'\n'; [ "$bump" = none ] && bump=patch ;;
   esac
 done < <(git_ log --no-merges --format='%h%x09%s' $range)
 
@@ -36,8 +34,8 @@ esac
 
 if [ "${1:-}" = "--changelog" ]; then
   echo "## $next - $(date +%Y-%m-%d)"
-  if [ -n "$feats" ]; then printf '\n### Novidades\n\n%s' "$feats"; fi
-  if [ -n "$fixes" ]; then printf '\n### Correções\n\n%s' "$fixes"; fi
+  if [ -n "$added" ]; then printf '\n### Adicionado\n\n%s' "$added"; fi
+  if [ -n "$fixed" ]; then printf '\n### Corrigido\n\n%s' "$fixed"; fi
 else
   echo "$next"
 fi
