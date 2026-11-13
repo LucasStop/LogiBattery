@@ -35,7 +35,8 @@ jobs:
             query($o:String!,$r:String!,$n:Int!){repository(owner:$o,name:$r){issue(number:$n){
               timelineItems(itemTypes:CLOSED_EVENT,last:1){nodes{... on ClosedEvent{closer{__typename}}}}}}}' \
             --jq '.data.repository.issue.timelineItems.nodes[0].closer.__typename // "none"')
-          if [ "$closer" != "PullRequest" ]; then
+          # merge commit fecha com closer Commit; fechamento manual vem sem closer
+          if [ "$closer" != "PullRequest" ] && [ "$closer" != "Commit" ]; then
             gh issue reopen "$N" --repo "$REPO" \
               --comment "Reaberta: issue só fecha por PR com \`Closes #$N\` (ou como \"not planned\"). Abra a branch por esta issue e o PR a partir dela."
           fi
