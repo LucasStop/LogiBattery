@@ -1,6 +1,6 @@
 # ADR 0006 — Leitura de bateria do QCY no popover (L/R), controle só no app separado
 
-- Status: proposta (aguarda aprovação do Lucas e do protótipo T13)
+- Status: aceita em 2026-11-13 (Lucas aprovou o protótipo T13 e a decisão)
 - Data: 2026-11-13
 
 ## Contexto

@@ -55,4 +55,4 @@ Formato único (RFC 9457, `application/problem+json`): `type`, `title`, `status`
 - 2026-11-03: `kind` ganha `laptop` e `headphones`, `path` ganha `internal` (US-13). Sem bump de `schemaVersion`: snapshot antigo continua legível, e app e widget saem no mesmo pacote.
 - 2026-11-04: campo opcional `intervalMinutes`, compatível com o `schemaVersion` 1 (snapshot antigo sem ele lê como 1 min). O widget deixa de usar 30 min fixos para "app parado" e para o cinza da linha (#116).
 - 2026-11-04: campo opcional `policy`, compatível com o `schemaVersion` 1 (snapshot antigo sem ele lê com os padrões). Cinza e "app parado" seguem as regras anteriores (#115).
-- 2026-11-13: campo opcional `sides` por aparelho, compatível com o `schemaVersion` 1 (snapshot antigo sem ele lê como um número só). Proposto em #142, entra com o código.
+- 2026-11-13: campo opcional `sides` por aparelho, compatível com o `schemaVersion` 1 (snapshot antigo sem ele lê como um número só). Entra em #142 (ADR 0006): `Device.sides`, `percent` vale o menor lado.
