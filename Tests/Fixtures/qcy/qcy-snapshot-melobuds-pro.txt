@@ -1,0 +1,4 @@
+# Notificação de 00001002 recebida ao assinar o canal, em 2026-11-12. Um pacote com 12 comandos.
+# 0x2C detecção de uso, 0x08 volume, 0x09 jogo, 0x17 modo ANC/cena, 0x10 repouso, 0x16 balanço,
+# 0x04 música, 0x23 LDAC, 0x24 desconhecido, 0x1F standby, 0x1D volume do tom, 0x19 idioma.
+ff 30 2c 04 01 02 01 01 08 03 4f 4f 0f 09 01 02 17 03 03 02 00 10 01 00 16 01 32 04 01 02 23 01 00 24 01 01 1f 02 05 00 1d 02 08 0f 19 04 57 51 30 30

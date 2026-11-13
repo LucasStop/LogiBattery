@@ -22,6 +22,7 @@ Inventário. `-` quando a parte não existe.
 | API / backend | - | - | - | - | - |
 | Domínio | Modelo de aparelho, deduplicação, regras de aviso, política de leitura | Swift puro | `LogiBattery/Core/Domain` | HIDPP (via protocolo) | Não |
 | HID++ (transporte e protocolo) | Enumerar receptores e Bluetooth, falar HID++ 1.0/2.0, ler bateria, carga e a tabela de features | `IOHIDManager`, Swift | `LogiBattery/Core/HIDPP` | Sistema (IOKit) | Número de série do aparelho |
+| BLE do fone QCY (protocolo proprietário) | Ler bateria por lado e do estojo, firmware, ANC, LDAC e modo jogo do fone | `CoreBluetooth`, Swift | `LogiBattery/Core/BLE` | Sistema (CoreBluetooth) | Endereço MAC do fone |
 | Bateria do sistema | Ler a bateria interna do Mac e a de fone Bluetooth conectado (US-13) | `IOPowerSources`, `IOBluetooth` (chaves KVC privadas) | `LogiBattery/Core/System/SystemBatteries.swift` | Sistema | Não |
 | Persistência | Snapshot JSON e histórico de leituras no App Group | JSON + SwiftData (ou SQLite) | `LogiBattery/Core/Storage` | App Group | Não |
 | Autenticação e permissões | Estado de Input Monitoring e Bluetooth, guia ao painel de Privacidade | TCC, `IOHIDCheckAccess` | `LogiBattery/Core/Permissions` | Sistema | Não |
@@ -93,6 +94,7 @@ Só o app host acessa o hardware. O widget lê o snapshot e nunca fala com HID.
 | [0002](adr/0002-bateria-do-sistema-via-iopowersources-e-iobluetooth.md) | Bateria do Mac por `IOPowerSources` e do fone por chaves privadas do `IOBluetoothDevice` | aceita |
 | [0003](adr/0003-bateria-de-ble-pelo-battery-service-padrao.md) | Bateria de teclado e mouse BLE de qualquer marca pelo Battery Service padrão (`CoreBluetooth`) | aceita |
 | [0004](adr/0004-versionamento-semver-e-release-por-script.md) | Versionamento SemVer e release por script, com tag conferida no CI | aceita |
+| [0005](adr/0005-protocolo-do-fone-qcy-em-modulo-proprio.md) | Protocolo do fone QCY em módulo próprio, somente leitura, fora da lista de aparelhos por enquanto | aceita |
 
 ## 11. Spike HID++ (issue #10, 2026-10-29)
 
@@ -125,4 +127,21 @@ Achados que viram regra do parser:
 - Leitura da tabela custa uma troca por feature (~35 por aparelho) e fica fora do ciclo de bateria.
 - Com o aparelho dormindo, o Bolt pode responder depois de ~0,6 s: o dump espera 1,6 s no primeiro frame e para cedo no erro HID++ 1.0 `10 idx 8F`.
 - Escrita (RGB, DPI, perfil onboard) ainda não existe. Antes de existir precisa de dono único do Bolt, porque o Options+ reaplica o perfil dele.
+
+### 11.2 Fone QCY por BLE (2026-11-12)
+
+O fone QCY MeloBuds Pro não fala HID++: o canal de controle é GATT proprietário, descoberto por manufacturer data `0x521C` e servido no serviço `A001`. Referência medida: [QCY.md](QCY.md).
+
+| Pergunta | Resposta medida |
+|---|---|
+| Dá para falar GATT com o áudio A2DP ativo? | Sim. Leitura completa com o fone conectado como dispositivo de áudio |
+| O advertising traz serviço? | Não (`services=[]`); o filtro viável é o company id |
+| Bateria por lado | Advertising (bytes 5/6/7 do payload) e característica `00000008`; mediram-se 91% e 92% |
+| O que o macOS mostra | Um número só, e errado nesse dia: 100% contra 91–92% do fone |
+| ANC, LDAC, jogo | `0x17`/`0x0C`, `0x23`, `0x09`; respostas a `0xFE` (pedido de valor) |
+| Escrita em `00001001` | Só sem resposta (props `4`) |
+
+- O estado não é empurrado em toda conexão: o cliente pede com `0xFE` ao terminar a descoberta.
+- MAC no advertising vem embaralhado (`[12]:[11]:[13]:[16]:[15]:[14]`) e os offsets do documento contam depois do company id. Errar um dos dois devolve MAC lixo.
+- O módulo é **somente leitura e não está ligado à lista de aparelhos**: o PRD exclui protocolo proprietário de outra marca, e a bateria por lado não cabe no modelo de um número só. Ligar exige história no PRD (ou alvo separado) e protótipo aprovado.
 

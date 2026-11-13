@@ -1,0 +1,4 @@
+# Advertising do QCY MeloBuds Pro, gravado pela sonda BLE em 2026-11-12 (macOS 26), com o áudio A2DP ativo.
+# Company id 0x521C em little-endian (CoreBluetooth inclui os dois bytes no começo).
+# Payload: vendor 0x4D4A, bateria L/R/estojo 93/94/0, controlMAC 84:AC:60:E9:90:6E.
+1c 52 4d 4a 9d 00 6e 5d 5e 00 b6 76 48 ac 84 60 6e 90 e9 01 ac 84 60 2f 9d e9
