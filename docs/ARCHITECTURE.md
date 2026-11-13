@@ -95,6 +95,7 @@ Só o app host acessa o hardware. O widget lê o snapshot e nunca fala com HID.
 | [0003](adr/0003-bateria-de-ble-pelo-battery-service-padrao.md) | Bateria de teclado e mouse BLE de qualquer marca pelo Battery Service padrão (`CoreBluetooth`) | aceita |
 | [0004](adr/0004-versionamento-semver-e-release-por-script.md) | Versionamento SemVer e release por script, com tag conferida no CI | aceita |
 | [0005](adr/0005-protocolo-do-fone-qcy-em-modulo-proprio.md) | Protocolo do fone QCY em módulo próprio, somente leitura, fora da lista de aparelhos por enquanto | aceita |
+| [0006](adr/0006-leitura-do-qcy-no-popover.md) | Leitura de bateria do QCY no popover (L/R numa linha); controle só no QCYBattery | proposta |
 | [0007](adr/0007-versao-por-pr.md) | Bump de versão e CHANGELOG no próprio PR; publicação por script depois do merge | aceita |
 
 ## 11. Spike HID++ (issue #10, 2026-10-29)
