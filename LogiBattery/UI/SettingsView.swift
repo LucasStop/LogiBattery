@@ -8,7 +8,6 @@ struct SettingsView: View {
     @State private var login = LoginItemModel()
     @State private var confirmDelete = false
     @State private var pixCopied = false
-    @AppStorage(SettingsModel.showMenuBarIconKey) private var showMenuBarIcon = true
     @AppStorage(SettingsModel.popoverWidthKey) private var popoverWidth = SettingsModel.defaultPopoverWidth
 
     var body: some View {
@@ -53,10 +52,15 @@ struct SettingsView: View {
                     label("settings.login", hint: login.failed ? "settings.login.error" : nil,
                           icon: "power", tint: .blue)
                 }
-                Toggle(isOn: $showMenuBarIcon) {
-                    label("settings.menuBarIcon", hint: "settings.menuBarIcon.hint",
+                Picker(selection: $model.values.menuBarIcon) {
+                    Text("settings.menuBarIcon.always").tag(MenuBarIconVisibility.always)
+                    Text("settings.menuBarIcon.peripherals").tag(MenuBarIconVisibility.withPeripherals)
+                    Text("settings.menuBarIcon.never").tag(MenuBarIconVisibility.never)
+                } label: {
+                    label("settings.menuBarIcon", hint: menuBarIconHint,
                           icon: "menubar.rectangle", tint: .purple)
                 }
+                .pickerStyle(.menu)
                 stepper("settings.popoverWidth", hint: "settings.popoverWidth.hint",
                         icon: "arrow.left.and.right.square", tint: .blue,
                         value: $popoverWidth, range: SettingsModel.popoverWidthRange,
@@ -121,6 +125,11 @@ struct SettingsView: View {
     private var forgetHint: LocalizedStringKey {
         if model.values.keepForMinutes == 0 { return "settings.forgetScope.hint.off" }
         return model.values.forgetScope == .anyKept ? "settings.forgetScope.hint.all" : "settings.forgetScope.hint.gray"
+    }
+
+    private var menuBarIconHint: LocalizedStringKey {
+        model.values.menuBarIcon == .withPeripherals
+            ? "settings.menuBarIcon.hint.peripherals" : "settings.menuBarIcon.hint"
     }
 
     /// Texto "Ajustado de X para Y" da linha que a tela puxou junto, ou nil.

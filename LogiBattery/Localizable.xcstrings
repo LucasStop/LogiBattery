@@ -1123,6 +1123,72 @@
         }
       }
     },
+    "settings.menuBarIcon.always": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sempre"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Always"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siempre"
+          }
+        }
+      }
+    },
+    "settings.menuBarIcon.peripherals": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Só com periféricos"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only with peripherals"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo con periféricos"
+          }
+        }
+      }
+    },
+    "settings.menuBarIcon.never": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nunca"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Never"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nunca"
+          }
+        }
+      }
+    },
     "settings.menuBarIcon.hint": {
       "localizations": {
         "pt-BR": {
@@ -1141,6 +1207,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Al ocultarlo, la app sigue leyendo y actualizando el widget. Para volver a ver el icono, abre LogiBattery desde Spotlight o el Finder."
+          }
+        }
+      }
+    },
+    "settings.menuBarIcon.hint.peripherals": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esconde quando só há a bateria do Mac ou periféricos sem resposta. Para ver o ícone de novo, conecte um periférico ou abra o LogiBattery pelo Spotlight ou pelo Finder."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hides when only the Mac battery or unresponsive peripherals are shown. To bring the icon back, connect a peripheral or open LogiBattery from Spotlight or the Finder."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se oculta cuando solo está la batería del Mac o periféricos sin respuesta. Para volver a ver el icono, conecta un periférico o abre LogiBattery desde Spotlight o el Finder."
           }
         }
       }

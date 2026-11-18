@@ -5,9 +5,21 @@ import WidgetKit
 @main
 struct LogiBatteryApp: App {
     @State private var permission = PermissionModel()
-    @AppStorage(SettingsModel.showMenuBarIconKey) private var showMenuBarIcon = true
+    @State private var settings = SettingsModel.shared
     @NSApplicationDelegateAdaptor private var appDelegate: AppDelegate
     @Environment(\.openWindow) private var openWindow
+
+    private var menuBarInserted: Binding<Bool> {
+        let current = settings.iconRevealed || viewModel.shouldShowMenuBarIcon(settings.values.menuBarIcon)
+        return Binding(
+            get: { current },
+            set: { inserted in
+                guard inserted != current else { return }
+                settings.iconRevealed = false
+                settings.values.menuBarIcon = inserted ? .always : .never
+            }
+        )
+    }
 
     init() {
         // Processo filho da leitura de Bluetooth: não abre interface (#107).
@@ -26,7 +38,7 @@ struct LogiBatteryApp: App {
 
     var body: some Scene {
         // Escondido, só some o ícone: a leitura roda no `init` e o widget segue atualizando (US-14).
-        MenuBarExtra(isInserted: $showMenuBarIcon) {
+        MenuBarExtra(isInserted: menuBarInserted) {
             DeviceList(viewModel: viewModel, permission: permission)
         } label: {
             // Largura fixa: se o item muda de tamanho ao aparecer a porcentagem, o macOS ancora o popover
@@ -66,9 +78,16 @@ struct LogiBatteryApp: App {
 
 /// Abrir o app de novo (Spotlight, Finder, clique no widget) traz o ícone escondido de volta: sem ele não há
 /// outro caminho até os Ajustes.
+@MainActor
 private final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        UserDefaults.standard.set(true, forKey: SettingsModel.showMenuBarIconKey)
+        let settings = SettingsModel.shared
+        guard !viewModel.shouldShowMenuBarIcon(settings.values.menuBarIcon) else { return true }
+        if settings.values.menuBarIcon == .never {
+            settings.values.menuBarIcon = .always
+        } else {
+            settings.iconRevealed = true
+        }
         return true
     }
 }
