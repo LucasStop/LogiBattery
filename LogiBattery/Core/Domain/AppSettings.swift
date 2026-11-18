@@ -1,6 +1,12 @@
 import Foundation
 import Observation
 
+/// Quando o ícone da barra de menus aparece (US-14). Em `.withPeripherals`, some quando só há o Mac ou periféricos já
+/// cinzas por falta de resposta.
+enum MenuBarIconVisibility: String, Codable, Equatable, Sendable {
+    case always, withPeripherals, never
+}
+
 struct AppSettings: Codable, Equatable, Sendable {
     /// Minutos que o menu de "Aparelhos sem resposta" oferece (#115); 0 é "Na hora".
     static let windowOptions = [0, 5, 15, 30, 60, 120, 360, 720, 1440, 2880, 10080]
@@ -12,6 +18,7 @@ struct AppSettings: Codable, Equatable, Sendable {
     var grayAfterMinutes = 30
     var keepForMinutes = 24 * 60
     var forgetScope = ForgetScope.grayOnly
+    var menuBarIcon = MenuBarIconVisibility.always
 
     var interval: Duration { .seconds(intervalMinutes * 60) }
     var thresholds: BatteryThresholds { BatteryThresholds(low: lowThreshold, critical: criticalThreshold) }
@@ -53,6 +60,8 @@ extension AppSettings {
             ?? defaults.grayAfterMinutes
         keepForMinutes = try container.decodeIfPresent(Int.self, forKey: .keepForMinutes) ?? defaults.keepForMinutes
         forgetScope = try container.decodeIfPresent(ForgetScope.self, forKey: .forgetScope) ?? defaults.forgetScope
+        menuBarIcon = try container.decodeIfPresent(MenuBarIconVisibility.self, forKey: .menuBarIcon)
+            ?? defaults.menuBarIcon
     }
 }
 
@@ -126,12 +135,22 @@ final class SettingsModel {
         values.forgetScope = scope
     }
 
+    /// Reabrir o app com o ícone escondido por "Só com periféricos" o mostra nesta sessão sem trocar o ajuste.
+    var iconRevealed = false
+
     private static let key = "settings"
     @ObservationIgnored private let defaults: UserDefaults
 
     init(defaults: UserDefaults) {
         self.defaults = defaults
-        values = defaults.data(forKey: Self.key).flatMap { try? JSONDecoder().decode(AppSettings.self, from: $0) }?
-            .normalized() ?? AppSettings()
+        let data = defaults.data(forKey: Self.key)
+        var loaded = data.flatMap { try? JSONDecoder().decode(AppSettings.self, from: $0) }?.normalized()
+            ?? AppSettings()
+        let hasMenuBarKey = data
+            .flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }?["menuBarIcon"] != nil
+        if !hasMenuBarKey, (defaults.object(forKey: Self.showMenuBarIconKey) as? Bool) == false {
+            loaded.menuBarIcon = .never
+        }
+        values = loaded
     }
 }

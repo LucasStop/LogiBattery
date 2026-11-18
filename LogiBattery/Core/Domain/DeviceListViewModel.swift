@@ -104,6 +104,19 @@ final class DeviceListViewModel {
 
     func dismissForgotten() { forgotten = nil }
 
+    /// Periférico (não-Mac) que respondeu ao último scan ou cuja leitura mantida ainda não ficou cinza.
+    var hasActivePeripheral: Bool {
+        devices.contains { $0.kind != .laptop && !isGray($0) }
+    }
+
+    func shouldShowMenuBarIcon(_ visibility: MenuBarIconVisibility) -> Bool {
+        switch visibility {
+        case .always: true
+        case .withPeripherals: hasActivePeripheral
+        case .never: false
+        }
+    }
+
     /// O ícone da barra de menu mostra o menor nível entre os aparelhos com leitura.
     var menuBarPercent: Int? { devices.compactMap(\.percent).min() }
 

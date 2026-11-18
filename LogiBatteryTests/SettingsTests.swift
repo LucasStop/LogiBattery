@@ -89,7 +89,28 @@ final class SettingsTests: XCTestCase {
         XCTAssertEqual(settings.grayAfterMinutes, 30)
         XCTAssertEqual(settings.keepForMinutes, 24 * 60)
         XCTAssertEqual(settings.forgetScope, .grayOnly)
+        XCTAssertEqual(settings.menuBarIcon, .always)
         XCTAssertEqual(settings.readingPolicy, ReadingPolicy())
+    }
+
+    func testMenuBarIconVisibilityPersistsAndMigratesFromLegacyBool() {
+        let defaults = defaults()
+        defaults.set(false, forKey: SettingsModel.showMenuBarIconKey)
+        let migrated = SettingsModel(defaults: defaults)
+        XCTAssertEqual(migrated.values.menuBarIcon, .never)
+
+        migrated.values.menuBarIcon = .withPeripherals
+        let reopened = SettingsModel(defaults: defaults)
+        XCTAssertEqual(reopened.values.menuBarIcon, .withPeripherals)
+    }
+
+    func testLegacyBoolTrueKeepsTheIconAlways() throws {
+        let defaults = defaults()
+        defaults.set(true, forKey: SettingsModel.showMenuBarIconKey)
+        defaults.set(Data(#"{"lowThreshold":25}"#.utf8), forKey: "settings")
+        let model = SettingsModel(defaults: defaults)
+        XCTAssertEqual(model.values.menuBarIcon, .always)
+        XCTAssertEqual(model.values.lowThreshold, 25)
     }
 
     /// Ajuste salvo antes da #115 não tem as chaves novas: o decode tem de manter o que já estava e usar os padrões.

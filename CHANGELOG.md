@@ -2,6 +2,16 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), em português, uma seção por versão publicada (ADR 0007). Cada PR `feat` ou `fix` traz a própria seção, com o que mudou e por quê; os demais tipos não entram. Seções: Adicionado, Alterado, Corrigido, Removido.
 
+## 0.4.0 - 2026-11-18
+
+### Adicionado
+
+- Ajuste de visibilidade do ícone na barra de menus: Sempre, Só com periféricos ou Nunca. Quem só usa o widget, ou está só com o Mac, não precisa de um ícone parado na barra; em "Só com periféricos" ele some quando só há o Mac ou periféricos cinzas e volta quando um responde ou ao reabrir o app (#152).
+
+### Alterado
+
+- O interruptor "Mostrar ícone na barra de menus" virou seletor em menu; quem o tinha desligado migra para "Nunca".
+
 ## 0.3.0 - 2026-11-13
 
 Acumula tudo o que entrou na main desde a 0.2.0 (04/11), que ficou sem versão porque o PR de release separado não foi rodado (ADR 0007). A partir daqui cada PR `feat` ou `fix` traz a própria versão.

@@ -293,6 +293,37 @@ final class DeviceLifecycleScenarioTests: XCTestCase {
         await scan(viewModel, after: minute, [.mouse])
         XCTAssertEqual(names(viewModel), ["MX Master 3S"])
     }
+
+    // MARK: Ícone na barra de menus só com periféricos (US-14)
+
+    func testMenuBarIconWithPeripheralsHidesWhenOnlyMacOrGrayPeripheralsRemain() async {
+        let viewModel = launch()
+        XCTAssertTrue(viewModel.shouldShowMenuBarIcon(.always))
+        XCTAssertFalse(viewModel.shouldShowMenuBarIcon(.withPeripherals))
+        XCTAssertFalse(viewModel.shouldShowMenuBarIcon(.never))
+
+        // Só o Mac: escondido no modo "Só com periféricos".
+        await scan(viewModel, after: 0, [.mac])
+        XCTAssertFalse(viewModel.shouldShowMenuBarIcon(.withPeripherals))
+        XCTAssertTrue(viewModel.shouldShowMenuBarIcon(.always))
+
+        // Teclado conecta: ícone aparece.
+        await scan(viewModel, after: minute, [.mac, .keyboard])
+        XCTAssertTrue(viewModel.shouldShowMenuBarIcon(.withPeripherals))
+        XCTAssertFalse(viewModel.shouldShowMenuBarIcon(.never))
+
+        // Teclado por receptor para de responder, mas leitura mantida ainda está verde: ícone continua.
+        await scan(viewModel, after: minute, [.mac])
+        XCTAssertTrue(viewModel.shouldShowMenuBarIcon(.withPeripherals))
+
+        // Passou de grayAfter (30 min), teclado fica cinza e só resta o Mac ativo: ícone some.
+        await scan(viewModel, after: 30 * minute, [.mac])
+        XCTAssertFalse(viewModel.shouldShowMenuBarIcon(.withPeripherals))
+
+        // Teclado acorda e responde de novo: ícone volta.
+        await scan(viewModel, after: minute, [.mac, .keyboard])
+        XCTAssertTrue(viewModel.shouldShowMenuBarIcon(.withPeripherals))
+    }
 }
 
 private struct Cast {
