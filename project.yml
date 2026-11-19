@@ -42,6 +42,7 @@ targets:
       - LogiBattery/Core/Storage/HistoryStore.swift
       - LogiBattery/UI/Components/HistoryChart.swift
       - LogiBattery/UI/Components/BatteryCell.swift
+      - LogiBattery/UI/Components/DeviceSideItem.swift
       - LogiBattery/Symbols.xcassets
     settings:
       base:
@@ -64,6 +65,7 @@ targets:
       - LogiBattery/Core/Domain/Device.swift
       - LogiBattery/Core/Storage/Snapshot.swift
       - LogiBattery/UI/Components/BatteryCell.swift
+      - LogiBattery/UI/Components/DeviceSideItem.swift
       - LogiBattery/Symbols.xcassets
     settings:
       base:
