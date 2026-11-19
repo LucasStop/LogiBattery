@@ -17,6 +17,16 @@ enum WidgetPage {
     /// Com 5 ou mais aparelhos no widget grande o gráfico de 24 h sai para caberem até 6 linhas por página (T09, #79).
     static let largeChartMaxDevices = 4
 
+    /// Linhas que o aparelho ocupa no grande: o fone com lados (T14, #154) tem duas faixas, vale por duas.
+    static func largeUnits(_ devices: [Device]) -> Int {
+        devices.reduce(0) { $0 + ($1.sides == nil ? 1 : 2) }
+    }
+
+    /// Cada faixa a mais do fone tira uma linha da página (6 viram 5) e, somada às linhas, tira o gráfico antes.
+    static func largePerPage(for devices: [Device]) -> Int {
+        max(1, largePerPage - (largeUnits(devices) - devices.count))
+    }
+
     static func slice<Item: Equatable & Sendable>(
         _ items: [Item],
         page: Int,

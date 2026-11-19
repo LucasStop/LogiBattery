@@ -63,62 +63,18 @@ private extension DeviceRow {
                 Spacer(minLength: 4)
             }
             HStack(spacing: 16) {
-                sideItem(.left, thresholds: thresholds)
-                sideItem(.right, thresholds: thresholds)
-                if device.side(.case) != nil { sideItem(.case, thresholds: thresholds) }
+                DeviceSideItem(device: device, part: .left, thresholds: thresholds, gray: gray)
+                DeviceSideItem(device: device, part: .right, thresholds: thresholds, gray: gray)
+                if device.side(.case) != nil {
+                    DeviceSideItem(device: device, part: .case, thresholds: thresholds, gray: gray)
+                }
             }
             .padding(.leading, 28)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 9)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(accessibilitySummary))
-    }
-
-    func sideItem(_ part: DeviceSide.Part, thresholds: BatteryThresholds) -> some View {
-        let side = device.side(part)
-        let tint: Color = gray ? .secondary : (side?.tint(thresholds) ?? .secondary)
-        return HStack(spacing: 4) {
-            Text(part.shortName).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-            Text(side.map { "\($0.percent)%" } ?? "—")
-                .font(.callout.weight(.semibold)).monospacedDigit()
-                .foregroundStyle(gray ? .secondary : .primary)
-            if side?.charging == true {
-                Image(systemName: "bolt.fill").font(.caption2).foregroundStyle(tint)
-            }
-            BatteryCell(percent: side?.percent, tint: tint, gray: gray).frame(width: 28)
-        }
-    }
-
-    /// "QCY MeloBuds Pro, esquerdo 90%, direito 85%" (T13); lado sem leitura vira "sem leitura".
-    var accessibilitySummary: String {
-        let parts = [DeviceSide.Part.left, .right, .case].compactMap { part -> String? in
-            if let side = device.side(part) {
-                let charging = side.charging ? ", \(String(localized: "charge.charging"))" : ""
-                return "\(part.spokenName) \(side.percent)%" + charging
-            }
-            return part == .case ? nil : "\(part.spokenName) \(String(localized: "device.side.unknown"))"
-        }
-        return ([device.name] + parts).joined(separator: ", ")
-    }
-}
-
-extension DeviceSide.Part {
-    /// Letra do popover (L, R, E; em inglês C de case).
-    var shortName: String {
-        switch self {
-        case .left: String(localized: "device.side.left.short")
-        case .right: String(localized: "device.side.right.short")
-        case .case: String(localized: "device.side.case.short")
-        }
-    }
-
-    var spokenName: String {
-        switch self {
-        case .left: String(localized: "device.side.left")
-        case .right: String(localized: "device.side.right")
-        case .case: String(localized: "device.side.case")
-        }
+        .accessibilityLabel(Text(device.sidesAccessibilitySummary))
     }
 }
 

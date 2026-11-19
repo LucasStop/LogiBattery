@@ -1,0 +1,68 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T14 · Widgets com o fone QCY por lado</title><link rel="stylesheet" href="proto.css">
+<style>
+/* Anel de dois arcos (#154): meio anel esquerdo = L, direito = R, cada um enche de baixo para cima. */
+.ring2{position:relative;width:64px;aspect-ratio:1}
+.w-m .ring2{width:62px}
+.ring2 svg{position:absolute;inset:0;width:100%;height:100%}
+.ring2 .bg{fill:none;stroke:var(--border);stroke-width:6;stroke-linecap:round}
+.ring2 .fg{fill:none;stroke:var(--lvl);stroke-width:6;stroke-linecap:round}
+.ring2 .ico{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);line-height:0;color:var(--fg)}
+.ring2 .ico .sf{font-size:24px}
+.none .ring2 .fg{stroke:var(--muted)}
+.slot .pct.two{font-size:16px;gap:0;white-space:nowrap}
+.slot .pct.two i{font-style:normal;color:var(--muted);padding:0 3px}
+/* Lista grande: duas faixas como no popover (T13). */
+.devs{display:grid;gap:8px}
+.dev.sides{flex-direction:column;align-items:stretch;gap:6px}
+.dev.sides .top{display:flex;align-items:center;gap:var(--s3)}
+.dev.sides .top .ico{width:20px;text-align:center;color:var(--muted);font-size:16px}
+.dev.sides .top .name{flex:1;min-width:0}
+.dev.sides .row2{display:flex;gap:16px;padding-left:32px}
+.sd{display:flex;align-items:center;gap:4px}
+.sd b{font-size:12px;color:var(--muted)}
+.sd .pct{font-size:14px}
+.sd .bolt{font-size:11px;color:var(--lvl)}
+.sd.ok{--lvl:var(--success)}.sd.low{--lvl:var(--warning)}.sd.crit{--lvl:var(--danger)}.sd.none{--lvl:var(--disabled)}
+.w-l .devs{margin-top:var(--s2)}
+</style></head><body>
+<h1>T14 · Widgets com o fone QCY por lado</h1>
+<p class="lead">Revisão de T01, T02 e T03 (#154, US-16): o fone QCY mostra L e R separados no widget, como no popover (<a href="t13-popover-qcy-lados.html">T13</a>). Pequeno e médio: o anel único vira dois meios-anéis (esquerdo é o L, direito é o R), cada um enchendo de baixo para cima na cor do nível do próprio lado; ícone do fone no centro; o estojo não entra no anel. Médio: sob o anel, os dois números ("90 · 85", esquerdo e direito). Grande: linha em duas faixas (nome e tempo; embaixo L, R e, havendo leitura, o estojo, cada um com número e célula). Sem lados (outros aparelhos, snapshot antigo) nada muda. O VoiceOver lê "QCY MeloBuds Pro, esquerdo 90%, direito 85%". Nomes e valores fictícios.</p>
+
+<section class="state"><h2>Pequeno · padrão</h2><div class="pair"><div class="widget w-s"><div class="rings" id="s-pad"></div></div></div></section>
+<section class="state"><h2>Médio · padrão</h2><div class="pair"><div class="widget w-m"><div class="rings" id="m-pad"></div></div></div></section>
+<section class="state"><h2>Médio · um lado só, lado carregando e lado baixo</h2><p class="muted sm">Lado sem leitura: arco vazio e "—" no lugar do número. Carregando não muda o anel (o raio aparece só na lista grande). Nível baixo pinta só o arco do lado fraco.</p><div class="pair"><div class="widget w-m"><div class="rings" id="m-est"></div></div></div></section>
+<section class="state"><h2>Pequeno e médio · leitura velha (mais de 30 min)</h2><p class="muted sm">Os dois arcos ficam na cor do sistema, como o anel único.</p><div class="pair"><div class="widget w-s"><div class="rings" id="s-cinza"></div></div><div class="widget w-m"><div class="rings" id="m-cinza"></div></div></div></section>
+<section class="state"><h2>Grande · padrão e com estojo</h2><p class="muted sm">O fone ocupa duas faixas, mais alto que as outras linhas: quantas linhas cabem por página (hoje 6, T09) e quando o gráfico de 24 h sai são medidos na implementação. Estojo só aparece se o firmware reportar.</p><div class="pair"><div class="widget w-l"><div class="tag">Baterias</div><div class="devs" id="l-pad"></div></div><div class="widget w-l"><div class="tag">Baterias</div><div class="devs" id="l-case"></div></div></div></section>
+<section class="state"><h2>Grande · leitura velha</h2><div class="pair"><div class="widget w-l"><div class="tag">Baterias · desatualizado</div><div class="devs" id="l-cinza"></div><p class="muted sm">Sem leituras novas há 3 h. Abra o app para atualizar.</p></div></div></section>
+
+<script>
+const lvl=p=>p==null?'none':p<=10?'crit':p<=20?'low':'ok';
+// Meio anel de 6 pt em círculo de 64 pt (raio 29), 8° de folga no topo e embaixo; pathLength 100 = meio anel cheio.
+const R=29,C=32,G=8*Math.PI/180;
+const sg=Math.sin(G)*R,cg=Math.cos(G)*R;
+// Do fundo ao topo: pela direita (R, sentido anti-horário) ou pela esquerda (L, horário).
+const half=side=>{const x=side==='L'?C-sg:C+sg;return `M${x.toFixed(2)} ${(C+cg).toFixed(2)} A${R} ${R} 0 0 ${side==='L'?1:0} ${x.toFixed(2)} ${(C-cg).toFixed(2)}`};
+const TONE={ok:'success',low:'warning',crit:'danger'};
+const arc=(side,p,cls)=>{const d=half(side);return `<path class="bg" d="${d}" pathLength="100"/>`+(p?`<path class="fg" style="--lvl:var(--${TONE[cls]||'disabled'})" d="${d}" pathLength="100" stroke-dasharray="${p} 100"/>`:'')};
+const ring2=(l,r,icon,gray)=>`<div class="ring2"><svg viewBox="0 0 64 64" aria-hidden="true">${arc('L',l,gray?'':lvl(l))}${arc('R',r,gray?'':lvl(r))}</svg><span class="ico" data-i="${icon}"></span></div>`;
+const num=v=>v==null?'—':v;
+const slot=(inner,aria,cls='',pct='')=>`<div class="slot ${cls}" role="img" aria-label="${aria}">${inner}${pct}</div>`;
+const one=(p,icon,name,cls)=>`<div class="ring" style="--p:${p}"><span class="ico" data-i="${icon}"></span></div>`;
+const mac=(med,gray)=>slot(one(90,'laptop'),'MacBook 90%',gray?'none':'ok',med?'<span class="pct">90%</span>':'');
+const mouse=(med,gray)=>slot(one(18,'lb.mouse.bluetooth'),'MX Master 3S 18%',gray?'none':'low',med?'<span class="pct">18%</span>':'');
+const empty=med=>`<div class="slot" aria-hidden="true"><div class="ring"></div>${med?'<span class="pct" style="visibility:hidden">0%</span>':''}</div>`;
+const qcy=(l,r,med,gray)=>slot(ring2(l,r,'lb.headphones.bluetooth',gray),`QCY MeloBuds Pro, esquerdo ${num(l)}%, direito ${num(r)}%`,gray?'none':'',med?`<span class="pct two">${num(l)}<i>·</i>${num(r)}</span>`:'');
+const set=(id,h)=>document.getElementById(id).innerHTML=h;
+set('s-pad',mac(0)+qcy(90,85,0)+mouse(0)+empty(0));
+set('m-pad',mac(1)+qcy(90,85,1)+mouse(1)+empty(1));
+set('m-est',qcy(72,null,1)+qcy(100,14,1)+mouse(1)+empty(1));
+set('s-cinza',mac(0,1)+qcy(90,85,0,1)+mouse(0,1)+empty(0));
+set('m-cinza',mac(1,1)+qcy(90,85,1,1)+mouse(1,1)+empty(1));
+const side=(n,p,chg)=>`<span class="sd ${lvl(p)}"><b>${n}</b><span class="pct">${num(p)}${p==null?'':'%'}</span>${chg?'<span class="bolt">⚡︎</span>':''}<span class="cell" style="--p:${p||0};--lvl:var(--${{ok:'success',low:'warning',crit:'danger',none:'disabled'}[lvl(p)]});width:28px"><i></i></span></span>`;
+const row=(ic,name,when,cls,pct,badge)=>`<div class="dev ${cls}" role="group" aria-label="${name}"><span class="ico" data-i="${ic}"></span><div class="name"><b class="h3">${name}</b><span class="caption">${when}</span></div><div class="lv"><span class="badge">${badge}</span><span class="pct">${pct}%</span><span class="cell" style="--p:${pct}"><i></i></span></div></div>`;
+const fone=(l,r,c,when,gray)=>`<div class="dev sides ${gray?'none':''}" role="group" aria-label="QCY MeloBuds Pro, esquerdo ${l}%, direito ${r}%${c?`, estojo ${c}%`:''}"><div class="top"><span class="ico" data-i="lb.headphones.bluetooth"></span><div class="name"><b class="h3">QCY MeloBuds Pro</b><span class="caption">${when}</span></div></div><div class="row2">${side('L',l)}${side('R',r)}${c?side('E',c):''}</div></div>`;
+set('l-pad',row('laptop','MacBook','há 1 min','ok',90,'Carga ok')+fone(90,85,null,'há 1 min')+row('lb.mouse.bluetooth','MX Master 3S','há 1 min','low',18,'Baixa')+row('lb.keyboard.bluetooth','MX Keys','há 1 min','chg',78,'Carregando'));
+set('l-case',row('laptop','MacBook','há 1 min','ok',90,'Carga ok')+fone(90,85,60,'há 1 min')+row('lb.mouse.bluetooth','MX Master 3S','há 1 min','low',18,'Baixa')+row('lb.keyboard.bluetooth','MX Keys','há 1 min','chg',78,'Carregando'));
+set('l-cinza',row('laptop','MacBook','há 3 h','none',90,'Última leitura')+fone(90,85,null,'há 3 h',1)+row('lb.mouse.bluetooth','MX Master 3S','há 3 h','none',18,'Última leitura'));
+</script>
+<script src="symbols.js"></script><script src="custom-symbols.js"></script><script src="proto.js"></script></body></html>

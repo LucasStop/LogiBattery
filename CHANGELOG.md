@@ -2,6 +2,12 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), em português, uma seção por versão publicada (ADR 0007). Cada PR `feat` ou `fix` traz a própria seção, com o que mudou e por quê; os demais tipos não entram. Seções: Adicionado, Alterado, Corrigido, Removido.
 
+## 0.5.0 - 2026-11-19
+
+### Adicionado
+
+- Widgets mostram os dois lados do fone QCY, como o popover: anel de dois arcos (esquerdo e direito, cada um na cor do próprio nível) no pequeno e no médio, com "90 · 85" embaixo no médio, e linha em duas faixas com L, R e estojo no grande. Antes o widget só trazia o menor lado e não dava para saber qual fone ia acabar primeiro. No grande o fone vale por duas linhas (a página cai de 6 para 5 e o gráfico de 24 h sai antes). Aparelho sem lados não muda (#154).
+
 ## 0.4.0 - 2026-11-18
 
 ### Adicionado

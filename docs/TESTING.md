@@ -76,7 +76,7 @@ Preencher uma linha por parte listada em ARCHITECTURE.md. Tipos: estático, unit
 | US-02 | Aparelho Bluetooth aparece com nome e % | `BluetoothDeviceTests`; smoke Bluetooth | unitário, manual |
 | US-03 | Mesmo aparelho em dois caminhos vira um item | `DeviceDedupeTests` | unitário |
 | US-04 | Estado carregando e cheio | `ChargeStateTests` | unitário |
-| US-05 | Widget mostra os aparelhos e o estado nos 3 tamanhos (anéis 2x2 sem % no pequeno, 4x1 com % no médio, lista no grande; paginação no médio a partir do 5º e no grande a partir do 7º) | `SnapshotContractTests`, `WidgetReloadTests` (reload só com mudança, leitura velha), `WidgetPaginationTests` (#79), `DeviceSymbolTests` (#65 e #75); print por tamanho comparado aos protótipos T01 a T03 e T09, com 1 a 4 aparelhos (posição vazia) | unitário, integração, manual |
+| US-05 | Widget mostra os aparelhos e o estado nos 3 tamanhos (anéis 2x2 sem % no pequeno, 4x1 com % no médio, lista no grande; paginação no médio a partir do 5º e no grande a partir do 7º) | `SnapshotContractTests`, `WidgetReloadTests` (reload só com mudança, leitura velha), `WidgetPaginationTests` (#79), `DeviceSymbolTests` (#65 e #75); `WidgetPaginationTests` também cobre o fone com lados valendo duas linhas no grande (#154); print por tamanho comparado aos protótipos T01 a T03, T09 e T14 (fone por lado), com 1 a 4 aparelhos (posição vazia) | unitário, integração, manual |
 | US-06 | Popover lista aparelhos; ícone mostra o menor nível | `PopoverViewModelTests`; manual | componente, manual |
 | US-07 | Bateria baixa avisa uma vez e rearma | `LowBatteryRuleTests` | unitário |
 | US-08 | Carga completa avisa uma vez por ciclo | `FullChargeRuleTests` | unitário |

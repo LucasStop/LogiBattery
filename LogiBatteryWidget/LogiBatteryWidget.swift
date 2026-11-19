@@ -86,7 +86,7 @@ private struct EmptyWidget: View {
 }
 
 /// Medidas do widget Baterias da Apple, medidas em print (DESIGN.md §3.8).
-private enum RingMetrics {
+enum RingMetrics {
     static let smallRing: CGFloat = 64
     static let mediumRing: CGFloat = 62
     static let stroke: CGFloat = 6
@@ -153,7 +153,17 @@ private struct RingSlot: View {
     let thresholds: BatteryThresholds
     let medium: Bool
 
-    private var percentText: String { device?.percent.map { "\($0)%" } ?? "—" }
+    private var percentText: String {
+        guard let device else { return "—" }
+        guard device.sides != nil else { return device.percent.map { "\($0)%" } ?? "—" }
+        // Dois números, esquerdo e direito, na ordem dos arcos (T14); o estojo não entra no anel.
+        return [DeviceSide.Part.left, .right].map { device.side($0).map { "\($0.percent)" } ?? "—" }
+            .joined(separator: " · ")
+    }
+    private var spokenText: String {
+        guard let device else { return "" }
+        return device.sides != nil ? device.sidesAccessibilitySummary : "\(device.name) \(percentText)"
+    }
 
     var body: some View {
         VStack(spacing: RingMetrics.percentGap) {
@@ -168,7 +178,7 @@ private struct RingSlot: View {
         // A caixa do texto sobra uns 4 pt abaixo dos dígitos; a Apple centraliza anel e dígitos, não a caixa.
         .padding(.top, medium ? 4 : 0)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("\(device?.name ?? "") \(percentText)"))
+        .accessibilityLabel(Text(spokenText))
         .accessibilityHidden(device == nil)
     }
 
@@ -188,6 +198,47 @@ private struct RingSlot: View {
 
     @ViewBuilder
     private func progress(_ device: Device) -> some View {
+        if device.sides != nil {
+            sidesProgress(device)
+        } else {
+            singleProgress(device)
+        }
+    }
+
+    /// Fone com lados (T14, #154): dois meios-anéis, esquerdo é o L e direito é o R, cada um na cor do próprio lado.
+    @ViewBuilder
+    private func sidesProgress(_ device: Device) -> some View {
+        let sides = [(HalfRing.Side.left, DeviceSide.Part.left), (.right, .right)].map { half, part in
+            (half: half, fraction: CGFloat(device.side(part)?.percent ?? 0) / 100,
+             tint: gray ? Color.secondary : (device.side(part)?.tint(thresholds) ?? .secondary))
+        }
+        ZStack {
+            ForEach(sides, id: \.half) { side in
+                HalfRing(side: side.half, fraction: 1).stroke(.quaternary, style: HalfRing.style)
+            }
+            if #available(macOS 15, *), !gray {
+                // Como no anel único: imagem em cor cheia mantém a cor do nível nos estilos translúcido/tonalizado.
+                Image(size: CGSize(width: size, height: size)) { context in
+                    let center = CGPoint(x: size / 2, y: size / 2)
+                    for side in sides where side.fraction > 0 {
+                        let path = HalfRing.path(side: side.half, fraction: side.fraction, center: center,
+                                                 radius: (size - RingMetrics.stroke) / 2)
+                        context.stroke(path, with: .color(side.tint), style: HalfRing.style)
+                    }
+                }
+                .widgetAccentedRenderingMode(.fullColor)
+                .padding(-RingMetrics.stroke / 2)
+            } else {
+                ForEach(sides.filter { $0.fraction > 0 }, id: \.half) { side in
+                    HalfRing(side: side.half, fraction: side.fraction).stroke(side.tint, style: HalfRing.style)
+                        .widgetAccentable()
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func singleProgress(_ device: Device) -> some View {
         let fraction = CGFloat(min(max(device.percent ?? 0, 0), 100)) / 100
         if #available(macOS 15, *), !gray {
             // Nos estilos translúcido e tonalizado o sistema pinta todo shape de uma cor só; imagem em cor cheia
@@ -223,14 +274,17 @@ private struct ListWidget: View {
     let series: [HistorySeries]
 
     var body: some View {
-        let slice = WidgetPage.slice(devices, page: page, perPage: WidgetPage.largePerPage)
-        let compactRows = devices.count > WidgetPage.largeChartMaxDevices
+        let slice = WidgetPage.slice(devices, page: page, perPage: WidgetPage.largePerPage(for: devices))
+        let compactRows = WidgetPage.largeUnits(devices) > WidgetPage.largeChartMaxDevices
         VStack(alignment: .leading, spacing: compactRows ? 6 : 8) {
             Text(isStale ? "widget.title.stale" : "widget.title")
                 .font(.caption).foregroundStyle(.secondary)
             ForEach(slice.items) { device in
                 let gray = isGray(device)
                 let level = BatteryLevel(percent: device.percent, thresholds: thresholds)
+                if device.sides != nil {
+                    SidesRow(device: device, gray: gray, thresholds: thresholds)
+                } else {
                 HStack(spacing: 8) {
                     device.symbol.font(.system(size: 16)).foregroundStyle(.secondary).frame(width: 20)
                     VStack(alignment: .leading, spacing: 2) {
@@ -249,6 +303,7 @@ private struct ListWidget: View {
                         .frame(width: 44)
                 }
                 .accessibilityElement(children: .combine)
+                }
             }
             Spacer(minLength: 0)
             if !compactRows, !series.isEmpty {

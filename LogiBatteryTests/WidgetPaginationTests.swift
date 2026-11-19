@@ -73,4 +73,19 @@ final class WidgetPaginationTests: XCTestCase {
         XCTAssertEqual(store.advance(family: "medium", pageCount: 2), 0)
         XCTAssertEqual(store.page(for: "large"), 0)
     }
+
+    /// Fone com lados (T14, #154) tem duas faixas: vale por duas linhas, tira uma da página e tira o gráfico antes.
+    func testHeadphonesWithSidesTakeTwoRowsOfTheLargeWidget() {
+        var all = devices(3)
+        XCTAssertEqual(WidgetPage.largeUnits(all), 3)
+        XCTAssertEqual(WidgetPage.largePerPage(for: all), 6)
+
+        all.append(Device(id: "qcy", name: "QCY", kind: .headphones, percent: 85, chargeState: .discharging,
+                          path: .bluetooth, readAt: .now,
+                          sides: [DeviceSide(side: .left, percent: 90, charging: false),
+                                  DeviceSide(side: .right, percent: 85, charging: false)]))
+        XCTAssertEqual(WidgetPage.largeUnits(all), 5)
+        XCTAssertGreaterThan(WidgetPage.largeUnits(all), WidgetPage.largeChartMaxDevices)
+        XCTAssertEqual(WidgetPage.largePerPage(for: all), 5)
+    }
 }
