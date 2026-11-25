@@ -8,6 +8,7 @@ Aqui vivem os artefatos de design de LogiBattery. O sistema de design em si (tok
 |---|---|
 | `telas.md` | Inventário de telas com status de aprovação. Fonte de verdade do que pode ser implementado |
 | `prototypes/` | Protótipos (HTML, exportações do Figma/canvas, links). Um por tela ou fluxo |
+| `prints/` | Prints do protótipo para aprovação: `prints/<tela>/NN-<estado>.png`, um PNG por estado com claro e escuro lado a lado. Sem eles não se pede aprovação |
 | `screenshots/` | Capturas da implementação, para comparar com o protótipo aprovado |
 | `brand/` | Logo, ícones e arquivos mestre (criar quando existirem) |
 | `components.md` | Anatomia e regras de uso de cada componente (opcional, ou usar Storybook) |
@@ -20,7 +21,7 @@ Tela sem status `aprovada` em `telas.md` não é implementada. Isso vale para te
 
 1. Escolher a tela em `telas.md` (ou adicionar uma linha) e ligar à história do PRD.
 2. Prototipar com tokens e componentes do `DESIGN.md`. Cobrir padrão, vazio, carregando e erro, em todos os breakpoints/plataformas do projeto.
-3. Salvar ou linkar o protótipo em `prototypes/` e mudar o status para `em revisão`.
+3. Salvar ou linkar o protótipo em `prototypes/`, gerar os prints de cada estado (claro e escuro) em `prints/<tela>/` e mudar o status para `em revisão`. O pedido de aprovação mostra os prints.
 4. Lucas revisa. Ajustes voltam ao passo 2. Aprovado: status `aprovada`, com data e link.
 5. Implementar em branch própria. O PR cita a linha de `telas.md` e anexa captura da implementação.
 6. Comparar implementação e protótipo. Divergência intencional atualiza o protótipo (e o `DESIGN.md`) antes do merge.
