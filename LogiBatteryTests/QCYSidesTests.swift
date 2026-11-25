@@ -1,3 +1,4 @@
+import QCYKit
 import XCTest
 @testable import LogiBattery
 
@@ -66,8 +67,10 @@ final class QCYSidesTests: XCTestCase {
 
     /// Regressão do "—" do fone: o sistema devolve sem nível e a leitura do QCY preenche.
     func testSystemRowWithoutPercentGetsReadingFromAdvertisement() throws {
-        let advertisement = try XCTUnwrap(QCYAdvertisement(manufacturerData: Data(try qcyFixture(
-            "qcy-advertisement-melobuds-pro"))))
+        // Mesmos bytes da fixture `qcy-advertisement-melobuds-pro` do QCYKit (gravada em 2026-11-12).
+        let bytes: [UInt8] = [0x1C, 0x52, 0x4D, 0x4A, 0x9D, 0x00, 0x6E, 0x5D, 0x5E, 0x00, 0xB6, 0x76, 0x48,
+                              0xAC, 0x84, 0x60, 0x6E, 0x90, 0xE9, 0x01, 0xAC, 0x84, 0x60, 0x2F, 0x9D, 0xE9]
+        let advertisement = try XCTUnwrap(QCYAdvertisement(manufacturerData: Data(bytes)))
         let merged = system(percent: nil).applying(qcy: QCYSides.make(advertisement))
         XCTAssertEqual(merged.sides?.map(\.percent), [93, 94])
         XCTAssertEqual(merged.percent, 93)

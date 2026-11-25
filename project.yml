@@ -12,6 +12,10 @@ settings:
     CODE_SIGN_STYLE: Automatic
     CODE_SIGN_IDENTITY: "-"
     DEVELOPMENT_TEAM: ""
+packages:
+  QCYKit:
+    url: https://github.com/LucasStop/QCYKit
+    from: 0.1.0
 targets:
   LogiBattery:
     type: application
@@ -30,6 +34,7 @@ targets:
     dependencies:
       - target: LogiBatteryWidget
         embed: true
+      - package: QCYKit
   LogiBatteryWidget:
     type: app-extension
     platform: macOS
@@ -56,42 +61,13 @@ targets:
       properties:
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
-  QCYBattery:
-    type: application
-    platform: macOS
-    sources:
-      - QCYBattery
-      - LogiBattery/Core/BLE
-      - LogiBattery/Core/Domain/Device.swift
-      - LogiBattery/Core/Storage/Snapshot.swift
-      - LogiBattery/UI/Components/BatteryCell.swift
-      - LogiBattery/UI/Components/DeviceSideItem.swift
-      - LogiBattery/Symbols.xcassets
-    settings:
-      base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.lucasstop.QCYBattery
-        GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_CFBundleDisplayName: QCY
-        INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "Para ler a bateria do fone QCY e ajustar cancelamento de ruído, LDAC e modo jogo."
-        CODE_SIGN_ENTITLEMENTS: QCYBattery/QCYBattery.entitlements
-        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        ENABLE_HARDENED_RUNTIME: YES
-  QCYBatteryTests:
-    type: bundle.unit-test
-    platform: macOS
-    sources: [QCYBatteryTests]
-    dependencies:
-      - target: QCYBattery
-    settings:
-      base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.lucasstop.QCYBatteryTests
-        GENERATE_INFOPLIST_FILE: YES
   LogiBatteryTests:
     type: bundle.unit-test
     platform: macOS
     sources: [LogiBatteryTests, Tests/Fixtures]
     dependencies:
       - target: LogiBattery
+      - package: QCYKit
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.lucasstop.LogiBatteryTests
@@ -111,12 +87,7 @@ schemes:
     build:
       targets: {LogiBattery: all, LogiBatteryWidget: all}
     test:
-      targets: [LogiBatteryTests, QCYBatteryTests]
-  QCYBattery:
-    build:
-      targets: {QCYBattery: all}
-    test:
-      targets: [QCYBatteryTests]
+      targets: [LogiBatteryTests]
   LogiBatteryUITests:
     build:
       targets: {LogiBattery: all, LogiBatteryUITests: all}
