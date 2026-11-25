@@ -1,4 +1,5 @@
 import Foundation
+import QCYKit
 
 /// Liga a leitura do fone QCY (`QCYState`/`QCYAdvertisement`) ao `Device` do popover (#142, ADR 0006).
 enum QCYSides {

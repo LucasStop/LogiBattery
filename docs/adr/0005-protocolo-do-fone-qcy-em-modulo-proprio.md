@@ -2,6 +2,7 @@
 
 - Status: aceita (escopo F4 escolhido pelo Lucas em 2026-11-12; ligar na interface ficou pendente)
 - Data: 2026-11-12
+- Nota (2026-11-25): protocolo e app QCYBattery saíram para repos próprios ([ADR 0008](0008-qcy-em-repos-proprios.md)). Os caminhos abaixo são os da época.
 
 ## Contexto
 O teclado e o mouse entram por HID++ e o fone Bluetooth por `IOBluetooth` (ADR 0002). O fone do Lucas, um QCY MeloBuds Pro, expõe um canal de controle GATT proprietário com muito mais do que o macOS mostra: bateria do lado esquerdo, do direito e do estojo, firmware, modo de cancelamento de ruído, LDAC e modo jogo. O macOS mostra um número só — e em 2026-11-12 mostrava 100% enquanto o fone reportava 91–92%. O PRD hoje lista "protocolo proprietário de outra marca" como fora de escopo, e o repositório que documenta o protocolo (Quicky) não tem licença.

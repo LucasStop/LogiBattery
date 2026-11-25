@@ -1,4 +1,5 @@
 import Foundation
+import QCYKit
 
 /// Lê L/R/estojo do fone QCY por GATT (fone conectado como áudio não anuncia) ou por advertising, uma vez por scan.
 /// Só leitura: nada é escrito no fone (ADR 0006). Sem Bluetooth, permissão ou fone, devolve `nil` no `timeout`.

@@ -62,7 +62,7 @@ Se a história envolve tela, ela aparece em [../design/telas.md](../design/telas
 - Atualização de firmware.
 
 ## Further Notes
-- Protocolo do fone QCY: a camada de leitura (bateria por lado e estojo, firmware, ANC, LDAC, modo jogo) está medida e implementada em `Core/BLE`, com referência em [QCY.md](QCY.md), e o controle vive no app separado QCYBattery (#135). A leitura de bateria por lado entra no popover pela US-16 (#142), depois de protótipo T13 aprovado.
+- Protocolo do fone QCY: a camada de leitura (bateria por lado e estojo, firmware, ANC, LDAC, modo jogo) está medida e implementada no pacote [QCYKit](https://github.com/LucasStop/QCYKit), com referência em [QCY.md](https://github.com/LucasStop/QCYKit/blob/main/docs/QCY.md), e o controle vive no app [QCYBattery](https://github.com/LucasStop/QCYBattery) (#135, ADR 0008). A leitura de bateria por lado entra no popover pela US-16 (#142), depois de protótipo T13 aprovado.
 - Os modelos exatos e o PID do receptor do Lucas são descobertos no primeiro run (`ioreg -p IOUSB -l`).
 - Aparelhos antigos usam HID++ 1.0 e ficam fora do MVP se não houver hardware para testar.
 - Licença MIT; repositório público.

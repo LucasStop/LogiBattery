@@ -22,7 +22,7 @@ Inventário. `-` quando a parte não existe.
 | API / backend | - | - | - | - | - |
 | Domínio | Modelo de aparelho, deduplicação, regras de aviso, política de leitura | Swift puro | `LogiBattery/Core/Domain` | HIDPP (via protocolo) | Não |
 | HID++ (transporte e protocolo) | Enumerar receptores e Bluetooth, falar HID++ 1.0/2.0, ler bateria, carga e a tabela de features | `IOHIDManager`, Swift | `LogiBattery/Core/HIDPP` | Sistema (IOKit) | Número de série do aparelho |
-| BLE do fone QCY (protocolo proprietário) | Ler bateria por lado e do estojo, firmware, ANC, LDAC e modo jogo do fone | `CoreBluetooth`, Swift | `LogiBattery/Core/BLE`; janela no alvo `QCYBattery/` (app separado, ADR 0005) | Sistema (CoreBluetooth) | Endereço MAC do fone |
+| BLE do fone QCY (protocolo proprietário) | Ler bateria por lado e do estojo, firmware, ANC, LDAC e modo jogo do fone | `CoreBluetooth`, Swift | pacote [QCYKit](https://github.com/LucasStop/QCYKit); adaptadores `QCYSides` e `QCYLiveReader` em `LogiBattery/Core/BLE`; janela no app [QCYBattery](https://github.com/LucasStop/QCYBattery) (ADR 0005, 0008) | Sistema (CoreBluetooth) | Endereço MAC do fone |
 | Bateria do sistema | Ler a bateria interna do Mac e a de fone Bluetooth conectado (US-13) | `IOPowerSources`, `IOBluetooth` (chaves KVC privadas) | `LogiBattery/Core/System/SystemBatteries.swift` | Sistema | Não |
 | Persistência | Snapshot JSON e histórico de leituras no App Group | JSON + SwiftData (ou SQLite) | `LogiBattery/Core/Storage` | App Group | Não |
 | Autenticação e permissões | Estado de Input Monitoring e Bluetooth, guia ao painel de Privacidade | TCC, `IOHIDCheckAccess` | `LogiBattery/Core/Permissions` | Sistema | Não |
@@ -97,6 +97,7 @@ Só o app host acessa o hardware. O widget lê o snapshot e nunca fala com HID.
 | [0005](adr/0005-protocolo-do-fone-qcy-em-modulo-proprio.md) | Protocolo do fone QCY em módulo próprio, somente leitura, fora da lista de aparelhos por enquanto | aceita |
 | [0006](adr/0006-leitura-do-qcy-no-popover.md) | Leitura de bateria do QCY no popover (L/R numa linha); controle só no QCYBattery | aceita |
 | [0007](adr/0007-versao-por-pr.md) | Bump de versão e CHANGELOG no próprio PR; publicação por script depois do merge | aceita |
+| [0008](adr/0008-qcy-em-repos-proprios.md) | QCYBattery e protocolo do QCY em repos próprios; LogiBattery depende do pacote QCYKit só para ler | aceita |
 
 ## 11. Spike HID++ (issue #10, 2026-10-29)
 
@@ -134,7 +135,7 @@ A escrita de configuração segue o mesmo caminho: `HIDPPWrite` monta `0x2201` (
 
 ### 11.2 Fone QCY por BLE (2026-11-12)
 
-O fone QCY MeloBuds Pro não fala HID++: o canal de controle é GATT proprietário, descoberto por manufacturer data `0x521C` e servido no serviço `A001`. Referência medida: [QCY.md](QCY.md).
+O fone QCY MeloBuds Pro não fala HID++: o canal de controle é GATT proprietário, descoberto por manufacturer data `0x521C` e servido no serviço `A001`. Referência medida: [QCY.md](https://github.com/LucasStop/QCYKit/blob/main/docs/QCY.md).
 
 | Pergunta | Resposta medida |
 |---|---|
@@ -147,5 +148,5 @@ O fone QCY MeloBuds Pro não fala HID++: o canal de controle é GATT proprietár
 
 - O estado não é empurrado em toda conexão: o cliente pede com `0xFE` ao terminar a descoberta.
 - MAC no advertising vem embaralhado (`[12]:[11]:[13]:[16]:[15]:[14]`) e os offsets do documento contam depois do company id. Errar um dos dois devolve MAC lixo.
-- O módulo lê e escreve (cena de ANC, LDAC, modo jogo). O LogiBattery usa só a leitura: `QCYLiveReader` e `QCYSides` preenchem `Device.sides` na linha do fone (US-16, T13, ADR 0006, #142); `percent` é o menor lado. Escrita fica no alvo separado QCYBattery (T12, #135, ADR 0005).
+- O módulo lê e escreve (cena de ANC, LDAC, modo jogo). O LogiBattery usa só a leitura: `QCYLiveReader` e `QCYSides` preenchem `Device.sides` na linha do fone (US-16, T13, ADR 0006, #142); `percent` é o menor lado. Escrita fica no app [QCYBattery](https://github.com/LucasStop/QCYBattery) (T12, #135, ADR 0005). Desde 2026-11-25 o protocolo é o pacote [QCYKit](https://github.com/LucasStop/QCYKit) e este repo só tem os adaptadores (ADR 0008).
 

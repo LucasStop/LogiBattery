@@ -2,6 +2,7 @@
 
 - Status: aceita em 2026-11-13 (Lucas aprovou o protótipo T13 e a decisão)
 - Data: 2026-11-13
+- Nota (2026-11-25): protocolo e app QCYBattery saíram para repos próprios ([ADR 0008](0008-qcy-em-repos-proprios.md)). Os caminhos abaixo são os da época.
 
 ## Contexto
 O popover mostra o MeloBuds Pro com "—": o macOS não informa nível a este fone (e, quando informou, errou: 100% com o fone em 91-92%). O protocolo QCY já está medido e implementado em `Core/BLE` ([QCY.md](../QCY.md)) e o app QCYBattery (ADR 0005, #135) usa esse módulo para ler e escrever. O Lucas pediu uma linha só no popover com os dois lados separados ("L 90% · R 85%"). O estojo não é exposto pelo firmware 2.0.6: byte `0x00` com tampa aberta ou fechada.
