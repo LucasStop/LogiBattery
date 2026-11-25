@@ -21,7 +21,7 @@ Perfil: monolito · Stack: Swift (SwiftUI, XcodeGen) (ver `.projeto.yml`)
 - Mudança de comportamento atualiza PRD/ARCHITECTURE/TESTING no mesmo PR.
 - Teste no nível certo conforme `docs/TESTING.md`; bug corrigido ganha teste de regressão.
 - Estratégia de testes e arquitetura precisam de "aprovado em AAAA-MM-DD" (Lucas) antes da implementação.
-- Perfil monólito: tela só é implementada com protótipo `aprovada` em `design/telas.md`. Sem aprovação, parar e pedir.
+- Perfil monólito: tela só é implementada com protótipo `aprovada` em `design/telas.md`. Pedido de aprovação sempre traz os prints do protótipo (claro e escuro) salvos em `design/prints/`; o Lucas aprova olhando os prints. Sem aprovação, parar e pedir.
 - Componente ou token novo entra no `DESIGN.md` antes ou junto da tela.
 - Contrato e dados: endpoints em `docs/API.md` (mesmo que só a própria UI consuma), migrações reversíveis e `docs/DATA.md` atualizado.
 - Versão por PR (ADR 0007): PR `feat` sobe MINOR e `fix` sobe PATCH no próprio PR (`scripts/release.sh prepare`, último passo antes do merge, depois de rebasear na main), com a entrada do `CHANGELOG.md` reescrita com o porquê; os demais tipos não mexem na versão. Depois do merge de um PR com bump, avisar que falta `scripts/release.sh publish` (build assinado, tag e GitHub Release; só quando o Lucas pedir) e vigiar o `release-check` da tag.

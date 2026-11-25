@@ -319,7 +319,7 @@ Nenhuma tela é desenvolvida sem protótipo aprovado. O inventário e o status d
 1. Definir a tela a partir de uma história do `docs/PRD.md`.
 2. Prototipar usando só tokens e componentes deste arquivo. Ferramenta: HTML em `design/prototypes/` (Figma se o Lucas pedir).
 3. Cobrir os estados (padrão, vazio, carregando, erro), tema claro e escuro, e os três tamanhos do widget.
-4. Lucas revisa e aprova; a data e o link entram em `design/telas.md`.
+4. Prints de cada estado, claro e escuro, em `design/prints/<tela>/`; Lucas revisa olhando os prints e aprova; a data e o link entram em `design/telas.md`.
 5. Só então implementar. A implementação é comparada com o protótipo (captura em `design/screenshots/`) e o teste visual/E2E da tela referencia o aprovado.
 6. Componente ou token novo exigido pela tela entra neste arquivo antes (ou junto) e passa pela mesma aprovação.
 
