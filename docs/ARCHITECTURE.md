@@ -24,6 +24,7 @@ Inventário. `-` quando a parte não existe.
 | HID++ (transporte e protocolo) | Enumerar receptores e Bluetooth, falar HID++ 1.0/2.0, ler bateria, carga e a tabela de features | `IOHIDManager`, Swift | `LogiBattery/Core/HIDPP` | Sistema (IOKit) | Número de série do aparelho |
 | BLE do fone QCY (protocolo proprietário) | Ler bateria por lado e do estojo, firmware, ANC, LDAC e modo jogo do fone | `CoreBluetooth`, Swift | pacote [QCYKit](https://github.com/LucasStop/QCYKit); adaptadores `QCYSides` e `QCYLiveReader` em `LogiBattery/Core/BLE`; janela no app [QCYBattery](https://github.com/LucasStop/QCYBattery) (ADR 0005, 0008) | Sistema (CoreBluetooth) | Endereço MAC do fone |
 | Bateria do sistema | Ler a bateria interna do Mac e a de fone Bluetooth conectado (US-13) | `IOPowerSources`, `IOBluetooth` (chaves KVC privadas) | `LogiBattery/Core/System/SystemBatteries.swift` | Sistema | Não |
+| Energia do Mac e helper privilegiado | Ler fonte de energia, tempo restante, Modo de Energia (`pmset`), brilho da tela e apps usando energia significativa (`proc_pid_rusage`); trocar `powermode` via XPC root (US-17, ADR 0009) | `IOPowerSources`, `pmset`, `DisplayServices`/IORegistry, `libproc`, `SMAppService.daemon`, `NSXPCConnection` | `LogiBattery/Core/System/MacPower*.swift`, `LogiBatteryPowerHelper/` | Sistema | Não (sem log com nomes de usuário) |
 | Persistência | Snapshot JSON e histórico de leituras no App Group | JSON + SwiftData (ou SQLite) | `LogiBattery/Core/Storage` | App Group | Não |
 | Autenticação e permissões | Estado de Input Monitoring e Bluetooth, guia ao painel de Privacidade | TCC, `IOHIDCheckAccess` | `LogiBattery/Core/Permissions` | Sistema | Não |
 | Integrações externas | Notificações e login item | `UserNotifications`, `SMAppService` | `LogiBattery/Core/System` | Sistema | Não |
@@ -98,6 +99,7 @@ Só o app host acessa o hardware. O widget lê o snapshot e nunca fala com HID.
 | [0006](adr/0006-leitura-do-qcy-no-popover.md) | Leitura de bateria do QCY no popover (L/R numa linha); controle só no QCYBattery | aceita |
 | [0007](adr/0007-versao-por-pr.md) | Bump de versão e CHANGELOG no próprio PR; publicação por script depois do merge | aceita |
 | [0008](adr/0008-qcy-em-repos-proprios.md) | QCYBattery e protocolo do QCY em repos próprios; LogiBattery depende do pacote QCYKit só para ler | aceita |
+| [0009](adr/0009-helper-privilegiado-e-energia-do-mac.md) | Saída do App Sandbox no host e helper privilegiado (`SMAppService.daemon`) para Modo de Energia e energia significativa | aceita |
 
 ## 11. Spike HID++ (issue #10, 2026-10-29)
 

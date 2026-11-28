@@ -61,6 +61,15 @@ struct SettingsView: View {
                           icon: "menubar.rectangle", tint: .purple)
                 }
                 .pickerStyle(.menu)
+                Picker(selection: $model.values.menuBarSource) {
+                    Text("settings.menuBarSource.lowest").tag(MenuBarIconSource.lowestBattery)
+                    Text("settings.menuBarSource.mac").tag(MenuBarIconSource.macBattery)
+                } label: {
+                    label("settings.menuBarSource", hint: "settings.menuBarSource.hint",
+                          icon: "battery.100", tint: .blue)
+                }
+                .pickerStyle(.menu)
+                .disabled(model.values.menuBarIcon == .never)
                 stepper("settings.popoverWidth", hint: "settings.popoverWidth.hint",
                         icon: "arrow.left.and.right.square", tint: .blue,
                         value: $popoverWidth, range: SettingsModel.popoverWidthRange,

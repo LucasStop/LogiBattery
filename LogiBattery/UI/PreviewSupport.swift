@@ -16,6 +16,12 @@ enum Sample {
         DeviceSide(side: .right, percent: 64, charging: true)
     ])
     static let all = [mouse, keyboard, headphones]
+    static let macPowerAdapter = MacPowerSnapshot(
+        powerSource: .powerAdapter,
+        detail: .fullyCharged,
+        energyMode: .highPower,
+        supportsHighPower: true
+    )
 }
 
 struct PreviewScanner: DeviceScanning {
@@ -27,5 +33,25 @@ struct PreviewAccess: InputAccess {
     let status: InputAccessStatus
     func request() {}
     func openPrivacySettings() {}
+}
+
+struct PreviewMacPowerReader: MacPowerReading {
+    let snapshot: MacPowerSnapshot?
+    func read() async -> MacPowerSnapshot? { snapshot }
+}
+
+struct PreviewPowerModeController: PowerModeControlling {
+    let statusValue: PowerHelperStatus
+    init(status: PowerHelperStatus = .enabled) { self.statusValue = status }
+    func status() -> PowerHelperStatus { statusValue }
+    func register() throws -> PowerHelperStatus { statusValue }
+    func setPowerMode(_ mode: EnergyMode, scope: String) async throws {}
+    func revoke() throws {}
+}
+
+struct PreviewSignificantEnergyReader: SignificantEnergyReading {
+    let items: [SignificantEnergyItem]
+    func sample() async -> [SignificantEnergyItem] { items }
+    func reset() async {}
 }
 #endif

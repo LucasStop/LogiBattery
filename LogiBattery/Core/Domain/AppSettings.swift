@@ -7,6 +7,11 @@ enum MenuBarIconVisibility: String, Codable, Equatable, Sendable {
     case always, withPeripherals, never
 }
 
+/// Qual bateria o ícone da barra de menus representa (US-18).
+enum MenuBarIconSource: String, Codable, Equatable, Sendable {
+    case lowestBattery, macBattery
+}
+
 struct AppSettings: Codable, Equatable, Sendable {
     /// Minutos que o menu de "Aparelhos sem resposta" oferece (#115); 0 é "Na hora".
     static let windowOptions = [0, 5, 15, 30, 60, 120, 360, 720, 1440, 2880, 10080]
@@ -19,6 +24,7 @@ struct AppSettings: Codable, Equatable, Sendable {
     var keepForMinutes = 24 * 60
     var forgetScope = ForgetScope.grayOnly
     var menuBarIcon = MenuBarIconVisibility.always
+    var menuBarSource = MenuBarIconSource.lowestBattery
 
     var interval: Duration { .seconds(intervalMinutes * 60) }
     var thresholds: BatteryThresholds { BatteryThresholds(low: lowThreshold, critical: criticalThreshold) }
@@ -62,6 +68,8 @@ extension AppSettings {
         forgetScope = try container.decodeIfPresent(ForgetScope.self, forKey: .forgetScope) ?? defaults.forgetScope
         menuBarIcon = try container.decodeIfPresent(MenuBarIconVisibility.self, forKey: .menuBarIcon)
             ?? defaults.menuBarIcon
+        menuBarSource = try container.decodeIfPresent(MenuBarIconSource.self, forKey: .menuBarSource)
+            ?? defaults.menuBarSource
     }
 }
 

@@ -31,6 +31,17 @@ struct LogiBatteryApp: App {
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
         // Ajuste novo vale na hora para a lista, o ícone e o widget, sem esperar a próxima leitura (#115).
         SettingsModel.shared.onChange = { viewModel.apply($0.readingPolicy) }
+        // Plugar/desplugar e Pouca Energia atualizam o ícone na hora; sem isso o Mac só era lido com o popover aberto.
+        Task {
+            await macPowerViewModel.refresh()
+            for await _ in powerEvents.changes {
+                await macPowerViewModel.refresh()
+                await viewModel.refresh()
+                // A leitura de sistema pode atrasar um instante depois do evento.
+                try? await Task.sleep(for: .seconds(2))
+                await viewModel.refresh()
+            }
+        }
         Task {
             await viewModel.run(interval: { SettingsModel.shared.values.interval }, changes: discovery.changes)
         }
@@ -39,23 +50,31 @@ struct LogiBatteryApp: App {
     var body: some Scene {
         // Escondido, só some o ícone: a leitura roda no `init` e o widget segue atualizando (US-14).
         MenuBarExtra(isInserted: menuBarInserted) {
-            DeviceList(viewModel: viewModel, permission: permission)
+            DeviceList(viewModel: viewModel, permission: permission, macPower: macPowerViewModel)
         } label: {
-            // Largura fixa: se o item muda de tamanho ao aparecer a porcentagem, o macOS ancora o popover
-            // na posição antiga e ele abre deslocado para a direita.
-            HStack(spacing: 3) {
-                Image(systemName: viewModel.menuBarSymbol)
-                Text(viewModel.menuBarPercent.map { "\($0)%" } ?? "")
-                    .monospacedDigit()
-            }
-            .frame(width: 62, alignment: .leading)
-            // O label existe desde a abertura do app: é onde o guia de permissão aparece no primeiro uso.
-            .task {
-                if permission.needsGuide {
-                    openWindow(id: "permission")
-                    NSApplication.shared.activate(ignoringOtherApps: true)
+            let source = settings.values.menuBarSource
+            let device = viewModel.menuBarDevice(for: source)
+            let isMacPluggedFull = source == .macBattery
+                && macPowerViewModel.snapshot?.powerSource == .powerAdapter
+                && device?.chargeState == .full
+            let style = MenuBarBatteryIcon.Style(
+                percent: device?.percent,
+                isCharging: device?.chargeState == .charging,
+                isPluggedFull: isMacPluggedFull,
+                isLowPowerMode: source == .macBattery && macPowerViewModel.snapshot?.energyMode == .lowPower,
+                level: BatteryLevel(percent: device?.percent, thresholds: settings.values.thresholds),
+                hasLoaded: viewModel.hasLoaded
+            )
+            // Imagem de largura fixa (29 × 14 pt): evita deslocamento da âncora do popover ao mudar o nível.
+            Image(nsImage: MenuBarBatteryIcon.image(for: style))
+                .accessibilityLabel(menuBarAccessibilityLabel(for: device))
+                // O label existe desde a abertura do app: é onde o guia de permissão aparece no primeiro uso.
+                .task {
+                    if permission.needsGuide {
+                        openWindow(id: "permission")
+                        NSApplication.shared.activate(ignoringOtherApps: true)
+                    }
                 }
-            }
         }
         .menuBarExtraStyle(.window)
 
@@ -73,6 +92,11 @@ struct LogiBatteryApp: App {
             SettingsView()
         }
         .windowResizability(.contentSize)
+    }
+
+    private func menuBarAccessibilityLabel(for device: Device?) -> String {
+        guard let device, let percent = device.percent else { return "LogiBattery" }
+        return "\(device.name), \(percent)%"
     }
 }
 
@@ -93,12 +117,19 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 private let discovery = HIDDiscovery()
+private let powerEvents = PowerEvents()
 
 /// Instância única: o loop de leitura (`init`) e a cena (menu e ícone) precisam enxergar o mesmo objeto. Como
 /// `@State` lido no `init`, o loop atualizava uma cópia e o menu ficava no snapshot restaurado (#102).
 @MainActor private let viewModel = DeviceListViewModel(
     scanner: LiveScanner(), restoring: SnapshotStore.appGroup?.read(),
     policy: SettingsModel.shared.values.readingPolicy, publish: publishSnapshot)
+
+@MainActor private let macPowerViewModel = MacPowerViewModel(
+    powerReader: MacPowerReader(),
+    modeController: PowerHelperClient(),
+    significantReader: SignificantEnergyReader()
+)
 
 /// Descobre as interfaces a cada leitura: receptor ou aparelho conectado agora aparece sem reiniciar o app.
 /// Soma a bateria do Mac e de qualquer periférico Bluetooth conectado no macOS, deduplicando com HID++ (#88).
