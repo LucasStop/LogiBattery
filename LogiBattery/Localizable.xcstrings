@@ -2442,6 +2442,174 @@
           }
         }
       }
+    },
+    "macPower.detail.estimating": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Calculating time remaining…" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Calculando tiempo restante…" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Calculando tempo restante…" } }
+      }
+    },
+    "macPower.detail.fullyCharged": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Fully Charged" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Carga completa" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Carga completa" } }
+      }
+    },
+    "macPower.detail.notCharging": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Not Charging" } },
+        "es": { "stringUnit": { "state": "translated", "value": "No está cargando" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Não está carregando" } }
+      }
+    },
+    "macPower.detail.remaining %@": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "%@ Remaining" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Quedan %@" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Restam %@" } }
+      }
+    },
+    "macPower.detail.untilFull %@": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "%@ Until Full" } },
+        "es": { "stringUnit": { "state": "translated", "value": "%@ para carga completa" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "%@ até carga completa" } }
+      }
+    },
+    "macPower.helper.approval.action": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Open Login Items…" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Abrir ítems de inicio…" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Abrir Itens de Início…" } }
+      }
+    },
+    "macPower.helper.approval.body": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Approve the LogiBattery helper in Login Items to switch energy mode without a password." } },
+        "es": { "stringUnit": { "state": "translated", "value": "Aprueba el asistente de LogiBattery en Ítems de inicio para cambiar el modo de energía sin contraseña." } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Aprove o auxiliar do LogiBattery em Itens de Início para trocar o modo de energia sem pedir senha." } }
+      }
+    },
+    "macPower.helper.error.connection": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Could not connect to the energy mode helper." } },
+        "es": { "stringUnit": { "state": "translated", "value": "No se pudo conectar al asistente de modo de energía." } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Não foi possível conectar ao auxiliar de modo de energia." } }
+      }
+    },
+    "macPower.mode.automatic": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Automatic" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Automático" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Automático" } }
+      }
+    },
+    "macPower.mode.highPower": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "High Power" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Alto consumo" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Alta Potência" } }
+      }
+    },
+    "macPower.mode.lowPower": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Low Power" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Bajo consumo" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Pouca Energia" } }
+      }
+    },
+    "macPower.mode.title": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Energy Mode" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Modo de energía" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Modo de energia" } }
+      }
+    },
+    "macPower.settings": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Battery Settings…" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Configuración de Batería…" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Ajustes de Bateria…" } }
+      }
+    },
+    "macPower.significant.brightness": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Display Brightness" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Brillo de la pantalla" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Brilho da tela" } }
+      }
+    },
+    "macPower.significant.none": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "No Apps Using Significant Energy" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Ninguna app usa energía significativa" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Nenhum app usando energia significativa" } }
+      }
+    },
+    "macPower.significant.title": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Using Significant Energy" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Usando energía significativa" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Usando energia significativa" } }
+      }
+    },
+    "macPower.source.adapter": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Power Adapter" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Adaptador de corriente" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Adaptador de Alimentação" } }
+      }
+    },
+    "macPower.source.battery": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Battery" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Batería" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Bateria" } }
+      }
+    },
+    "macPower.source.prefix": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Power Source:" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Fuente de alimentación:" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Fonte de energia:" } }
+      }
+    },
+    "macPower.title": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Battery" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Batería" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Bateria" } }
+      }
+    },
+    "settings.menuBarSource": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Show in menu bar" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Mostrar en la barra de menús" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Exibir na barra de menus" } }
+      }
+    },
+    "settings.menuBarSource.hint": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Choose between the lowest device battery or the Mac battery." } },
+        "es": { "stringUnit": { "state": "translated", "value": "Elige entre la batería más baja o la batería del Mac." } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Escolha entre o aparelho com menor nível ou a bateria do Mac." } }
+      }
+    },
+    "settings.menuBarSource.lowest": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Lowest battery" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Batería más baja" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Menor bateria" } }
+      }
+    },
+    "settings.menuBarSource.mac": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Mac battery" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Batería del Mac" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Bateria do Mac" } }
+      }
     }
   },
   "version": "1.0"

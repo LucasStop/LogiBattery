@@ -117,11 +117,32 @@ final class DeviceListViewModel {
         }
     }
 
-    /// O ícone da barra de menu mostra o menor nível entre os aparelhos com leitura.
-    var menuBarPercent: Int? { devices.compactMap(\.percent).min() }
+    /// O ícone da barra de menu mostra o menor nível entre os aparelhos ou a bateria do Mac (US-18).
+    var menuBarPercent: Int? { menuBarPercent(for: .lowestBattery) }
 
-    var menuBarSymbol: String {
-        menuBarPercent.map(Self.symbol(forPercent:)) ?? (hasLoaded ? "questionmark.circle" : "ellipsis.circle")
+    var menuBarSymbol: String { menuBarSymbol(for: .lowestBattery) }
+
+    func menuBarDevice(for source: MenuBarIconSource) -> Device? {
+        switch source {
+        case .macBattery:
+            return devices.first { $0.kind == .laptop } ?? devices.min { ($0.percent ?? 101) < ($1.percent ?? 101) }
+        case .lowestBattery:
+            return devices.filter { $0.percent != nil }.min { ($0.percent ?? 101) < ($1.percent ?? 101) }
+        }
+    }
+
+    func menuBarPercent(for source: MenuBarIconSource) -> Int? {
+        menuBarDevice(for: source)?.percent
+    }
+
+    func menuBarSymbol(for source: MenuBarIconSource) -> String {
+        guard let device = menuBarDevice(for: source), let percent = device.percent else {
+            return hasLoaded ? "questionmark.circle" : "ellipsis.circle"
+        }
+        if device.chargeState == .charging {
+            return "battery.100.bolt"
+        }
+        return Self.symbol(forPercent: percent)
     }
 
     static func symbol(forPercent percent: Int) -> String {

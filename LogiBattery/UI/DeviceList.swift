@@ -5,6 +5,7 @@ import SwiftUI
 struct DeviceList: View {
     let viewModel: DeviceListViewModel
     let permission: PermissionModel
+    let macPower: MacPowerViewModel
     @Environment(\.openWindow) private var openWindow
     @AppStorage(SettingsModel.popoverWidthKey) private var popoverWidth = SettingsModel.defaultPopoverWidth
 
@@ -65,6 +66,11 @@ struct DeviceList: View {
                     if !Task.isCancelled { viewModel.dismissForgotten() }
                 }
             }
+            if macPower.snapshot != nil {
+                PopoverSection {
+                    MacPowerSection(viewModel: macPower)
+                }
+            }
             PopoverSection {
                 VStack(spacing: 0) {
                     actionRow("popover.history", chevron: true) {
@@ -89,6 +95,8 @@ struct DeviceList: View {
             permission.refresh()
             await viewModel.refresh()
         }
+        .onAppear { macPower.startPopoverUpdates() }
+        .onDisappear { macPower.stopPopoverUpdates() }
     }
 
     private var header: some View {
@@ -298,13 +306,25 @@ private struct CaseTooltip: View {
 #if DEBUG
 #Preview("Com aparelhos") {
     let model = DeviceListViewModel(scanner: PreviewScanner(devices: Sample.all))
-    DeviceList(viewModel: model, permission: PermissionModel(access: PreviewAccess(status: .granted)))
+    let power = MacPowerViewModel(
+        powerReader: PreviewMacPowerReader(snapshot: Sample.macPowerAdapter),
+        modeController: PreviewPowerModeController(),
+        significantReader: PreviewSignificantEnergyReader(items: [.displayBrightness])
+    )
+    DeviceList(viewModel: model, permission: PermissionModel(access: PreviewAccess(status: .granted)),
+               macPower: power)
         .task { await model.refresh() }
 }
 
 #Preview("Sem permissão") {
     let model = DeviceListViewModel(scanner: PreviewScanner(devices: []))
-    DeviceList(viewModel: model, permission: PermissionModel(access: PreviewAccess(status: .denied)))
+    let power = MacPowerViewModel(
+        powerReader: PreviewMacPowerReader(snapshot: nil),
+        modeController: PreviewPowerModeController(),
+        significantReader: PreviewSignificantEnergyReader(items: [])
+    )
+    DeviceList(viewModel: model, permission: PermissionModel(access: PreviewAccess(status: .denied)),
+               macPower: power)
         .task { await model.refresh() }
 }
 #endif

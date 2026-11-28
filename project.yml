@@ -20,7 +20,9 @@ targets:
   LogiBattery:
     type: application
     platform: macOS
-    sources: [LogiBattery]
+    sources:
+      - LogiBattery
+      - LogiBatteryPowerHelper/PowerHelperProtocol.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.lucasstop.LogiBattery
@@ -34,7 +36,33 @@ targets:
     dependencies:
       - target: LogiBatteryWidget
         embed: true
+      - target: LogiBatteryPowerHelper
+        embed: false
       - package: QCYKit
+    postBuildScripts:
+      - name: Embed Power Helper
+        basedOnDependencyAnalysis: false
+        script: |
+          set -euo pipefail
+          helper_dst="$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH/Library/HelperTools"
+          plist_dst="$TARGET_BUILD_DIR/$CONTENTS_FOLDER_PATH/Library/LaunchDaemons"
+          mkdir -p "$helper_dst" "$plist_dst"
+          cp "$BUILT_PRODUCTS_DIR/LogiBatteryPowerHelper" "$helper_dst/LogiBatteryPowerHelper"
+          cp "$SRCROOT/LogiBatteryPowerHelper/com.lucasstop.LogiBattery.power-helper.plist" "$plist_dst/"
+          if [ "${CODE_SIGNING_ALLOWED:-NO}" = "YES" ] && [ -n "${EXPANDED_CODE_SIGN_IDENTITY:-}" ]; then
+            codesign --force --options runtime --sign "$EXPANDED_CODE_SIGN_IDENTITY" "$helper_dst/LogiBatteryPowerHelper"
+          fi
+  LogiBatteryPowerHelper:
+    type: tool
+    platform: macOS
+    sources:
+      - LogiBatteryPowerHelper/main.swift
+      - LogiBatteryPowerHelper/PowerHelperProtocol.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.lucasstop.LogiBattery.power-helper
+        ENABLE_HARDENED_RUNTIME: YES
+        SKIP_INSTALL: YES
   LogiBatteryWidget:
     type: app-extension
     platform: macOS
