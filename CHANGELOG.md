@@ -2,6 +2,18 @@
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), em português, uma seção por versão publicada (ADR 0007). Cada PR `feat` ou `fix` traz a própria seção, com o que mudou e por quê; os demais tipos não entram. Seções: Adicionado, Alterado, Corrigido, Removido.
 
+## 0.6.0 - 2026-11-28
+
+### Adicionado
+
+- Seção de energia do Mac no popover: fonte de energia, tempo restante, Modo de Energia (Automático, Pouca Energia, Alta Potência), brilho e apps que usam energia significativa, e atalho para os Ajustes de Bateria. Assim dá para esconder o ícone nativo de bateria e cuidar do Mac e dos periféricos num lugar só (#160).
+- Ícone de bateria da barra de menus no estilo do macOS 27: monocromático com raio recortado carregando ou na tomada, amarelo em Pouca Energia e vermelho em bateria baixa ou crítica, cantos mais arredondados e dígitos maiores e centralizados. Ele agora muda na hora ao plugar, desplugar ou ligar a Pouca Energia, e não só com o popover aberto (#160).
+- Opção "Liberar sem senha" na troca de Modo de Energia: uma regra de `sudoers` limitada a `pmset -c|-b powermode 0|1|2`, validada com `visudo`, que o popover instala com uma senha e pode remover ("Pedir senha de novo"). Sem ela a troca pede a senha do administrador a cada vez (#160).
+
+### Alterado
+
+- A troca de Modo de Energia não usa mais um daemon `SMAppService`: sem Developer ID o macOS não registra o item (erro 1, sem registro no BTM). O auxiliar privilegiado foi removido e o ADR 0009 revisado; volta quando houver Developer ID e notarização (#160).
+
 ## 0.5.0 - 2026-11-19
 
 ### Adicionado
