@@ -19,10 +19,6 @@ final class MenuBarBatteryIconTests: XCTestCase {
 
     func testColoredStatesDisableTemplateToPreserveAppleColors() {
         let cases: [MenuBarBatteryIcon.Style] = [
-            .init(percent: 82, isCharging: true, isPluggedFull: false, isLowPowerMode: false,
-                  level: .normal, hasLoaded: true),
-            .init(percent: 100, isCharging: false, isPluggedFull: true, isLowPowerMode: false,
-                  level: .normal, hasLoaded: true),
             .init(percent: 60, isCharging: false, isPluggedFull: false, isLowPowerMode: true,
                   level: .normal, hasLoaded: true),
             .init(percent: 18, isCharging: false, isPluggedFull: false, isLowPowerMode: false,
@@ -34,6 +30,19 @@ final class MenuBarBatteryIconTests: XCTestCase {
             let image = MenuBarBatteryIcon.image(for: style)
             XCTAssertEqual(image.size, MenuBarBatteryIcon.size)
             XCTAssertFalse(image.isTemplate)
+        }
+    }
+
+    func testChargingAndPluggedFullStayMonochromeTemplateLikeNative() {
+        let cases: [MenuBarBatteryIcon.Style] = [
+            .init(percent: 82, isCharging: true, isPluggedFull: false, isLowPowerMode: false,
+                  level: .normal, hasLoaded: true),
+            .init(percent: 100, isCharging: false, isPluggedFull: true, isLowPowerMode: false,
+                  level: .normal, hasLoaded: true)
+        ]
+        for style in cases {
+            XCTAssertTrue(style.showsBolt)
+            XCTAssertTrue(MenuBarBatteryIcon.image(for: style).isTemplate)
         }
     }
 

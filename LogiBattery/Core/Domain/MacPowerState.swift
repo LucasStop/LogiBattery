@@ -199,7 +199,7 @@ protocol PowerModeControlling: Sendable {
     func status() -> PowerHelperStatus
     func register() throws -> PowerHelperStatus
     func setPowerMode(_ mode: EnergyMode, scope: String) async throws
-    @MainActor func openApprovalSettings()
+    func revoke() throws
 }
 
 protocol SignificantEnergyReading: Sendable {

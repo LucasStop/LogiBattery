@@ -31,6 +31,17 @@ struct LogiBatteryApp: App {
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
         // Ajuste novo vale na hora para a lista, o ícone e o widget, sem esperar a próxima leitura (#115).
         SettingsModel.shared.onChange = { viewModel.apply($0.readingPolicy) }
+        // Plugar/desplugar e Pouca Energia atualizam o ícone na hora; sem isso o Mac só era lido com o popover aberto.
+        Task {
+            await macPowerViewModel.refresh()
+            for await _ in powerEvents.changes {
+                await macPowerViewModel.refresh()
+                await viewModel.refresh()
+                // A leitura de sistema pode atrasar um instante depois do evento.
+                try? await Task.sleep(for: .seconds(2))
+                await viewModel.refresh()
+            }
+        }
         Task {
             await viewModel.run(interval: { SettingsModel.shared.values.interval }, changes: discovery.changes)
         }
@@ -106,6 +117,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 private let discovery = HIDDiscovery()
+private let powerEvents = PowerEvents()
 
 /// Instância única: o loop de leitura (`init`) e a cena (menu e ícone) precisam enxergar o mesmo objeto. Como
 /// `@State` lido no `init`, o loop atualizava uma cópia e o menu ficava no snapshot restaurado (#102).

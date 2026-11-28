@@ -9,7 +9,6 @@ final class MacPowerViewModel {
     private(set) var significantItems: [SignificantEnergyItem] = []
     private(set) var helperStatus: PowerHelperStatus
     private(set) var isSwitchingMode = false
-    private(set) var needsApprovalNotice = false
     private(set) var switchError: String?
 
     @ObservationIgnored private let powerReader: any MacPowerReading
@@ -28,14 +27,13 @@ final class MacPowerViewModel {
         self.modeController = modeController
         self.significantReader = significantReader
         self.sampleInterval = sampleInterval
-        self.helperStatus = modeController.status()
+        // `status()` roda `sudo`: fora do init, que roda na inicialização do global e não pode esperar processo filho.
+        self.helperStatus = .notRegistered
     }
 
     func refresh() async {
-        helperStatus = modeController.status()
-        if helperStatus == .enabled {
-            needsApprovalNotice = false
-        }
+        let controller = modeController
+        helperStatus = await Task.detached { controller.status() }.value
         snapshot = await powerReader.read()
     }
 
@@ -65,20 +63,6 @@ final class MacPowerViewModel {
     func selectMode(_ mode: EnergyMode) async {
         guard let current = snapshot, current.energyMode != mode, !isSwitchingMode else { return }
         switchError = nil
-        helperStatus = modeController.status()
-        if helperStatus != .enabled {
-            do {
-                helperStatus = try modeController.register()
-            } catch {
-                switchError = error.localizedDescription
-                return
-            }
-            if helperStatus != .enabled {
-                needsApprovalNotice = true
-                return
-            }
-        }
-        needsApprovalNotice = false
         isSwitchingMode = true
         defer { isSwitchingMode = false }
         do {
@@ -98,7 +82,24 @@ final class MacPowerViewModel {
         }
     }
 
-    func openApprovalSettings() {
-        modeController.openApprovalSettings()
+    /// Instala a regra de `sudoers` (pede a senha uma vez) para as próximas trocas não pedirem senha.
+    func enablePasswordless() {
+        switchError = nil
+        do {
+            helperStatus = try modeController.register()
+        } catch {
+            switchError = error.localizedDescription
+        }
+    }
+
+    /// Remove a regra: a troca volta a pedir senha.
+    func revokePasswordless() {
+        switchError = nil
+        do {
+            try modeController.revoke()
+        } catch {
+            switchError = error.localizedDescription
+        }
+        helperStatus = modeController.status()
     }
 }

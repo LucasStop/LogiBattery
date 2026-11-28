@@ -12,7 +12,7 @@ private final class FakePowerModeController: PowerModeControlling, @unchecked Se
     var currentStatus: PowerHelperStatus
     var registerResult: PowerHelperStatus
     var appliedCalls: [(mode: EnergyMode, scope: String)] = []
-    var openedSettingsCount = 0
+    var revokeCount = 0
 
     init(status: PowerHelperStatus = .enabled, registerResult: PowerHelperStatus? = nil) {
         self.currentStatus = status
@@ -30,9 +30,9 @@ private final class FakePowerModeController: PowerModeControlling, @unchecked Se
         appliedCalls.append((mode, scope))
     }
 
-    @MainActor
-    func openApprovalSettings() {
-        openedSettingsCount += 1
+    func revoke() throws {
+        revokeCount += 1
+        currentStatus = .notRegistered
     }
 }
 
@@ -74,7 +74,6 @@ final class MacPowerViewModelTests: XCTestCase {
         XCTAssertEqual(controller.appliedCalls.first?.mode, .highPower)
         XCTAssertEqual(controller.appliedCalls.first?.scope, "-c")
         XCTAssertEqual(model.snapshot?.energyMode, .highPower)
-        XCTAssertFalse(model.needsApprovalNotice)
     }
 
     func testSelectModeAppliesBatteryScopeWhenOnBattery() async {
@@ -99,17 +98,13 @@ final class MacPowerViewModelTests: XCTestCase {
         XCTAssertEqual(controller.appliedCalls.first?.scope, "-b")
     }
 
-    func testSelectModeShowsApprovalNoticeWhenHelperRequiresApproval() async {
+    func testSelectModeStillSwitchesWithoutPasswordlessRule() async {
         let initial = MacPowerSnapshot(
-            powerSource: .powerAdapter,
-            detail: .fullyCharged,
-            energyMode: .automatic,
-            supportsHighPower: true
+            powerSource: .powerAdapter, detail: .fullyCharged, energyMode: .automatic, supportsHighPower: true
         )
-        let reader = FakeMacPowerReader(snapshot: initial)
-        let controller = FakePowerModeController(status: .notRegistered, registerResult: .requiresApproval)
+        let controller = FakePowerModeController(status: .notRegistered)
         let model = MacPowerViewModel(
-            powerReader: reader,
+            powerReader: FakeMacPowerReader(snapshot: initial),
             modeController: controller,
             significantReader: FakeSignificantEnergyReader()
         )
@@ -117,12 +112,24 @@ final class MacPowerViewModelTests: XCTestCase {
         await model.refresh()
         await model.selectMode(.highPower)
 
-        XCTAssertTrue(model.needsApprovalNotice)
-        XCTAssertEqual(model.helperStatus, .requiresApproval)
-        XCTAssertTrue(controller.appliedCalls.isEmpty)
+        XCTAssertEqual(controller.appliedCalls.first?.mode, .highPower)
+        XCTAssertEqual(model.helperStatus, .notRegistered)
+    }
 
-        model.openApprovalSettings()
-        XCTAssertEqual(controller.openedSettingsCount, 1)
+    func testEnableAndRevokePasswordlessUpdateStatus() async {
+        let controller = FakePowerModeController(status: .notRegistered, registerResult: .enabled)
+        let model = MacPowerViewModel(
+            powerReader: FakeMacPowerReader(snapshot: nil),
+            modeController: controller,
+            significantReader: FakeSignificantEnergyReader()
+        )
+
+        model.enablePasswordless()
+        XCTAssertEqual(model.helperStatus, .enabled)
+
+        model.revokePasswordless()
+        XCTAssertEqual(controller.revokeCount, 1)
+        XCTAssertEqual(model.helperStatus, .notRegistered)
     }
 
     func testMenuBarSourceSwitchesBetweenLowestBatteryAndMacBattery() async {

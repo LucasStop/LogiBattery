@@ -67,14 +67,13 @@ struct MacPowerSection: View {
                     modeButton(mode: mode, isSelected: snapshot.energyMode == mode)
                 }
             }
-            if viewModel.needsApprovalNotice {
-                approvalNotice
-            } else if let error = viewModel.switchError {
+            if let error = viewModel.switchError {
                 Text(verbatim: error)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .padding(.top, 2)
             }
+            passwordlessControl
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
@@ -119,21 +118,25 @@ struct MacPowerSection: View {
         }
     }
 
-    private var approvalNotice: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("macPower.helper.approval.body")
-                .font(.caption)
-                .foregroundStyle(.primary)
-            Button("macPower.helper.approval.action") {
-                viewModel.openApprovalSettings()
+    @ViewBuilder
+    private var passwordlessControl: some View {
+        if viewModel.helperStatus == .enabled {
+            Button("macPower.helper.revoke.action") { viewModel.revokePasswordless() }
+                .buttonStyle(.link)
+                .controlSize(.small)
+        } else {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("macPower.helper.approval.body")
+                    .font(.caption)
+                Button("macPower.helper.approval.action") { viewModel.enablePasswordless() }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.small)
+            .padding(8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .padding(.top, 4)
         }
-        .padding(8)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-        .padding(.top, 4)
     }
 
     private var significantEnergyBlock: some View {

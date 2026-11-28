@@ -1,6 +1,7 @@
 # ADR 0009 — Helper privilegiado (`SMAppService.daemon`) e saída do App Sandbox no host
 
-- Status: aceita (Lucas aprovou o plano em 2026-11-28)
+- Status: parcialmente substituída em 2026-11-28 (Lucas aprovou): o daemon `SMAppService` não registra sem Developer ID (`SMAppServiceErrorDomain` 1, sem registro no BTM, medido com Apple Development). A troca de Modo de Energia usa `do shell script "pmset ... powermode N" with administrator privileges`, com pedido de senha a cada troca; o helper foi removido. Voltar ao daemon quando houver Developer ID e notarização. A saída do App Sandbox no host continua valendo.
+- Aprovada originalmente em 2026-11-28
 - Data: 2026-11-28
 
 ## Contexto

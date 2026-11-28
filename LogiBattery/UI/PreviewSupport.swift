@@ -46,7 +46,7 @@ struct PreviewPowerModeController: PowerModeControlling {
     func status() -> PowerHelperStatus { statusValue }
     func register() throws -> PowerHelperStatus { statusValue }
     func setPowerMode(_ mode: EnergyMode, scope: String) async throws {}
-    @MainActor func openApprovalSettings() {}
+    func revoke() throws {}
 }
 
 struct PreviewSignificantEnergyReader: SignificantEnergyReading {

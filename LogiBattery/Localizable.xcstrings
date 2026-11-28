@@ -2480,16 +2480,23 @@
     },
     "macPower.helper.approval.action": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Open Login Items…" } },
-        "es": { "stringUnit": { "state": "translated", "value": "Abrir ítems de inicio…" } },
-        "pt-BR": { "stringUnit": { "state": "translated", "value": "Abrir Itens de Início…" } }
+        "en": { "stringUnit": { "state": "translated", "value": "Allow without password" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Permitir sin contraseña" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Liberar sem senha" } }
       }
     },
     "macPower.helper.approval.body": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Approve the LogiBattery helper in Login Items to switch energy mode without a password." } },
-        "es": { "stringUnit": { "state": "translated", "value": "Aprueba el asistente de LogiBattery en Ítems de inicio para cambiar el modo de energía sin contraseña." } },
-        "pt-BR": { "stringUnit": { "state": "translated", "value": "Aprove o auxiliar do LogiBattery em Itens de Início para trocar o modo de energia sem pedir senha." } }
+        "en": { "stringUnit": { "state": "translated", "value": "Switching energy mode asks for your password each time. Allow it once to stop being asked." } },
+        "es": { "stringUnit": { "state": "translated", "value": "Cambiar el modo de energía pide tu contraseña cada vez. Permítelo una vez para no volver a verla." } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Trocar o modo de energia pede sua senha toda vez. Libere uma vez para não pedir mais." } }
+      }
+    },
+    "macPower.helper.revoke.action": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Ask for password again" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Volver a pedir contraseña" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Pedir senha de novo" } }
       }
     },
     "macPower.helper.error.connection": {

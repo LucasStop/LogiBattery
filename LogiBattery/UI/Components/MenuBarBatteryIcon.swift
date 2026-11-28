@@ -1,4 +1,5 @@
 import AppKit
+import CoreText
 import Foundation
 
 /// Renderiza o ícone de bateria da barra de menus no estilo nativo da Apple:
@@ -15,9 +16,14 @@ enum MenuBarBatteryIcon {
         let level: BatteryLevel
         let hasLoaded: Bool
 
+        /// Nativo: colorido só em Pouca Energia (amarelo) e baixa/crítica (vermelho);
+        /// carregando ou plugado fica monocromático.
         var usesColor: Bool {
-            percent != nil && (isCharging || isPluggedFull || isLowPowerMode || level == .low || level == .critical)
+            percent != nil && (isLowPowerMode || level == .low || level == .critical)
         }
+
+        /// O raio do nativo aparece carregando e plugado em 100%.
+        var showsBolt: Bool { isCharging || isPluggedFull }
     }
 
     static func image(for style: Style) -> NSImage {
@@ -30,9 +36,9 @@ enum MenuBarBatteryIcon {
     }
 
     private static func draw(style: Style) {
-        let bodyRect = NSRect(x: 0.5, y: 0.75, width: 25.5, height: 12.5)
-        let bodyRadius: CGFloat = 3.2
-        let capRect = NSRect(x: 27.0, y: 4.9, width: 1.5, height: 4.2)
+        let bodyRect = NSRect(x: 0.5, y: 0.5, width: 26, height: 13)
+        let bodyRadius: CGFloat = 4.6
+        let capRect = NSRect(x: 27.4, y: 4.8, width: 1.5, height: 4.4)
         let bodyPath = NSBezierPath(roundedRect: bodyRect, xRadius: bodyRadius, yRadius: bodyRadius)
         let capPath = NSBezierPath(roundedRect: capRect, xRadius: 0.75, yRadius: 0.75)
 
@@ -79,9 +85,6 @@ enum MenuBarBatteryIcon {
         if style.level == .critical || style.level == .low {
             return NSColor(calibratedRed: 1.0, green: 0.231, blue: 0.188, alpha: 1) // Apple systemRed #FF3B30
         }
-        if style.isCharging || style.isPluggedFull {
-            return NSColor(calibratedRed: 0.204, green: 0.780, blue: 0.349, alpha: 1) // Apple systemGreen #34C759
-        }
         return NSColor(calibratedRed: 1.0, green: 0.800, blue: 0.0, alpha: 1) // Apple systemYellow #FFCC00
     }
 
@@ -101,9 +104,9 @@ enum MenuBarBatteryIcon {
 
     private static func drawCenteredContent(_ text: String, in rect: NSRect, style: Style) {
         let isThreeDigits = text.count >= 3
-        let fontSize: CGFloat = style.isCharging
-            ? (isThreeDigits ? 7.6 : 8.8)
-            : (isThreeDigits ? 8.2 : 9.5)
+        let fontSize: CGFloat = style.showsBolt
+            ? (isThreeDigits ? 8.6 : 9.8)
+            : (isThreeDigits ? 9.2 : 10.6)
         let font = roundedBoldFont(ofSize: fontSize)
         let attributes: [NSAttributedString.Key: Any] = [
             .font: font,
@@ -113,46 +116,41 @@ enum MenuBarBatteryIcon {
         let attributed = NSAttributedString(string: text, attributes: attributes)
         let textSize = attributed.size()
 
-        let boltWidth: CGFloat = style.isCharging ? 4.4 : 0
-        let boltGap: CGFloat = style.isCharging ? 1.0 : 0
+        let boltWidth: CGFloat = style.showsBolt ? 4.8 : 0
+        let boltGap: CGFloat = style.showsBolt ? 1.0 : 0
         let totalWidth = textSize.width + boltGap + boltWidth
         let startX = rect.midX - totalWidth / 2
 
-        let drawRect = NSRect(
-            x: startX,
-            y: rect.midY - textSize.height / 2 + 0.25,
-            width: textSize.width,
-            height: textSize.height
-        )
+        // Centra a tinta real dos glifos (CTLineGetImageBounds), não a caixa da linha: dá o mesmo resultado em
+        // qualquer tamanho de fonte e para "!" e "…".
+        let line = CTLineCreateWithAttributedString(attributed)
+        let ink = CTLineGetImageBounds(line, nil)
 
         NSGraphicsContext.saveGraphicsState()
-        if !style.usesColor, let context = NSGraphicsContext.current?.cgContext {
-            context.setBlendMode(.clear)
+        if let context = NSGraphicsContext.current?.cgContext {
+            if !style.usesColor { context.setBlendMode(.clear) }
+            context.textPosition = CGPoint(x: startX, y: rect.midY - ink.midY)
+            CTLineDraw(line, context)
         }
-        attributed.draw(in: drawRect)
         NSGraphicsContext.restoreGraphicsState()
 
-        if style.isCharging {
+        if style.showsBolt {
             let boltRect = NSRect(
                 x: startX + textSize.width + boltGap,
-                y: rect.midY - 3.7,
+                y: rect.midY - 4.0,
                 width: boltWidth,
-                height: 7.4
+                height: 8.0
             )
-            drawBolt(in: boltRect, color: labelColor(for: style))
+            drawBolt(in: boltRect, color: labelColor(for: style), knockOut: !style.usesColor)
         }
     }
 
     private static func labelColor(for style: Style) -> NSColor {
         guard style.usesColor else { return .black }
-        if style.isLowPowerMode && style.level != .low && style.level != .critical
-            && !style.isCharging && !style.isPluggedFull {
-            return .black
-        }
-        return .white
+        return style.level == .low || style.level == .critical ? .white : .black
     }
 
-    private static func drawBolt(in rect: NSRect, color: NSColor) {
+    private static func drawBolt(in rect: NSRect, color: NSColor, knockOut: Bool) {
         let path = NSBezierPath()
         path.move(to: NSPoint(x: rect.minX + rect.width * 0.62, y: rect.maxY))
         path.line(to: NSPoint(x: rect.minX + rect.width * 0.08, y: rect.minY + rect.height * 0.44))
@@ -161,7 +159,10 @@ enum MenuBarBatteryIcon {
         path.line(to: NSPoint(x: rect.minX + rect.width * 0.92, y: rect.minY + rect.height * 0.56))
         path.line(to: NSPoint(x: rect.minX + rect.width * 0.52, y: rect.minY + rect.height * 0.56))
         path.close()
+        NSGraphicsContext.saveGraphicsState()
+        if knockOut { NSGraphicsContext.current?.cgContext.setBlendMode(.clear) }
         color.setFill()
         path.fill()
+        NSGraphicsContext.restoreGraphicsState()
     }
 }
